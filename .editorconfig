@@ -1,0 +1,20 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.java]
+ij_java_block_brace_style = next_line
+ij_java_class_brace_style = next_line
+ij_java_method_brace_style = next_line
+
+[*.md]
+trim_trailing_whitespace = false
+
+[*.{json,yaml,yml}]
+indent_size = 2
