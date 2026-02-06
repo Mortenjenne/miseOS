@@ -68,11 +68,38 @@ So that I know what dishes I need to prepare
 - And I can filter by week (current, next, previous)
 - And each dish shows: name, description, allergens
 
+### US-06: Set Suggestion Deadline
+As a Head Chef
+I want to enforce a weekly deadline for suggestions (e.g., Wednesday 12:00)
+So that I have enough time to review and order ingredients before the weekend.
+
+**Acceptance Criteria:**
+
+- Given the system clock is past the defined deadline.
+
+- When a Line Cook tries to submit a suggestion for the upcoming week.
+
+- Then the system prevents the submission and prompts them to suggest for the following week instead.
+
+### US-07: Finalize Weekly Menu (Head Chef Override)
+As a Head Chef 
+I want to manage empty slots in the weekly grid by either adding my own dishes or setting placeholders
+
+So that I can fulfill the menu requirement for the coming week and ensure the public view is never incomplete.
+
+**Acceptance Criteria:**
+
+- Given I am viewing the Weekly Menu Grid (Monday-Friday) for the upcoming week.
+- When a specific station slot is empty (either because no suggestion was submitted or I rejected the existing ones).
+- Then I have the option to:
+- Create a "Direct Entry": Manually type in a dish name, description, and allergens without going through the suggestion/approval workflow.
+- And once I save the grid, these entries must be flagged as "Aproved."
+
 ---
 
 ## Epic 3: Ingredient Management
 
-### US-06: Submit Ingredient Request
+### US-08: Submit Ingredient Request
 As a Line Cook  
 I want to request ingredients for my approved dishes  
 So that I have everything needed to execute the menu
@@ -85,7 +112,7 @@ So that I have everything needed to execute the menu
 - And the request status is set to "Pending"
 - And I can view all my ingredient requests and their status
 
-### US-07: Approve Ingredient Requests
+### US-09: Approve Ingredient Requests
 As a Head Chef  
 I want to review and approve ingredient requests  
 So that I can control purchasing and ensure budget is met
@@ -98,7 +125,7 @@ So that I can control purchasing and ensure budget is met
 - And I can modify quantity or add notes
 - And approved requests are automatically added to the shopping list
 
-### US-08: Generate Shopping List
+### US-10: Generate Shopping List
 As a Head Chef  
 I want to generate an aggregated shopping list from approved ingredient requests  
 So that I can place consolidated orders with suppliers that arrive exactly when we need them
@@ -115,7 +142,7 @@ So that I can place consolidated orders with suppliers that arrive exactly when 
 
 ## Epic 4: Public Menu Access & Translation
 
-### US-09: View Menu as Guest
+### US-11: View Menu as Guest
 As a Guest (unauthenticated user)  
 I want to view the current week's menu  
 So that I know what food is available
@@ -128,7 +155,7 @@ So that I know what food is available
 - And I do not need to log in
 - And I cannot see pending or rejected suggestions
 
-### US-010: Toggle Menu Language
+### US-12: Toggle Menu Language
 As a Guest  
 I want to switch between Danish and English  
 So that I can read the menu in my preferred language
@@ -140,7 +167,7 @@ So that I can read the menu in my preferred language
 - And allergen labels are translated
 - And the selected language persists during my session
 
-### US-11: View Allergen Information
+### US-13: View Allergen Information
 As a Guest  
 I want to clearly see allergen information for each dish  
 So that I can avoid foods that affect my health
@@ -152,7 +179,7 @@ So that I can avoid foods that affect my health
 - And common allergens (gluten, dairy, nuts, etc.) are clearly marked
 
 
-### US-12: Translate Menu 
+### US-14: Translate Menu 
 As a Head Chef 
 I want to provide translations for dish names and descriptions
 So that international guests can understand the menu.
@@ -168,7 +195,7 @@ So that international guests can understand the menu.
 
 ## Epic 5: Menu History & Analytics (Nice-to-Have)
 
-### US-13: View Menu History
+### US-15: View Menu History
 As a Head Chef  
 I want to view past weekly menus  
 So that I can reference successful dishes and avoid repetition
@@ -180,7 +207,7 @@ So that I can reference successful dishes and avoid repetition
 - And I can see which Line Cook suggested each dish
 - And I can clone past dishes to new menu suggestions
 
-### US-14: Track Dish Popularity
+### US-16: Track Dish Popularity
 As a Head Chef  
 I want to see which dishes appear most frequently  
 So that I can identify customer favorites
@@ -196,7 +223,7 @@ So that I can identify customer favorites
 
 ## Epic 6: Weather Integration (The Cook's Assistant)
 
-### US-15: Weather-Informed Planning
+### US-17: Weather-Informed Planning
 As a Line Cook 
 I want to see the weather forecast for the upcoming week while making suggestions
 So that I can suggest dishes that match the climate
