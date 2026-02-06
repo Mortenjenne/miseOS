@@ -1,0 +1,36 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+class User {
+}
+
+class Station
+class DishSuggestion
+class Allergen
+class WeeklyMenu
+class WeeklyMenuDish
+class IngredientRequest
+class ShoppingList
+class ShoppingListItem
+
+User "1" --> "0..1" Station : is assigned to
+User "1" --> "*" DishSuggestion : creates
+User "1" --> "*" DishSuggestion : reviews
+User "1" --> "*" IngredientRequest : creates
+User "1" --> "*" IngredientRequest : reviews
+User "1" --> "*" ShoppingList : creates
+User "1" --> "*" WeeklyMenu : publishes
+
+Station "1" --> "*" DishSuggestion : has suggestions from
+Station "1" --> "*" WeeklyMenuDish : appears in
+
+DishSuggestion "*" --> "*" Allergen : contains
+DishSuggestion "1" --> "*" IngredientRequest : requires
+DishSuggestion "0..1" --> "0..1" WeeklyMenuDish : appears in
+
+WeeklyMenu "1" --> "25" WeeklyMenuDish : contains
+
+ShoppingList "1" --> "*" ShoppingListItem : contains
+ShoppingListItem "*" ..> "*" IngredientRequest : aggregates
+
+@enduml
