@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Table(name = "users")
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@Builder(toBuilder = true)
 @Getter
 @ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
