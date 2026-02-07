@@ -2,11 +2,13 @@ package app.config;
 
 import java.util.Properties;
 
-final class HibernateBaseProperties {
+final class HibernateBaseProperties
+{
 
     private HibernateBaseProperties() {}
 
-    static Properties createBase() {
+    static Properties createBase()
+    {
         Properties props = new Properties();
         props.put("hibernate.connection.driver_class", "org.postgresql.Driver");
         props.put("hibernate.current_session_context_class", "thread");

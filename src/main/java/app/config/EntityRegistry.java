@@ -1,15 +1,15 @@
 package app.config;
 
-import app.entities.Employee;
-import app.entities.Point;
+import app.entities.User;
 import org.hibernate.cfg.Configuration;
 
-final class EntityRegistry {
+final class EntityRegistry
+{
 
     private EntityRegistry() {}
 
-    static void registerEntities(Configuration configuration) {
-        configuration.addAnnotatedClass(Point.class);
-        configuration.addAnnotatedClass(Employee.class);
+    static void registerEntities(Configuration configuration)
+    {
+        configuration.addAnnotatedClass(User.class);
     }
 }
