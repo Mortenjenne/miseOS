@@ -1,5 +1,7 @@
 package app.entities;
 
+import app.enums.Role;
+import app.enums.Station;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,8 +19,10 @@ public class User
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
+    @Column(name = "first_name")
     private String firstName;
 
+    
     private String lastName;
 
     private String email;
