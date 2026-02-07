@@ -64,4 +64,14 @@ public final class HibernateConfig
         props.put("hibernate.connection.username", username);
         props.put("hibernate.connection.password", password);
     }
+
+    public static EntityManagerFactory getEntityManagerFactoryForTest() {
+        Properties props = HibernateBaseProperties.createBase();
+        props.put("hibernate.hbm2ddl.auto", "create-drop");
+        props.put("hibernate.connection.url", "jdbc:postgresql://localhost:5432/miseos_test");
+        props.put("hibernate.connection.username", "postgres");
+        props.put("hibernate.connection.password", "postgres");
+
+        return HibernateEmfBuilder.build(props);
+    }
 }
