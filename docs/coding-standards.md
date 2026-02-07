@@ -121,7 +121,6 @@ This document describes the coding standards and best practices to be followed i
 - **Rules:**
     - Annotated with `@Entity`, `@Table`, etc.
     - Contains only domain data and simple getters/setters
-    - May contain domain logic methods (e.g., `isPublished()`, `canBeEdited()`)
     - NO business logic that depends on external services
     - Use appropriate JPA annotations (`@OneToMany`, `@ManyToOne`, etc.)
 
@@ -245,7 +244,7 @@ public class MenuService {
 - **Location:** `app.controllers` package
 - **Purpose:** Handle HTTP requests and responses
 - **Rules:**
-    - Use Javalin or similar framework
+    - Use Javalin
     - Inject services via constructor
     - Parse request data and call services
     - Return DTOs, never entities
@@ -287,13 +286,6 @@ public class MenuController {
 
 **Example:**
 ```java
-public record CreateDishRequest(
-    @NotBlank String name,
-    @NotBlank String description,
-    @NotNull Set<Allergen> allergens,
-    @NotNull Station station
-) {}
-
 public record DishResponse(
     Long id,
     String name,
@@ -403,24 +395,6 @@ final class EntityRegistry {
 - Trivial getters/setters
 - Obvious implementations
 
-### 7.3 Javadoc
-- Use for public APIs and service methods
-- Include `@param`, `@return`, `@throws` tags
-
-**Example:**
-```java
-/**
- * Publishes a weekly menu, making it immutable.
- * All associated menu items become snapshots.
- *
- * @param menuId the ID of the menu to publish
- * @throws MenuNotFoundException if menu doesn't exist
- * @throws MenuAlreadyPublishedException if menu is already published
- */
-public void publishMenu(Long menuId) {
-    // implementation
-}
-```
 
 ---
 
@@ -514,24 +488,6 @@ em.createQuery("SELECT d FROM Dish d WHERE d.station = :station", Dish.class)
 - Place tests in `src/test/java` with same package structure
 - Naming convention: `ClassNameTest.java`
 
-**Example:**
-```java
-class MenuServiceTest {
-    
-    @Test
-    void publishMenu_shouldSetStatusToPublished() {
-        // Arrange
-        WeeklyMenu menu = new WeeklyMenu();
-        menu.setStatus(MenuStatus.DRAFT);
-        
-        // Act
-        menu.publish();
-        
-        // Assert
-        assertEquals(MenuStatus.PUBLISHED, menu.getStatus());
-    }
-}
-```
 
 ### 10.2 Integration Tests
 - Test repository layer with actual database
@@ -629,7 +585,7 @@ minor changes
 ### 12.2 config.properties Template
 Provide a `config.properties.template` in the repository:
 ```properties
-DB_NAME=miseos_dev
+DB_NAME=miseos
 DB_USERNAME=your_username
 DB_PASSWORD=your_password
 ```
@@ -649,11 +605,6 @@ Users copy this to `config.properties` and fill in their values.
 - Check user roles before allowing actions
 - Line Cooks can only edit their own suggestions
 - Only Head Chef can publish menus
-
-### 13.3 Input Validation
-- Validate all user input
-- Use bean validation annotations (`@NotNull`, `@NotBlank`, etc.)
-- Sanitize inputs to prevent injection attacks
 
 ---
 
@@ -720,28 +671,7 @@ Before creating a Pull Request, verify:
 
 ---
 
-## 17. Production Readiness
-
-### 17.1 Configuration
-- Use `hibernate.hbm2ddl.auto=validate` in production
-- Enable connection pooling (HikariCP configured)
-- Set appropriate pool sizes
-- Configure proper logging
-
-### 17.2 Performance
-- Use indexes on frequently queried columns
-- Optimize N+1 queries
-- Monitor query performance
-- Implement caching if needed
-
-### 17.3 Monitoring
-- Log errors appropriately
-- Include request tracking
-- Monitor database connection pool
-
----
-
-## 18. Resources and References
+## 17. Resources and References
 
 ### Documentation
 - [Hibernate Documentation](https://hibernate.org/orm/documentation/)
@@ -767,4 +697,4 @@ Before creating a Pull Request, verify:
 
 **Last Updated:** 2026-02-06  
 **Version:** 1.0  
-**Maintainer:** [Your Name]
+**Maintainer:** Morten Jensen
