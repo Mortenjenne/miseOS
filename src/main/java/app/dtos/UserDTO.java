@@ -1,15 +1,14 @@
 package app.dtos;
 
-import app.entities.User;
-import app.enums.Role;
-import app.enums.Station;
+import app.persistence.entities.User;
+import app.enums.UserRole;
 
 public record UserDTO(
     int id,
     String firstName,
     String lastName,
     String email,
-    Role role,
+    UserRole userRole,
     Station station
 ) {
 
@@ -19,7 +18,7 @@ public record UserDTO(
             user.getFirstName(),
             user.getLastName(),
             user.getEmail(),
-            user.getRole(),
+            user.getUserRole(),
             user.getStation()
         );
     }

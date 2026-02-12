@@ -1,6 +1,6 @@
-package app.config;
+package app.persistence.config;
 
-import app.entities.User;
+import app.persistence.entities.User;
 import org.hibernate.cfg.Configuration;
 
 final class EntityRegistry

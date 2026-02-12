@@ -1,13 +1,12 @@
 package app.dtos;
 
-import app.enums.Role;
-import app.enums.Station;
+import app.enums.UserRole;
 
 public record CreateUserRequest(
     String firstName,
     String lastName,
     String email,
     String password,
-    Role role,
+    UserRole userRole,
     Station station
 ) {}

@@ -1,10 +1,10 @@
 package app.services.impl;
 
-import app.daos.UserDAO;
+import app.persistence.daos.IUserDAO;
 import app.dtos.CreateUserRequest;
 import app.dtos.LoginRequest;
 import app.dtos.UserDTO;
-import app.entities.User;
+import app.persistence.entities.User;
 import app.services.UserService;
 import app.utils.PasswordUtil;
 import app.utils.ValidationUtil;
@@ -14,11 +14,11 @@ import java.util.List;
 
 public class UserServiceImpl implements UserService
 {
-    private final UserDAO userDAO;
+    private final IUserDAO IUserDAO;
 
-    public UserServiceImpl(UserDAO userDAO)
+    public UserServiceImpl(IUserDAO IUserDAO)
     {
-        this.userDAO = userDAO;
+        this.IUserDAO = IUserDAO;
     }
 
     @Override
@@ -33,11 +33,11 @@ public class UserServiceImpl implements UserService
             .lastName(request.lastName())
             .email(request.email())
             .hashedPassword(hashedPassword)
-            .role(request.role())
+            .userRole(request.userRole())
             .station(request.station())
             .build();
 
-        User userFromDB = userDAO.create(userToSave);
+        User userFromDB = IUserDAO.create(userToSave);
 
         return new UserDTO(userFromDB);
     }
@@ -45,7 +45,7 @@ public class UserServiceImpl implements UserService
     @Override
     public UserDTO findById(int id)
     {
-        User user = userDAO.findById(id)
+        User user = IUserDAO.findById(id)
             .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
         return new UserDTO(user);
@@ -54,7 +54,7 @@ public class UserServiceImpl implements UserService
     @Override
     public List<UserDTO> findAll()
     {
-        return userDAO.findAll().stream()
+        return IUserDAO.findAll().stream()
             .map(UserDTO::new)
             .toList();
     }
@@ -64,7 +64,7 @@ public class UserServiceImpl implements UserService
     {
         ValidationUtil.validateEmail(loginRequest.email());
 
-        return userDAO.findByEmail(loginRequest.email())
+        return IUserDAO.findByEmail(loginRequest.email())
             .filter(user -> PasswordUtil.verifyPassword(loginRequest.password(), user.getHashedPassword()))
             .map(UserDTO::new)
             .orElseThrow(() -> new IllegalArgumentException("Ugyldig mail eller password"));
@@ -77,29 +77,29 @@ public class UserServiceImpl implements UserService
         ValidationUtil.validateName(updateDTO.lastName(), "Efternavn");
         ValidationUtil.validateEmail(updateDTO.email());
 
-        User existingUser = userDAO.findById(updateDTO.id())
+        User existingUser = IUserDAO.findById(updateDTO.id())
             .orElseThrow(() -> new IllegalArgumentException("Brugeren med ID " + updateDTO.id() + " findes ikke"));
 
         User updatedUser = existingUser.toBuilder()
             .firstName(updateDTO.firstName())
             .lastName(updateDTO.lastName())
             .email(updateDTO.email())
-            .role(updateDTO.role())
+            .userRole(updateDTO.userRole())
             .station(updateDTO.station())
             .build();
 
-        return new UserDTO(userDAO.update(updatedUser));
+        return new UserDTO(IUserDAO.update(updatedUser));
     }
 
     @Override
     public void delete(int id)
     {
-        if (!userDAO.findById(id).isPresent())
+        if (!IUserDAO.findById(id).isPresent())
         {
             throw new IllegalArgumentException("Kan ikke slette: Bruger med ID " + id + " findes ikke");
         }
 
-        userDAO.delete(id);
+        IUserDAO.delete(id);
     }
 
     private void validateUserRegistration(CreateUserRequest request)
@@ -109,7 +109,7 @@ public class UserServiceImpl implements UserService
         ValidationUtil.validateEmail(request.email());
         ValidationUtil.validatePassword(request.password());
 
-        if (userDAO.findByEmail(request.email()).isPresent())
+        if (IUserDAO.findByEmail(request.email()).isPresent())
         {
             throw new IllegalArgumentException("En bruger med denne email findes allerede");
         }

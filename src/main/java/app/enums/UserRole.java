@@ -1,6 +1,6 @@
 package app.enums;
 
-public enum Role
+public enum UserRole
 {
     HEAD_CHEF,
     SOUS_CHEF,
