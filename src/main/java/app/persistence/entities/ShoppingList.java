@@ -56,7 +56,7 @@ public class ShoppingList implements IEntity
         if(shoppingListItem != null)
         {
             shoppingListItems.add(shoppingListItem);
-            shoppingListItem.set(this);
+            shoppingListItem.setShoppingList(this);
         }
     }
 
@@ -65,7 +65,7 @@ public class ShoppingList implements IEntity
         if(shoppingListItem != null)
         {
             shoppingListItems.remove(shoppingListItem);
-            shoppingListItem.set(null);
+            shoppingListItem.setShoppingList(null);
         }
     }
 

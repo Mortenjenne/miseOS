@@ -41,6 +41,17 @@ public class ShoppingListItem implements IEntity
     @Column(name = "notes")
     private String notes;
 
+    @Setter
+    @ManyToOne
+    @JoinColumn(name = "shopping_list_id", nullable = false)
+    private ShoppingList shoppingList;
+
+    //TODO Use @Setter(AcessLevel.Protected)
+    protected void set(ShoppingList shoppingList)
+    {
+        this.shoppingList = shoppingList;
+    }
+
     @Override
     public boolean equals(Object o)
     {
