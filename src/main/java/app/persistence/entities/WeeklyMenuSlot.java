@@ -12,13 +12,14 @@ import java.util.Objects;
 @Getter
 @Entity
 @Table(name = "weekly_menu_slot")
-public class WeeklyMenuSlot
+public class WeeklyMenuSlot implements IEntity
 {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Setter
+    @Enumerated(EnumType.STRING)
     @Column(name = "day_of_week", nullable = false)
     private DayOfWeek dayOfWeek;
 

@@ -29,6 +29,7 @@ public class WeeklyMenu implements IEntity
     private int year;
 
     @Setter
+    @Enumerated(EnumType.STRING)
     @Column(name = "menu_status", nullable = false)
     private MenuStatus menuStatus;
 
