@@ -14,7 +14,7 @@ public class User implements IEntity
 {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @Setter
     @Column(name = "first_name", nullable = false)
