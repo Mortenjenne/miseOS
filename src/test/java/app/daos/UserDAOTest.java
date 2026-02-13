@@ -18,8 +18,8 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.testcontainers.shaded.org.hamcrest.MatcherAssert.assertThat;
-import static org.testcontainers.shaded.org.hamcrest.Matchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class UserDAOTest
@@ -33,17 +33,21 @@ class UserDAOTest
     {
         TestCleanDB.truncateTables(emf);
         TestPopulator populator = new TestPopulator(emf);
-        seeded = populator.populate();
+        populator.populate();
+        seeded = populator.getSeededData();
         userDAO = new UserDAO(emf);
     }
 
     @AfterAll
     void tearDown()
     {
-        emf.close();
+        if (emf != null && emf.isOpen())
+        {
+            emf.close();
+        }
     }
 
-    @DisplayName("Test creating user")
+    @DisplayName("Create - Should persist user")
     @Test
     void create()
     {
@@ -57,6 +61,25 @@ class UserDAOTest
         assertThat(result.getLastName(), is("Oliver"));
     }
 
+    @DisplayName("Create - should throw exception when user is null")
+    @Test
+    void createNullUserThrowsException()
+    {
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> userDAO.create(null));
+
+        assertTrue(exception.getMessage().contains("User cannot be null"));
+    }
+
+    @Test
+    @DisplayName("Create - should throw exception when email is duplicate")
+    void create_DuplicateEmail_ThrowsException() {
+
+        User gordon = (User) seeded.get("user_gordon");
+        User duplicate = new User("Fake", "Gordon", gordon.getEmail(), "hash", UserRole.LINE_COOK);
+
+        assertThrows(Exception.class, () -> userDAO.create(duplicate));
+    }
+
     @DisplayName("Test retrieving all users")
     @Test
     void getAll()
@@ -64,14 +87,14 @@ class UserDAOTest
         Set<User> users = userDAO.getAll();
 
         assertThat(users, hasSize(4));
-        assertThat(users, containsInAnyOrder(seeded.get("user1"), seeded.get("user2"), seeded.get("user3"), seeded.get("user4")));
+        assertThat(users, containsInAnyOrder(seeded.get("user_gordon"), seeded.get("user_claire"), seeded.get("user_marco"), seeded.get("user_rene")));
     }
 
-    @DisplayName("Test retrieving user by user id")
+    @DisplayName("Get by id - Should retrieve user")
     @Test
     void getByID()
     {
-        User seed = (User) seeded.get("user1");
+        User seed = (User) seeded.get("user_gordon");
         User fetched = userDAO.getByID(seed.getId());
         assertThat(fetched.getId(), is(seed.getId()));
         assertThat(fetched.getFirstName(), is(seed.getFirstName()));
@@ -80,11 +103,21 @@ class UserDAOTest
         assertThat(fetched.getUserRole(), is(seed.getUserRole()));
     }
 
+    @DisplayName("Get by id - Should throw EntityNotFoundException when user doesn't exist")
+    @Test
+    void getByIDNotFoundThrowsException() {
+
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> userDAO.getByID(999L));
+
+        assertTrue(exception.getMessage().contains("999"));
+        assertTrue(exception.getMessage().contains("not found"));
+    }
+
     @DisplayName("Test updating a user")
     @Test
     void update()
     {
-        User seed = (User) seeded.get("user1");
+        User seed = (User) seeded.get("user_gordon");
         seed.setFirstName("Dak");
         seed.setLastName("Wichangoen");
         seed.setUserRole(UserRole.SOUS_CHEF);
@@ -103,7 +136,7 @@ class UserDAOTest
     @Test
     void delete()
     {
-        User seed = (User) seeded.get("user1");
+        User seed = (User) seeded.get("user_rene");
         Long id = seed.getId();
 
         boolean isDeleted = userDAO.delete(id);
@@ -118,7 +151,7 @@ class UserDAOTest
     @Test
     void findByEmail()
     {
-        User seed = (User) seeded.get("user2");
+        User seed = (User) seeded.get("user_claire");
 
         Optional<User> fetched = userDAO.findByEmail(seed.getEmail());
 
@@ -151,7 +184,7 @@ class UserDAOTest
     @Test
     void existsByEmail()
     {
-        User seed = (User) seeded.get("user1");
+        User seed = (User) seeded.get("user_gordon");
         String nonExistingEmail = "fake@chef.com";
 
         assertThat(userDAO.existsByEmail(seed.getEmail()), is(true));

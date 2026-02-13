@@ -68,6 +68,33 @@ public class DishSuggestion implements IEntity
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    public DishSuggestion(String nameDA, String descriptionDA, Station station, User createdBy)
+    {
+        if (nameDA == null || nameDA.isBlank())
+        {
+            throw new IllegalArgumentException("Danish name is required");
+        }
+        if (descriptionDA == null || descriptionDA.isBlank())
+        {
+            throw new IllegalArgumentException("Danish description is required");
+        }
+        if (station == null) {
+
+            throw new IllegalArgumentException("Station is required");
+        }
+
+        if (createdBy == null)
+        {
+            throw new IllegalArgumentException("Creator (User) is required");
+        }
+
+        this.nameDA = nameDA;
+        this.descriptionDA = descriptionDA;
+        this.station = station;
+        this.createdBy = createdBy;
+        this.dishStatus = Status.PENDING;
+    }
+
 
     public String getName(String language)
     {

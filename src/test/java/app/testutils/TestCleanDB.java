@@ -10,7 +10,7 @@ public class TestCleanDB
         try (EntityManager em = emf.createEntityManager())
         {
             em.getTransaction().begin();
-            em.createNativeQuery("TRUNCATE TABLE users, station RESTART IDENTITY CASCADE").executeUpdate();
+            em.createNativeQuery("TRUNCATE TABLE users, station, allergen, ingredient_request, dish_suggestion  RESTART IDENTITY CASCADE").executeUpdate();
             em.getTransaction().commit();
         }
     }
