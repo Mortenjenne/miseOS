@@ -1,6 +1,6 @@
 package app.persistence.daos;
 
-import app.persistence.entities.Station;
+import app.persistence.entities.Allergen;
 import app.utils.DBValidator;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
@@ -10,65 +10,79 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-public class StationDAO implements IStationDAO
+public class AllergenDAO implements IAllergenDAO
 {
     private final EntityManagerFactory emf;
 
-    public StationDAO(EntityManagerFactory emf)
+    public AllergenDAO(EntityManagerFactory emf)
     {
         this.emf = emf;
     }
 
     @Override
-    public Station create(Station station)
+    public Optional<Allergen> findByName(String name)
     {
-        DBValidator.validateNotNull(station, "Station");
-
         try(EntityManager em = emf.createEntityManager())
         {
-            em.getTransaction().begin();
-            em.persist(station);
-            em.getTransaction().commit();
-            return station;
+            Allergen allergen = em.createQuery("SELECT a FROM Allergen a WHERE a.name = :name", Allergen.class)
+                .getResultStream()
+                .findFirst()
+                .orElse(null);
+
+            return Optional.ofNullable(allergen);
         }
     }
 
     @Override
-    public Set<Station> getAll()
+    public Allergen create(Allergen allergen)
+    {
+        DBValidator.validateNotNull(allergen, "Allergen");
+
+        try(EntityManager em = emf.createEntityManager())
+        {
+            em.getTransaction().begin();
+            em.persist(allergen);
+            em.getTransaction().commit();
+            return allergen;
+        }
+    }
+
+    @Override
+    public Set<Allergen> getAll()
     {
         try(EntityManager em = emf.createEntityManager())
         {
-            TypedQuery<Station> query = em.createQuery("SELECT s FROM Station s", Station.class);
+            TypedQuery<Allergen> query = em.createQuery("SELECT a FROM Allergen a", Allergen.class);
             return new HashSet<>(query.getResultList());
         }
     }
 
     @Override
-    public Station getByID(Long id)
+    public Allergen getByID(Long id)
     {
         DBValidator.validateId(id);
 
         try(EntityManager em = emf.createEntityManager())
         {
-            Station station = em.find(Station.class, id);
-            return DBValidator.validateExists(station, id, Station.class);
+            Allergen allergen = em.find(Allergen.class, id);
+            return DBValidator.validateExists(allergen, id, Allergen.class);
         }
     }
 
     @Override
-    public Station update(Station station)
+    public Allergen update(Allergen allergen)
     {
-        DBValidator.validateNotNull(station, "Station");
-        DBValidator.validateId(station.getId());
+        DBValidator.validateNotNull(allergen, "User");
+        DBValidator.validateId(allergen.getId());
 
         try (EntityManager em = emf.createEntityManager())
         {
             try
             {
                 em.getTransaction().begin();
-                Station exist = em.find(Station.class, station.getId());
-                DBValidator.validateExists(exist, station.getId(), Station.class);
-                Station merged = em.merge(station);
+                Allergen exist = em.find(Allergen.class, allergen.getId());
+                DBValidator.validateExists(exist, allergen.getId(), Allergen.class);
+                Allergen merged = em.merge(allergen);
                 em.getTransaction().commit();
                 return merged;
             }
@@ -93,8 +107,8 @@ public class StationDAO implements IStationDAO
             try
             {
                 em.getTransaction().begin();
-                Station managed = em.find(Station.class, id);
-                DBValidator.validateExists(managed, id, Station.class);
+                Allergen managed = em.find(Allergen.class, id);
+                DBValidator.validateExists(managed, id, Allergen.class);
                 em.remove(managed);
                 em.getTransaction().commit();
                 return true;
@@ -107,22 +121,6 @@ public class StationDAO implements IStationDAO
                 }
                 throw e;
             }
-        }
-    }
-
-    @Override
-    public Optional<Station> findByName(String name)
-    {
-        DBValidator.validateNotNull(name, "Name");
-
-        try(EntityManager em = emf.createEntityManager())
-        {
-            Station station = em.createQuery("SELECT st FROM Station st WHERE st.stationName = :name", Station.class)
-                .getResultStream()
-                .findFirst()
-                .orElse(null);
-
-            return Optional.ofNullable(station);
         }
     }
 }

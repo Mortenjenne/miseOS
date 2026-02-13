@@ -8,5 +8,4 @@ import java.util.Optional;
 public interface IAllergenDAO extends IEntityDAO<Allergen, Long>
 {
     Optional<Allergen> findByName(String name);
-    List<Allergen> getAllOrdered();
 }
