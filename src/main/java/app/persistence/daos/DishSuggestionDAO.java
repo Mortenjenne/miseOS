@@ -30,6 +30,8 @@ public class DishSuggestionDAO implements IDishSuggestionDAO
     @Override
     public Set<DishSuggestion> findByWeekAndYear(int weekNumber, int year)
     {
+        DBValidator.validateRange(weekNumber, 1, 53, "Week number");
+        DBValidator.validateRange(year, 2000, 2100, "Year");
         return Set.of();
     }
 

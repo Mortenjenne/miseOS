@@ -37,7 +37,9 @@ public class WeeklyMenuDAO implements IWeeklyMenuDAO
     @Override
     public Optional<WeeklyMenu> findByWeekAndYear(int weekNumber, int year)
     {
-        //TODO add validation
+        DBValidator.validateRange(weekNumber, 1, 53, "Week number");
+        DBValidator.validateRange(year, 2000, 2100, "Year");
+
         try(EntityManager em = emf.createEntityManager())
         {
             WeeklyMenu weeklyMenu = em.createQuery("SELECT wm FROM WeeklyMenu wm WHERE wm.weekNumber = :weekNumber AND wm.year = :year", WeeklyMenu.class)

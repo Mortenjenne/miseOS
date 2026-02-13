@@ -10,6 +10,4 @@ public interface IIngredientRequestDAO extends IEntityDAO<IngredientRequest, Lon
 {
     Set<IngredientRequest> findByStatus(Status status);
     Set<IngredientRequest> findByStatusAndDeliveryDate(Status status, LocalDate deliveryDate);
-    Set<IngredientRequest> findByDishSuggestionId(Long dishSuggestionId);
-    Set<IngredientRequest> findByCreatedBy(Long userId);
 }
