@@ -1,21 +1,14 @@
 package app.persistence.daos;
 
+import app.enums.UserRole;
 import app.persistence.entities.User;
 
-import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface IUserDAO
 {
-    User create(User user);
-
-    Optional<User> findById(int id);
-
     Optional<User> findByEmail(String email);
-
-    List<User> findAll();
-
-    User update(User user);
-
-    boolean delete(int id);
+    Set<User> findByRole(UserRole role);
+    boolean existsByEmail(String email);
 }

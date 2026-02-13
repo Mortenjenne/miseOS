@@ -1,4 +1,4 @@
-package app.persistence.config;
+package app.config;
 
 import jakarta.persistence.EntityManagerFactory;
 import org.hibernate.SessionFactory;
@@ -8,7 +8,7 @@ import org.hibernate.service.ServiceRegistry;
 
 import java.util.Properties;
 
-final class HibernateEmfBuilder
+public final class HibernateEmfBuilder
 {
 
     private HibernateEmfBuilder() {}

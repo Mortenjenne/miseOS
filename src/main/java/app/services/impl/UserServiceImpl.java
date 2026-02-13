@@ -12,11 +12,11 @@ import jakarta.persistence.EntityNotFoundException;
 
 import java.util.List;
 
-public class UserServiceImpl implements UserService
+    /*public class UserServiceImpl implements UserService
 {
     private final IUserDAO IUserDAO;
 
-    public UserServiceImpl(IUserDAO IUserDAO)
+public UserServiceImpl(IUserDAO IUserDAO)
     {
         this.IUserDAO = IUserDAO;
     }
@@ -114,4 +114,7 @@ public class UserServiceImpl implements UserService
             throw new IllegalArgumentException("En bruger med denne email findes allerede");
         }
     }
+
 }
+     */
+
