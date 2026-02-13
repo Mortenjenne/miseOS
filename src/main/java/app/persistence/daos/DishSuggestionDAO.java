@@ -14,7 +14,7 @@ import java.util.Set;
 
 public class DishSuggestionDAO implements IDishSuggestionDAO
 {
-    private EntityManagerFactory emf;
+    private final EntityManagerFactory emf;
 
     public DishSuggestionDAO(EntityManagerFactory emf)
     {
