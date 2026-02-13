@@ -1,11 +1,11 @@
 package app.persistence.entities;
 
 import app.enums.Status;
-import app.enums.UserRole;
 import app.exceptions.UnauthorizedActionException;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -22,26 +22,32 @@ public class DishSuggestion implements IEntity
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Setter
+    @Column(name = "name_da", nullable = false)
     private String nameDA;
 
+    @Setter
+    @Column(name = "name_en")
     private String nameEN;
 
+    @Setter
+    @Column(name = "description_da", nullable = false)
     private String descriptionDA;
 
+    @Setter
+    @Column(name = "description_en")
     private String descriptionEN;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "dish_status", nullable = false)
     private Status dishStatus;
 
-    private int weekNumber;
-
-    private int year;
-
-    private LocalDateTime createdAt;
-
-    private LocalDateTime reviewedAt;
+    @Setter
+    @Column(name = "feedback")
+    private String feedback;
 
     @ManyToOne
-    @JoinColumn(name = "station_id")
+    @JoinColumn(name = "station_id", nullable = false)
     private Station station;
 
     @ManyToOne
@@ -53,27 +59,24 @@ public class DishSuggestion implements IEntity
     private User reviewedBy;
 
     @ManyToMany
-    @JoinTable(name = "dish_allergen", joinColumns = @JoinColumn(name = "dish_id"), inverseJoinColumns = @JoinColumn(name = "allergen_id"))
+    @JoinTable(name = "dish_allergen", joinColumns = @JoinColumn(name = "dish_suggestion_id"), inverseJoinColumns = @JoinColumn(name = "allergen_id"))
     private Set<Allergen> allergens = new HashSet<>();
 
-    @PrePersist
-    private void createdAt()
+    @Column(name = "reviewed_at")
+    private LocalDateTime reviewedAt;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+
+    public String getName(String language)
     {
-        this.createdAt = LocalDateTime.now();
+        return "da".equalsIgnoreCase(language) ? nameDA : nameEN;
     }
 
-    @Override
-    public boolean equals(Object o)
+    public String getDescription(String language)
     {
-        if (o == null || getClass() != o.getClass()) return false;
-        DishSuggestion that = (DishSuggestion) o;
-        return Objects.equals(id, that.id);
-    }
-
-    @Override
-    public int hashCode()
-    {
-        return Objects.hashCode(id);
+        return "da".equalsIgnoreCase(language) ? descriptionDA : descriptionEN;
     }
 
     public void approve(User headChef)
@@ -85,13 +88,37 @@ public class DishSuggestion implements IEntity
         this.reviewedAt = LocalDateTime.now();
     }
 
-    public void reject(User headChef)
+    public void reject(User headChef, String feedback)
     {
         validateHeadChef(headChef);
         validateDishStatus();
         this.dishStatus = Status.REJECTED;
         this.reviewedBy = headChef;
         this.reviewedAt = LocalDateTime.now();
+        this.feedback = feedback;
+    }
+
+    public void addAllergen(Allergen allergen)
+    {
+        if(allergen != null)
+        {
+            this.allergens.add(allergen);
+        }
+    }
+
+    public void removeAllergen(Allergen allergen)
+    {
+        if(allergen != null)
+        {
+            this.allergens.remove(allergen);
+        }
+
+    }
+
+    @PrePersist
+    private void onCreate()
+    {
+        this.createdAt = LocalDateTime.now();
     }
 
     private void validateDishStatus()
@@ -109,10 +136,24 @@ public class DishSuggestion implements IEntity
             throw new IllegalArgumentException("Head chef cannot be null");
         }
 
-        if(currentUser.getUserRole() != UserRole.HEAD_CHEF)
+        if(!currentUser.isHeadChef())
         {
             throw new UnauthorizedActionException("Only head chefs can approve dish suggestions");
         }
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (o == null || getClass() != o.getClass()) return false;
+        DishSuggestion that = (DishSuggestion) o;
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hashCode(id);
     }
 
 }

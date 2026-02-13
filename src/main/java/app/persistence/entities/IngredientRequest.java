@@ -28,8 +28,12 @@ public class IngredientRequest implements IEntity
     private String name;
 
     @Setter
+    @Column(name = "quantity", nullable = false)
+    private double quantity;
+
+    @Setter
     @Column(name = "unit", nullable = false)
-    private double unit;
+    private String unit;
 
     @Setter
     @Column(name = "preferred_supplier")
