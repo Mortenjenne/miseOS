@@ -1,6 +1,7 @@
 package app.testutils;
 
 import app.enums.UserRole;
+import app.persistence.daos.IUserDAO;
 import app.persistence.daos.UserDAO;
 import app.persistence.daos.StationDAO;
 import app.persistence.entities.IEntity;
@@ -13,7 +14,7 @@ import java.util.Map;
 
 public class TestPopulator
 {
-    private final UserDAO userDAO;
+    private final IUserDAO userDAO;
     private final StationDAO stationDAO;
 
     public TestPopulator(EntityManagerFactory emf)

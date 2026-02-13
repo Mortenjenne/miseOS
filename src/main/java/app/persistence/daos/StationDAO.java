@@ -7,9 +7,10 @@ import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.TypedQuery;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
-public class StationDAO implements IEntityDAO<Station, Long>
+public class StationDAO implements IStationDAO
 {
     private final EntityManagerFactory emf;
 
@@ -107,5 +108,11 @@ public class StationDAO implements IEntityDAO<Station, Long>
                 throw e;
             }
         }
+    }
+
+    @Override
+    public Optional<Station> findByName(String name)
+    {
+        return Optional.empty();
     }
 }

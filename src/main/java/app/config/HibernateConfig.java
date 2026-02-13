@@ -12,7 +12,7 @@ public final class HibernateConfig
 
     private HibernateConfig() {}
 
-    static EntityManagerFactory getEntityManagerFactory()
+    public static EntityManagerFactory getEntityManagerFactory()
     {
         if (emf == null)
         {

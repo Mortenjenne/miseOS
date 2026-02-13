@@ -2,6 +2,7 @@ package app.daos;
 
 import app.config.HibernateTestConfig;
 import app.enums.UserRole;
+import app.persistence.daos.IUserDAO;
 import app.persistence.daos.UserDAO;
 import app.persistence.entities.IEntity;
 import app.persistence.entities.User;
@@ -24,7 +25,7 @@ import static org.testcontainers.shaded.org.hamcrest.Matchers.*;
 class UserDAOTest
 {
     private final EntityManagerFactory emf = HibernateTestConfig.getEntityManagerFactory();
-    private UserDAO userDAO;
+    private IUserDAO userDAO;
     private Map<String, IEntity> seeded;
 
     @BeforeEach

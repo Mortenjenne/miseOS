@@ -11,7 +11,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-public class UserDAO implements IEntityDAO<User, Long>, IUserDAO
+public class UserDAO implements IUserDAO
 {
     private final EntityManagerFactory emf;
 
