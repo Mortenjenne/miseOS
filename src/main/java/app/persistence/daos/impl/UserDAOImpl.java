@@ -1,13 +1,13 @@
-package app.daos.impl;
+package app.persistence.daos.impl;
 
-import app.daos.UserDAO;
-import app.entities.User;
+import app.persistence.daos.IUserDAO;
+import app.persistence.entities.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import java.util.List;
 import java.util.Optional;
 
-public class UserDAOImpl implements UserDAO
+public class UserDAOImpl implements IUserDAO
 {
     private final EntityManagerFactory emf;
 

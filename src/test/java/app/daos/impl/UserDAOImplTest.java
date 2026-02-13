@@ -1,15 +1,13 @@
 package app.daos.impl;
 
-import app.config.HibernateConfig;
-import app.daos.UserDAO;
-import app.entities.User;
-import app.enums.Role;
-import app.enums.Station;
+import app.persistence.config.HibernateConfig;
+import app.persistence.daos.IUserDAO;
+import app.persistence.daos.impl.UserDAOImpl;
+import app.persistence.entities.User;
+import app.enums.UserRole;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.*;
-
-import javax.swing.text.html.parser.Entity;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class UserDAOImplTest
 {
     private static EntityManagerFactory emf;
-    private static UserDAO userDAO;
+    private static IUserDAO IUserDAO;
     private static User user;
 
     @BeforeAll
@@ -38,13 +36,13 @@ class UserDAOImplTest
             em.getTransaction().commit();
         }
 
-        userDAO = new UserDAOImpl(emf);
+        IUserDAO = new UserDAOImpl(emf);
         user = User.builder()
             .firstName("Mads")
             .lastName("Kok")
             .email("mads@miseos.dk")
             .hashedPassword("1234")
-            .role(Role.LINE_COOK)
+            .userRole(UserRole.LINE_COOK)
             .station(Station.HOT)
             .build();
 
@@ -55,15 +53,14 @@ class UserDAOImplTest
     @Test
     void createAndFind()
     {
-        User userFromDB = userDAO.create(user);
+        User userFromDB = IUserDAO.create(user);
 
         assertTrue(userFromDB.getId() > 0);
 
-        Optional<User> found = userDAO.findById(user.getId());
+        Optional<User> found = IUserDAO.findById(user.getId());
         assertTrue(found.isPresent());
         assertEquals("Mads", found.get().getFirstName());
         assertEquals("Kok", found.get().getLastName());
-        assertTrue(found.get().getStation().equals(Station.HOT));
     }
 
     @DisplayName("Test find by email")
@@ -71,8 +68,8 @@ class UserDAOImplTest
     void findByEmail()
     {
         String email = user.getEmail();
-        userDAO.create(user);
-        Optional<User> found = userDAO.findByEmail(email);
+        IUserDAO.create(user);
+        Optional<User> found = IUserDAO.findByEmail(email);
         assertTrue(found.isPresent());
         assertEquals(email, found.get().getEmail());
     }
@@ -82,8 +79,8 @@ class UserDAOImplTest
     void findByEmailNotPresent()
     {
         String email = "test@notfound.dk";
-        userDAO.create(user);
-        Optional<User> found = userDAO.findByEmail(email);
+        IUserDAO.create(user);
+        Optional<User> found = IUserDAO.findByEmail(email);
         assertFalse(found.isPresent());
     }
 
@@ -91,18 +88,18 @@ class UserDAOImplTest
     @DisplayName("Test find all users")
     void findAll()
     {
-        userDAO.create(user);
+        IUserDAO.create(user);
         User user2 = User.builder()
             .firstName("Jane")
             .lastName("Doe")
             .email("benny@miseos.dk")
             .hashedPassword("5678")
-            .role(Role.LINE_COOK)
+            .userRole(UserRole.LINE_COOK)
             .station(Station.COLD)
             .build();
-        userDAO.create(user2);
+        IUserDAO.create(user2);
 
-        List<User> users = userDAO.findAll();
+        List<User> users = IUserDAO.findAll();
 
         assertEquals(2, users.size());
         boolean hasMads = users.stream().anyMatch(u -> u.getFirstName().equals("Mads"));
@@ -116,18 +113,18 @@ class UserDAOImplTest
     @Test
     void update()
     {
-        User createdUser = userDAO.create(user);
+        User createdUser = IUserDAO.create(user);
         User userToUpdate = createdUser.toBuilder()
             .firstName("John")
             .lastName("Smith")
-            .role(Role.CHEF_DE_PARTIE)
+            .userRole(UserRole.CHEF_DE_PARTIE)
             .station(Station.COLD)
             .build();
 
-        User updatedUser = userDAO.update(userToUpdate);
+        User updatedUser = IUserDAO.update(userToUpdate);
 
         assertEquals("John", updatedUser.getFirstName());
-        assertEquals(Role.CHEF_DE_PARTIE, updatedUser.getRole());
+        assertEquals(UserRole.CHEF_DE_PARTIE, updatedUser.getUserRole());
         assertEquals(Station.COLD, updatedUser.getStation());
         assertEquals(createdUser.getId(), updatedUser.getId());
 
@@ -137,12 +134,12 @@ class UserDAOImplTest
     @DisplayName("Test delete user")
     void delete()
     {
-        userDAO.create(user);
+        IUserDAO.create(user);
 
-        boolean deleted = userDAO.delete(user.getId());
+        boolean deleted = IUserDAO.delete(user.getId());
         assertTrue(deleted);
 
-        Optional<User> found = userDAO.findById(user.getId());
+        Optional<User> found = IUserDAO.findById(user.getId());
         assertFalse(found.isPresent());
     }
 

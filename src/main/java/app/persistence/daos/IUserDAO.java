@@ -1,11 +1,11 @@
-package app.daos;
+package app.persistence.daos;
 
-import app.entities.User;
+import app.persistence.entities.User;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface UserDAO
+public interface IUserDAO
 {
     User create(User user);
 
