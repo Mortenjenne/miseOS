@@ -71,9 +71,10 @@ public class IngredientRequest implements IEntity
     @JoinColumn(name = "dish_suggestion_id")
     private DishSuggestion dishSuggestion;
 
-    public IngredientRequest(String name, double unit, String preferredSupplier, String note, Status status, RequestType requestType, LocalDate deliveryDate, DishSuggestion dishSuggestion, User createdBy)
+    public IngredientRequest(String name, double quantity, String unit, String preferredSupplier, String note, Status status, RequestType requestType, LocalDate deliveryDate, DishSuggestion dishSuggestion, User createdBy)
     {
         this.name = name;
+        this.quantity = quantity;
         this.unit = unit;
         this.preferredSupplier = preferredSupplier;
         this.note = note;

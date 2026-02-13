@@ -56,7 +56,7 @@ public class User implements IEntity
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    public User(String firstName, String lastName, String email, String hashedPassword, UserRole userRole, Station station)
+    public User(String firstName, String lastName, String email, String hashedPassword, UserRole userRole)
     {
         ValidationUtil.validateEmail(email);
 
@@ -65,7 +65,6 @@ public class User implements IEntity
         this.email = email.toLowerCase().trim();
         this.hashedPassword = hashedPassword;
         this.userRole = userRole;
-        this.station = station;
     }
 
     public boolean isHeadChef()

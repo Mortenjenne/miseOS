@@ -1,10 +1,11 @@
 package app.dtos;
 
+import app.persistence.entities.Station;
 import app.persistence.entities.User;
 import app.enums.UserRole;
 
 public record UserDTO(
-    int id,
+    Long id,
     String firstName,
     String lastName,
     String email,
