@@ -7,9 +7,8 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Set;
 
-public interface IShoppingListDAO
+public interface IShoppingListDAO extends IEntityDAO<ShoppingList, Long>
 {
     Set<ShoppingList> findByStatus(ShoppingListStatus status);
     Optional<ShoppingList> findByDeliveryDate(LocalDate deliveryDate);
-    Optional<ShoppingList> getByIdWithItems(Long id);
 }
