@@ -118,6 +118,7 @@ public class StationDAO implements IStationDAO
         try(EntityManager em = emf.createEntityManager())
         {
             Station station = em.createQuery("SELECT st FROM Station st WHERE st.stationName = :name", Station.class)
+                .setParameter("name", name)
                 .getResultStream()
                 .findFirst()
                 .orElse(null);
