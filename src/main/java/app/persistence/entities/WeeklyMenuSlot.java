@@ -42,13 +42,12 @@ public class WeeklyMenuSlot implements IEntity
     @Column(name = "is_empty", nullable = false)
     private boolean isEmpty;
 
-    public WeeklyMenuSlot(DayOfWeek dayOfWeek, DishSuggestion dishSuggestion, Station station, WeeklyMenu weeklyMenu, boolean isEmpty)
+    public WeeklyMenuSlot(DayOfWeek dayOfWeek, DishSuggestion dishSuggestion, Station station)
     {
         this.dayOfWeek = dayOfWeek;
         this.dishSuggestion = dishSuggestion;
         this.station = station;
-        this.weeklyMenu = weeklyMenu;
-        this.isEmpty = isEmpty;
+        this.isEmpty = (dishSuggestion == null);
     }
 
     @Override

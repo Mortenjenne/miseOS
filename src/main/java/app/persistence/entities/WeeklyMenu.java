@@ -46,11 +46,11 @@ public class WeeklyMenu implements IEntity
     @OneToMany(mappedBy = "weeklyMenu", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<WeeklyMenuSlot> weeklyMenuSlots = new HashSet<>();
 
-    public WeeklyMenu(int weekNumber, int year, MenuStatus menuStatus)
+    public WeeklyMenu(int weekNumber, int year)
     {
         this.weekNumber = weekNumber;
         this.year = year;
-        this.menuStatus = menuStatus;
+        this.menuStatus = MenuStatus.DRAFT;
     }
 
     public void publish(User headChef)

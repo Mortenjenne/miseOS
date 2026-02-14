@@ -1,5 +1,6 @@
 package app.testutils;
 
+import app.enums.DayOfWeek;
 import app.enums.MenuStatus;
 import app.enums.RequestType;
 import app.enums.UserRole;
@@ -40,6 +41,8 @@ public class TestPopulator
         populateAllergens();
         populateDishSuggestions();
         populateIngredientRequest();
+        populateWeeklyMenus();
+        populateShoppingLists();
     }
 
     public Map<String, IEntity> getSeededData()
@@ -84,15 +87,15 @@ public class TestPopulator
     }
 
     private void populateAllergens() {
-        Allergen gluten = allergenDAO.create(new Allergen("Gluten", "🌾"));
-        Allergen dairy = allergenDAO.create(new Allergen("Dairy", "🥛"));
-        Allergen eggs = allergenDAO.create(new Allergen("Eggs", "🥚"));
-        Allergen nuts = allergenDAO.create(new Allergen("Nuts", "🥜"));
-        Allergen shellfish = allergenDAO.create(new Allergen("Shellfish", "🦐"));
-        Allergen fish = allergenDAO.create(new Allergen("Fish", "🐟"));
-        Allergen soy = allergenDAO.create(new Allergen("Soy", "🫘"));
-        Allergen celery = allergenDAO.create(new Allergen("Celery", "🥬"));
-        Allergen mustard = allergenDAO.create(new Allergen("Mustard", "🌭"));
+        Allergen gluten = allergenDAO.create(new Allergen("Gluten"));
+        Allergen dairy = allergenDAO.create(new Allergen("Dairy"));
+        Allergen eggs = allergenDAO.create(new Allergen("Eggs"));
+        Allergen nuts = allergenDAO.create(new Allergen("Nuts"));
+        Allergen shellfish = allergenDAO.create(new Allergen("Shellfish"));
+        Allergen fish = allergenDAO.create(new Allergen("Fish"));
+        Allergen soy = allergenDAO.create(new Allergen("Soy"));
+        Allergen celery = allergenDAO.create(new Allergen("Celery"));
+        Allergen mustard = allergenDAO.create(new Allergen("Mustard"));
 
         seeded.put("allergen_gluten", gluten);
         seeded.put("allergen_dairy", dairy);
@@ -156,7 +159,7 @@ public class TestPopulator
     {
         User headChef = (User) seeded.get("user_gordon");
         User lineCook = (User) seeded.get("user_claire");
-        DishSuggestion dish = (DishSuggestion) seeded.get("dish_salmon_pending");
+        DishSuggestion dish = (DishSuggestion) seeded.get("dish_salmon");
 
         IngredientRequest req1 = new IngredientRequest(
             "Frisk Dild",
@@ -205,24 +208,42 @@ public class TestPopulator
 
     private void populateWeeklyMenus() {
         User gordon = (User) seeded.get("user_gordon");
+        Station hotStation = (Station) seeded.get("station_hot");
+        Station coldStation = (Station) seeded.get("station_cold");
 
-        WeeklyMenu menu10 = new WeeklyMenu(
-            10,
-            2025,
-            MenuStatus.PUBLISHED,
-        );
+        DishSuggestion salmon = (DishSuggestion) seeded.get("dish_salmon");
+        DishSuggestion steak = (DishSuggestion) seeded.get("dish_steak");
 
-        // DRAFT MENU (Week 11 - Next week, being prepared)
-        WeeklyMenu menu11 = menuDAO.create(new WeeklyMenu(
-            11,
-            2025,
-            MenuStatus.DRAFT,
-            null,
-            null
-        ));
+        WeeklyMenu menu1 = new WeeklyMenu(7, 2025);
 
-        seeded.put("menu_week10", menu10);
-        seeded.put("menu_week11", menu11);
+        WeeklyMenuSlot slot1 = new WeeklyMenuSlot(DayOfWeek.MONDAY, salmon, coldStation);
+        WeeklyMenuSlot slot2 = new WeeklyMenuSlot(DayOfWeek.MONDAY, steak, hotStation);
+        WeeklyMenuSlot slot3 = new WeeklyMenuSlot(DayOfWeek.TUESDAY, null, hotStation);
+
+        menu1.addMenuSlot(slot1);
+        menu1.addMenuSlot(slot2);
+        menu1.addMenuSlot(slot3);
+
+        menuDAO.create(menu1);
+
+        seeded.put("menu_week7", menu1);
+    }
+
+    private void populateShoppingLists()
+    {
+        User claire = (User) seeded.get("user_claire");
+
+        ShoppingList list1 = new ShoppingList(LocalDate.now().plusDays(3), claire);
+
+        ShoppingListItem item1 = new ShoppingListItem("Frisk Dild", 15.0, "Bundter", "Grønttorvet", "Til fiskefrikadeller og garniture");
+        ShoppingListItem item2 = new ShoppingListItem("Laks", 5.0, "Sider", "Hvide Sande Fiskehus", "Til rygning");
+
+        list1.addItem(item1);
+        list1.addItem(item2);
+
+        shoppingListDAO.create(list1);
+
+        seeded.put("shopping_list_1", list1);
     }
 
 

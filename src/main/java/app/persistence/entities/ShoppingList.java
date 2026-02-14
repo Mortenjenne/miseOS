@@ -44,11 +44,11 @@ public class ShoppingList implements IEntity
     @OneToMany(mappedBy = "shoppingList", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<ShoppingListItem> shoppingListItems = new HashSet<>();
 
-    public ShoppingList(LocalDate deliveryDate, ShoppingListStatus shoppingListStatus, User createdBy)
+    public ShoppingList(LocalDate deliveryDate, User createdBy)
     {
         this.deliveryDate = deliveryDate;
-        this.shoppingListStatus = shoppingListStatus;
         this.createdBy = createdBy;
+        this.shoppingListStatus = ShoppingListStatus.DRAFT;
     }
 
     public void addItem(ShoppingListItem shoppingListItem)

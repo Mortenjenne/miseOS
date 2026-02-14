@@ -46,6 +46,16 @@ public class ShoppingListItem implements IEntity
     @JoinColumn(name = "shopping_list_id", nullable = false)
     private ShoppingList shoppingList;
 
+    public ShoppingListItem(String ingredientName, double quantity, String unit, String supplier, String notes)
+    {
+        this.ingredientName = ingredientName;
+        this.quantity = quantity;
+        this.unit = unit;
+        this.supplier = supplier;
+        this.notes = notes;
+        this.isOrdered = false;
+    }
+
     //TODO Use @Setter(AcessLevel.Protected)
     protected void set(ShoppingList shoppingList)
     {

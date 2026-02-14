@@ -20,14 +20,14 @@ public class Allergen implements IEntity
     @Column(name = "name", nullable = false, unique = true)
     private String name;
 
-    @Setter
-    @Column(name = "icon_code", nullable = true)
-    private String iconCode;
 
-    public Allergen(String name, String iconCode)
+    public Allergen(String name)
     {
-        this.name = name;
-        this.iconCode = iconCode;
+        if (name == null || name.isBlank())
+        {
+            throw new IllegalArgumentException("Allergen name cannot be blank");
+        }
+        this.name = name.trim();
     }
 
     @Override
