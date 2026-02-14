@@ -1,10 +1,8 @@
 package app.persistence.daos;
 
 import app.config.HibernateTestConfig;
-import app.enums.UserRole;
 import app.persistence.entities.IEntity;
 import app.persistence.entities.Station;
-import app.persistence.entities.User;
 import app.testutils.TestCleanDB;
 import app.testutils.TestPopulator;
 import jakarta.persistence.EntityManagerFactory;
@@ -113,7 +111,6 @@ class StationDAOTest
         assertTrue(exception.getMessage().contains("not found"));
     }
 
-
     @DisplayName("Update - Should update a stations attributes")
     @Test
     void update()
@@ -132,7 +129,7 @@ class StationDAOTest
         assertThat(fetched.getStationName(), is("Super Cold Kitchen"));
     }
 
-    @DisplayName("Delete  Should delete and throw exception with not after deletion")
+    @DisplayName("Delete  Should delete and throw exception after deletion")
     @Test
     void delete()
     {
@@ -153,6 +150,7 @@ class StationDAOTest
 
         Optional<Station> fetched = stationDAO.findByName(targetName);
 
+        assertTrue(fetched.isPresent());
         assertThat(fetched, notNullValue());
         assertThat(fetched.get().getStationName(), is(targetName));
         assertThat(fetched.get().getDescription(), is(((Station) seeded.get("station_grill")).getDescription()));
