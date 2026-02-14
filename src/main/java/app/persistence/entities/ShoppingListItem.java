@@ -55,7 +55,7 @@ public class ShoppingListItem implements IEntity
         this.notes = notes;
         this.isOrdered = false;
     }
-    
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

@@ -92,6 +92,27 @@ class ShoppingListDAOTest
     }
 
     @Test
+    @DisplayName("GetAll - should return all shopping lists")
+    void getAll()
+    {
+        Set<ShoppingList> allLists = shoppingListDAO.getAll();
+
+        assertThat(allLists, hasSize(greaterThanOrEqualTo(1)));
+    }
+
+    @Test
+    @DisplayName("GetAll - should return empty set when database is empty")
+    void getAll_EmptyDatabase()
+    {
+        TestCleanDB.truncateTables(emf);
+
+        Set<ShoppingList> allLists = shoppingListDAO.getAll();
+
+        assertThat(allLists, notNullValue());
+        assertThat(allLists, empty());
+    }
+
+    @Test
     @DisplayName("Update - should change status and save")
     void update()
     {
@@ -168,5 +189,48 @@ class ShoppingListDAOTest
     void findByDeliveryDateNullThrowsException()
     {
         assertThrows(IllegalArgumentException.class, () -> shoppingListDAO.findByDeliveryDate(null));
+    }
+
+    @Test
+    @DisplayName("Cascade - should persist new item added to existing list")
+    void cascadeAddItem()
+    {
+        ShoppingList seed = (ShoppingList) seeded.get("shopping_list_1");
+        int originalSize = seed.getShoppingListItems().size();
+
+        ShoppingListItem newItem = new ShoppingListItem("Sukker", 5, "kg", "Danisco", "Rørsukker");
+        seed.addItem(newItem);
+
+        ShoppingList updated = shoppingListDAO.update(seed);
+
+        assertThat(updated.getShoppingListItems(), hasSize(originalSize + 1));
+
+        ShoppingList fetched = shoppingListDAO.getByID(seed.getId());
+        assertThat(fetched.getShoppingListItems(), hasSize(originalSize + 1));
+        assertTrue(fetched.getShoppingListItems().stream()
+            .anyMatch(item -> item.getIngredientName().equals("Sukker")));
+    }
+
+    @Test
+    @DisplayName("Cascade - should remove item via orphanRemoval")
+    void cascadeRemoveItem()
+    {
+        ShoppingList seed = (ShoppingList) seeded.get("shopping_list_1");
+        Long listId = seed.getId();
+
+        ShoppingList managedList = shoppingListDAO.getByID(listId);
+        int originalSize = managedList.getShoppingListItems().size();
+
+        ShoppingListItem itemToRemove = managedList.getShoppingListItems().iterator().next();
+        String removedName = itemToRemove.getIngredientName();
+        managedList.removeItem(itemToRemove);
+
+        ShoppingList updated = shoppingListDAO.update(managedList);
+
+        assertThat(updated.getShoppingListItems(), hasSize(originalSize - 1));
+
+        ShoppingList fetched = shoppingListDAO.getByID(listId);
+        assertThat(fetched.getShoppingListItems(), hasSize(originalSize - 1));
+        assertTrue(fetched.getShoppingListItems().stream().noneMatch(item -> item.getIngredientName().equals(removedName)));
     }
 }
