@@ -25,6 +25,7 @@ public class AllergenDAO implements IAllergenDAO
         try(EntityManager em = emf.createEntityManager())
         {
             Allergen allergen = em.createQuery("SELECT a FROM Allergen a WHERE a.name = :name", Allergen.class)
+                .setParameter("name", name)
                 .getResultStream()
                 .findFirst()
                 .orElse(null);
