@@ -55,24 +55,19 @@ public class ShoppingListItem implements IEntity
         this.notes = notes;
         this.isOrdered = false;
     }
-
-    //TODO Use @Setter(AcessLevel.Protected)
-    protected void set(ShoppingList shoppingList)
-    {
-        this.shoppingList = shoppingList;
-    }
-
+    
     @Override
-    public boolean equals(Object o)
-    {
+    public boolean equals(Object o) {
+        if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
+
         ShoppingListItem that = (ShoppingListItem) o;
-        return Objects.equals(id, that.id);
+        return Objects.equals(ingredientName, that.ingredientName) && Objects.equals(shoppingList, that.shoppingList);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hashCode(id);
+        return Objects.hash(ingredientName, shoppingList);
     }
 }

@@ -3,9 +3,7 @@ package app.persistence.daos;
 import app.enums.ShoppingListStatus;
 import app.persistence.entities.ShoppingList;
 import app.utils.DBValidator;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.TypedQuery;
+import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -88,8 +86,20 @@ public class ShoppingListDAO implements IShoppingListDAO
 
         try (EntityManager em = emf.createEntityManager())
         {
-            ShoppingList list = em.find(ShoppingList.class, id);
-            return DBValidator.validateExists(list, id, ShoppingList.class);
+            try
+            {
+                ShoppingList list = em.createQuery(
+                        "SELECT sl FROM ShoppingList sl LEFT JOIN FETCH sl.shoppingListItems WHERE sl.id = :id",
+                        ShoppingList.class)
+                    .setParameter("id", id)
+                    .getSingleResult();
+
+                return DBValidator.validateExists(list, id, ShoppingList.class);
+            }
+            catch (NoResultException e)
+            {
+                throw new EntityNotFoundException("ShoppingList with id " + id + " not found");
+            }
         }
     }
 
