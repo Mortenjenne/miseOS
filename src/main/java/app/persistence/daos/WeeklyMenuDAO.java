@@ -3,9 +3,7 @@ package app.persistence.daos;
 import app.enums.MenuStatus;
 import app.persistence.entities.WeeklyMenu;
 import app.utils.DBValidator;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.TypedQuery;
+import jakarta.persistence.*;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -54,9 +52,39 @@ public class WeeklyMenuDAO implements IWeeklyMenuDAO
     }
 
     @Override
+    public WeeklyMenu getByIdWithSlots(Long id)
+    {
+        DBValidator.validateId(id);
+
+        try (EntityManager em = emf.createEntityManager())
+        {
+            try
+            {
+                WeeklyMenu menu = em.createQuery(
+                        "SELECT wm FROM WeeklyMenu wm " +
+                            "LEFT JOIN FETCH wm.weeklyMenuSlots " +
+                            "WHERE wm.id = :id",
+                        WeeklyMenu.class)
+                    .setParameter("id", id)
+                    .getSingleResult();
+
+                return DBValidator.validateExists(menu, id, WeeklyMenu.class);
+            }
+            catch (NoResultException e)
+            {
+                throw new EntityNotFoundException(
+                    "WeeklyMenu with id " + id + " not found"
+                );
+            }
+        }
+    }
+
+    @Override
     public WeeklyMenu create(WeeklyMenu weeklyMenu)
     {
         DBValidator.validateNotNull(weeklyMenu, "WeeklyMenu");
+        DBValidator.validateRange(weeklyMenu.getWeekNumber(), 1, 53, "WeekNumber");
+        DBValidator.validateRange(weeklyMenu.getYear(), 2000, 2100, "WeekNumber");
 
         try(EntityManager em = emf.createEntityManager())
         {

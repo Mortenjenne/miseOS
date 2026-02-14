@@ -10,4 +10,6 @@ public interface IWeeklyMenuDAO extends IEntityDAO<WeeklyMenu, Long>
 {
     Set<WeeklyMenu> findByStatus(MenuStatus status);
     Optional<WeeklyMenu> findByWeekAndYear(int weekNumber, int year);
+    WeeklyMenu getByIdWithSlots(Long id);
+
 }
