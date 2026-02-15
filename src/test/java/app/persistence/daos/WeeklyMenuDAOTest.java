@@ -36,12 +36,6 @@ class WeeklyMenuDAOTest
         weeklyMenuDAO = new WeeklyMenuDAO(emf);
     }
 
-    @AfterAll
-    void tearDown()
-    {
-        emf.close();
-    }
-
     @Test
     @DisplayName("Create - should persist weekly menu and its slots")
     void create() {

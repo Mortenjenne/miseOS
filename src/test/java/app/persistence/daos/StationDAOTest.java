@@ -35,12 +35,6 @@ class StationDAOTest
         stationDAO = new StationDAO(emf);
     }
 
-    @AfterAll
-    void tearDown()
-    {
-        emf.close();
-    }
-
     @DisplayName(("Create - should persist a station"))
     @Test
     void create()

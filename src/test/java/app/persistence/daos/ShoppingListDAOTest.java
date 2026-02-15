@@ -39,12 +39,6 @@ class ShoppingListDAOTest
         shoppingListDAO = new ShoppingListDAO(emf);
     }
 
-    @AfterAll
-    void tearDown()
-    {
-        emf.close();
-    }
-
     @Test
     @DisplayName("Create - should persist ShoppingList and its ShoppingListItems (Cascade Test)")
     void create()

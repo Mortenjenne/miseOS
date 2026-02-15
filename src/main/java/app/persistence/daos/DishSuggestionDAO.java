@@ -6,9 +6,11 @@ import app.persistence.entities.User;
 import app.utils.DBValidator;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
 
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
 
@@ -24,27 +26,82 @@ public class DishSuggestionDAO implements IDishSuggestionDAO
     @Override
     public Set<DishSuggestion> findByStatus(Status status)
     {
-        return Set.of();
+        DBValidator.validateNotNull(status, "Status");
+
+        try(EntityManager em = emf.createEntityManager())
+        {
+            TypedQuery<DishSuggestion> query = em.createQuery(
+                    "SELECT d FROM DishSuggestion d WHERE d.dishStatus = :status",
+                    DishSuggestion.class)
+                .setParameter("status", status);
+
+            return new HashSet<>(query.getResultList());
+        }
     }
 
-    @Override
     public Set<DishSuggestion> findByWeekAndYear(int weekNumber, int year)
     {
         DBValidator.validateRange(weekNumber, 1, 53, "Week number");
         DBValidator.validateRange(year, 2000, 2100, "Year");
-        return Set.of();
+
+        try (EntityManager em = emf.createEntityManager())
+        {
+            TypedQuery<DishSuggestion> query = em.createQuery(
+                "SELECT DISTINCT wms.dishSuggestion " +
+                    "FROM WeeklyMenuSlot wms " +
+                    "WHERE wms.weeklyMenu.weekNumber = :weekNumber " +
+                    "AND wms.weeklyMenu.year = :year " +
+                    "AND wms.dishSuggestion IS NOT NULL",
+                DishSuggestion.class
+            );
+
+            query.setParameter("weekNumber", weekNumber);
+            query.setParameter("year", year);
+
+            return new LinkedHashSet<>(query.getResultList());
+        }
     }
 
     @Override
     public Set<DishSuggestion> findByStationAndStatus(Long stationId, Status status)
     {
-        return Set.of();
+        DBValidator.validateId(stationId);
+        DBValidator.validateNotNull(status, "Status");
+
+        try(EntityManager em = emf.createEntityManager())
+        {
+            TypedQuery<DishSuggestion> query = em.createQuery(
+                    "SELECT d FROM DishSuggestion d WHERE d.station.id = :stationId AND d.dishStatus = :status",
+                    DishSuggestion.class)
+                .setParameter("stationId", stationId)
+                .setParameter("status", status);
+
+            return new HashSet<>(query.getResultList());
+        }
     }
 
     @Override
     public Optional<DishSuggestion> getByIdWithAllergens(Long id)
     {
-        return Optional.empty();
+        DBValidator.validateId(id);
+
+        try(EntityManager em = emf.createEntityManager())
+        {
+            try
+            {
+                DishSuggestion dish = em.createQuery(
+                        "SELECT d FROM DishSuggestion d LEFT JOIN FETCH d.allergens WHERE d.id = :id",
+                        DishSuggestion.class)
+                    .setParameter("id", id)
+                    .getSingleResult();
+
+                return Optional.of(dish);
+            }
+            catch (NoResultException e)
+            {
+                return Optional.empty();
+            }
+        }
     }
 
     @Override

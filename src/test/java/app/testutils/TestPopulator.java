@@ -144,15 +144,24 @@ public class TestPopulator
             cookMarco
         );
 
+        DishSuggestion d5 = new DishSuggestion(
+            "Sushi",
+            "sashimi og syltet ingefær",
+            coldStation,
+            cookClaire
+        );
+
         dishDAO.create(d1);
         dishDAO.create(d2);
         dishDAO.create(d3);
         dishDAO.create(d4);
+        dishDAO.create(d5);
 
         seeded.put("dish_salmon", d1);
         seeded.put("dish_steak", d2);
         seeded.put("dish_tartelet", d3);
         seeded.put("dish_roastbeef", d4);
+        seeded.put("dish_sushi",d5);
     }
 
     private void populateIngredientRequest()
@@ -213,16 +222,22 @@ public class TestPopulator
 
         DishSuggestion salmon = (DishSuggestion) seeded.get("dish_salmon");
         DishSuggestion steak = (DishSuggestion) seeded.get("dish_steak");
+        DishSuggestion tartelet = (DishSuggestion) seeded.get("dish_tartelet");
+        DishSuggestion roastbeef = (DishSuggestion) seeded.get("dish_roastbeef");
 
         WeeklyMenu menu1 = new WeeklyMenu(7, 2025);
 
         WeeklyMenuSlot slot1 = new WeeklyMenuSlot(DayOfWeek.MONDAY, salmon, coldStation);
         WeeklyMenuSlot slot2 = new WeeklyMenuSlot(DayOfWeek.MONDAY, steak, hotStation);
-        WeeklyMenuSlot slot3 = new WeeklyMenuSlot(DayOfWeek.TUESDAY, null, hotStation);
+        WeeklyMenuSlot slot3 = new WeeklyMenuSlot(DayOfWeek.MONDAY, roastbeef, coldStation);
+        WeeklyMenuSlot slot4 = new WeeklyMenuSlot(DayOfWeek.MONDAY, tartelet, hotStation);
+        WeeklyMenuSlot slot5 = new WeeklyMenuSlot(DayOfWeek.TUESDAY, null, hotStation);
 
         menu1.addMenuSlot(slot1);
         menu1.addMenuSlot(slot2);
         menu1.addMenuSlot(slot3);
+        menu1.addMenuSlot(slot4);
+        menu1.addMenuSlot(slot5);
 
         menuDAO.create(menu1);
 

@@ -36,15 +36,6 @@ class UserDAOTest
         userDAO = new UserDAO(emf);
     }
 
-    @AfterAll
-    void tearDown()
-    {
-        if (emf != null && emf.isOpen())
-        {
-            emf.close();
-        }
-    }
-
     @DisplayName("Create - Should persist user")
     @Test
     void create()

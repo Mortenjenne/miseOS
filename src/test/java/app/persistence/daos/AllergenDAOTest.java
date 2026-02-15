@@ -36,12 +36,6 @@ class AllergenDAOTest
         allergenDAO = new AllergenDAO(emf);
     }
 
-    @AfterAll
-    void tearDown()
-    {
-        if (emf != null) emf.close();
-    }
-
     @Test
     @DisplayName("Create - should persist a new allergen")
     void create()

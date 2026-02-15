@@ -172,15 +172,15 @@ public class DishSuggestion implements IEntity
     @Override
     public boolean equals(Object o)
     {
-        if (o == null || getClass() != o.getClass()) return false;
-        DishSuggestion that = (DishSuggestion) o;
-        return Objects.equals(id, that.id);
+        if (this == o) return true;
+        if (!(o instanceof DishSuggestion)) return false;
+        DishSuggestion other = (DishSuggestion) o;
+        return id != null && id.equals(other.id);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hashCode(id);
+        return getClass().hashCode();
     }
-
 }

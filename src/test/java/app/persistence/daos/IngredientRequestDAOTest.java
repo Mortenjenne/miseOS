@@ -40,12 +40,6 @@ class IngredientRequestDAOTest
         ingredientRequestDAO = new IngredientRequestDAO(emf);
     }
 
-    @AfterAll
-    void tearDown()
-    {
-        emf.close();
-    }
-
     @Test
     @DisplayName("Create - should persist a request with dependencies")
     void create()
