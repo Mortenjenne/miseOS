@@ -102,16 +102,18 @@ public class IngredientRequest implements IEntity
     @Override
     public boolean equals(Object o)
     {
-        if (o == null || getClass() != o.getClass()) return false;
-        IngredientRequest that = (IngredientRequest) o;
-        return Objects.equals(id, that.id);
+        if (this == o) return true;
+        if (!(o instanceof IngredientRequest)) return false;
+        IngredientRequest other = (IngredientRequest) o;
+        return id != null && id.equals(other.id);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hashCode(id);
+        return getClass().hashCode();
     }
+
 
     private void valideIngredientRequest()
     {

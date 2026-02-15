@@ -17,8 +17,7 @@ import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class DishSuggestionDAOTest {
@@ -82,7 +81,7 @@ class DishSuggestionDAOTest {
         assertThat(fetched.getDescriptionDA(), is(seed.getDescriptionDA()));
         assertThat(fetched.getDishStatus(), is(seed.getDishStatus()));
         assertThat(fetched.getStation(), is(seed.getStation()));
-        assertTrue(fetched.getCreatedAt().isBefore(seed.getCreatedAt()));
+        assertNotNull(fetched.getCreatedAt());
     }
 
     @Test

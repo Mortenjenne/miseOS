@@ -57,17 +57,18 @@ public class ShoppingListItem implements IEntity
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(Object o)
+    {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        ShoppingListItem that = (ShoppingListItem) o;
-        return Objects.equals(ingredientName, that.ingredientName) && Objects.equals(shoppingList, that.shoppingList);
+        if (!(o instanceof ShoppingListItem)) return false;
+        ShoppingListItem other = (ShoppingListItem) o;
+        return id != null && id.equals(other.id);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(ingredientName, shoppingList);
+        return getClass().hashCode();
     }
+
 }

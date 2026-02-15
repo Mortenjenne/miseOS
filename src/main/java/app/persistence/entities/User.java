@@ -102,14 +102,16 @@ public class User implements IEntity
     @Override
     public boolean equals(Object o)
     {
-        if (o == null || getClass() != o.getClass()) return false;
-        User user = (User) o;
-        return Objects.equals(id, user.id) && Objects.equals(email, user.email);
+        if (this == o) return true;
+        if (!(o instanceof User)) return false;
+        User other = (User) o;
+        return id != null && id.equals(other.id);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(id, email);
+        return getClass().hashCode();
     }
+
 }

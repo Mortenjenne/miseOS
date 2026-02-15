@@ -43,14 +43,16 @@ public class Station implements IEntity
     @Override
     public boolean equals(Object o)
     {
-        if (o == null || getClass() != o.getClass()) return false;
-        Station station = (Station) o;
-        return Objects.equals(id, station.id);
+        if (this == o) return true;
+        if (!(o instanceof Station)) return false;
+        Station other = (Station) o;
+        return id != null && id.equals(other.id);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hashCode(id);
+        return getClass().hashCode();
     }
+
 }

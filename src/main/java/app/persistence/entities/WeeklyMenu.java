@@ -91,14 +91,16 @@ public class WeeklyMenu implements IEntity
     @Override
     public boolean equals(Object o)
     {
-        if (o == null || getClass() != o.getClass()) return false;
-        WeeklyMenu that = (WeeklyMenu) o;
-        return Objects.equals(id, that.id);
+        if (this == o) return true;
+        if (!(o instanceof WeeklyMenu)) return false;
+        WeeklyMenu other = (WeeklyMenu) o;
+        return id != null && id.equals(other.id);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hashCode(id);
+        return getClass().hashCode();
     }
+
 }

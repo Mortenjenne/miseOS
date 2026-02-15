@@ -33,14 +33,16 @@ public class Allergen implements IEntity
     @Override
     public boolean equals(Object o)
     {
-        if (o == null || getClass() != o.getClass()) return false;
-        Allergen allergen = (Allergen) o;
-        return Objects.equals(id, allergen.id) && Objects.equals(name, allergen.name);
+        if (this == o) return true;
+        if (!(o instanceof Allergen)) return false;
+        Allergen other = (Allergen) o;
+        return id != null && id.equals(other.id);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(id, name);
+        return getClass().hashCode();
     }
+
 }

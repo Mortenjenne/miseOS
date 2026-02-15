@@ -87,14 +87,16 @@ public class ShoppingList implements IEntity
     @Override
     public boolean equals(Object o)
     {
-        if (o == null || getClass() != o.getClass()) return false;
-        ShoppingList that = (ShoppingList) o;
-        return Objects.equals(id, that.id);
+        if (this == o) return true;
+        if (!(o instanceof ShoppingList)) return false;
+        ShoppingList other = (ShoppingList) o;
+        return id != null && id.equals(other.id);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hashCode(id);
+        return getClass().hashCode();
     }
+
 }

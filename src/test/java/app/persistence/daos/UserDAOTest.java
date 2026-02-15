@@ -36,8 +36,8 @@ class UserDAOTest
         userDAO = new UserDAO(emf);
     }
 
-    @DisplayName("Create - Should persist user")
     @Test
+    @DisplayName("Create - Should persist user")
     void create()
     {
         User newUser = new User("Jamie", "Oliver", "jamie@chef.com", "hash", UserRole.LINE_COOK);
@@ -50,8 +50,8 @@ class UserDAOTest
         assertThat(result.getLastName(), is("Oliver"));
     }
 
-    @DisplayName("Create - should throw exception when user is null")
     @Test
+    @DisplayName("Create - should throw exception when user is null")
     void createNullUserThrowsException()
     {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> userDAO.create(null));
@@ -61,7 +61,7 @@ class UserDAOTest
 
     @Test
     @DisplayName("Create - should throw exception when email is duplicate")
-    void create_DuplicateEmail_ThrowsException() {
+    void createDuplicateEmailThrowsException() {
 
         User gordon = (User) seeded.get("user_gordon");
         User duplicate = new User("Fake", "Gordon", gordon.getEmail(), "hash", UserRole.LINE_COOK);
@@ -69,8 +69,8 @@ class UserDAOTest
         assertThrows(Exception.class, () -> userDAO.create(duplicate));
     }
 
-    @DisplayName("Test retrieving all users")
     @Test
+    @DisplayName("Test retrieving all users")
     void getAll()
     {
         Set<User> users = userDAO.getAll();
@@ -79,8 +79,8 @@ class UserDAOTest
         assertThat(users, containsInAnyOrder(seeded.get("user_gordon"), seeded.get("user_claire"), seeded.get("user_marco"), seeded.get("user_rene")));
     }
 
-    @DisplayName("Get by id - Should retrieve user")
     @Test
+    @DisplayName("Get by id - Should retrieve user")
     void getByID()
     {
         User seed = (User) seeded.get("user_gordon");
@@ -92,8 +92,8 @@ class UserDAOTest
         assertThat(fetched.getUserRole(), is(seed.getUserRole()));
     }
 
-    @DisplayName("Get by id - Should throw EntityNotFoundException when user doesn't exist")
     @Test
+    @DisplayName("Get by id - Should throw EntityNotFoundException when user doesn't exist")
     void getByIDNotFoundThrowsException() {
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> userDAO.getByID(999L));
@@ -102,8 +102,8 @@ class UserDAOTest
         assertTrue(exception.getMessage().contains("not found"));
     }
 
-    @DisplayName("Test updating a user")
     @Test
+    @DisplayName("Update - Should update a user")
     void update()
     {
         User seed = (User) seeded.get("user_gordon");
@@ -121,8 +121,8 @@ class UserDAOTest
         assertThat(fetched.getLastName(), is("Wichangoen"));
     }
 
-    @DisplayName("Test deleting a user")
     @Test
+    @DisplayName("Delete - Should delete a user")
     void delete()
     {
         User seed = (User) seeded.get("user_rene");
@@ -136,8 +136,8 @@ class UserDAOTest
         assertThat(users, hasSize(3));
     }
 
-    @DisplayName("Test finding user by email")
     @Test
+    @DisplayName("Find - Should find user by email")
     void findByEmail()
     {
         User seed = (User) seeded.get("user_claire");
@@ -150,8 +150,8 @@ class UserDAOTest
         assertThat(user.getId(), is(seed.getId()));
     }
 
-    @DisplayName("Test finding user by email not present")
     @Test
+    @DisplayName("Find - Should not find user by email, when not present")
     void findByEmailNotPresent()
     {
         String email = "fake@email.dk";
@@ -162,6 +162,7 @@ class UserDAOTest
     }
 
     @Test
+    @DisplayName("Find - Find user by role")
     void findByRole()
     {
         Set<User> cooks = userDAO.findByRole(UserRole.LINE_COOK);
@@ -171,6 +172,7 @@ class UserDAOTest
     }
 
     @Test
+    @DisplayName("Find - Should find existing user with correct mail and not with incorrect")
     void existsByEmail()
     {
         User seed = (User) seeded.get("user_gordon");
