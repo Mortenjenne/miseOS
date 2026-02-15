@@ -1,7 +1,6 @@
 package app.testutils;
 
 import app.enums.DayOfWeek;
-import app.enums.MenuStatus;
 import app.enums.RequestType;
 import app.enums.UserRole;
 import app.persistence.daos.*;
@@ -73,7 +72,7 @@ public class TestPopulator
         User u1 = new User("Gordon", "Ramsay", "gordon@kitchen.com", "hash1", UserRole.HEAD_CHEF);
         User u2 = new User("Claire", "Smyth", "claire@pastry.com", "hash2", UserRole.LINE_COOK);
         User u3 = new User("Marco", "Pierre", "marco@grill.com", "hash3", UserRole.LINE_COOK);
-        User u4 = new User("Rene", "Redzepi", "lars@cold.com", "hash4", UserRole.LINE_COOK);
+        User u4 = new User("Rene", "Redzepi", "rene@cold.com", "hash4", UserRole.LINE_COOK);
 
         userDAO.create(u1);
         userDAO.create(u2);
@@ -260,7 +259,4 @@ public class TestPopulator
 
         seeded.put("shopping_list_1", list1);
     }
-
-
-
 }

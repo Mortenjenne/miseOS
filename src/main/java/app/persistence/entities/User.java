@@ -67,6 +67,8 @@ public class User implements IEntity
         this.userRole = userRole;
     }
 
+
+
     public boolean isHeadChef()
     {
         return this.userRole == UserRole.HEAD_CHEF;
