@@ -1,5 +1,6 @@
 package app;
 
+import app.config.ApplicationConfig;
 import app.config.HibernateConfig;
 
 import app.persistence.daos.IUserDAO;
@@ -12,5 +13,7 @@ public class Main
     {
         EntityManagerFactory entityManagerFactory = HibernateConfig.getEntityManagerFactory();
         IUserDAO userDAO = new UserDAO(entityManagerFactory);
+
+        ApplicationConfig.start();
     }
 }

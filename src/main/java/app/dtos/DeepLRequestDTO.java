@@ -1,11 +1,13 @@
 package app.dtos;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 
-public record DeepLRequest(List<String> text,
-                           @JsonProperty("target_lang")
+@JsonIgnoreProperties(ignoreUnknown = true)
+public record DeepLRequestDTO(List<String> text,
+                              @JsonProperty("target_lang")
                            String targetLanguage)
 {
 }

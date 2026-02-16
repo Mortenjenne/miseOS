@@ -1,4 +1,14 @@
 package app.dtos;
 
-public record TranslationDTO() {
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+public record TranslationDTO(
+    @JsonProperty("detected_source_language")
+    String detectedSourceLanguage,
+
+    String text
+)
+{
 }
