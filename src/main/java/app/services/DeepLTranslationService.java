@@ -12,7 +12,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.List;
 
-
 public class DeepLTranslationService implements ITranslationService
 {
     private final HttpClient client;
@@ -56,12 +55,12 @@ public class DeepLTranslationService implements ITranslationService
 
         DeepLResponseDTO responseDTO = objectMapper.readValue(response.body(), DeepLResponseDTO.class);
 
-        if (responseDTO.translationDTOS() == null || responseDTO.translationDTOS().isEmpty())
+        if (responseDTO.translations() == null || responseDTO.translations().isEmpty())
         {
             throw new TranslationException("DeepL translation failed response was empty");
         }
 
-        return responseDTO.translationDTOS().stream()
+        return responseDTO.translations().stream()
             .findFirst()
             .map(TranslationDTO::text)
             .orElseThrow(() -> new TranslationException("No translation found"));
