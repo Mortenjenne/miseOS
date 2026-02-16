@@ -9,7 +9,6 @@ import lombok.Setter;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 @NoArgsConstructor
@@ -44,11 +43,11 @@ public class ShoppingList implements IEntity
     @OneToMany(mappedBy = "shoppingList", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<ShoppingListItem> shoppingListItems = new HashSet<>();
 
-    public ShoppingList(LocalDate deliveryDate, ShoppingListStatus shoppingListStatus, User createdBy)
+    public ShoppingList(LocalDate deliveryDate, User createdBy)
     {
         this.deliveryDate = deliveryDate;
-        this.shoppingListStatus = shoppingListStatus;
         this.createdBy = createdBy;
+        this.shoppingListStatus = ShoppingListStatus.DRAFT;
     }
 
     public void addItem(ShoppingListItem shoppingListItem)
@@ -87,14 +86,16 @@ public class ShoppingList implements IEntity
     @Override
     public boolean equals(Object o)
     {
-        if (o == null || getClass() != o.getClass()) return false;
-        ShoppingList that = (ShoppingList) o;
-        return Objects.equals(id, that.id);
+        if (this == o) return true;
+        if (!(o instanceof ShoppingList)) return false;
+        ShoppingList other = (ShoppingList) o;
+        return id != null && id.equals(other.id);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hashCode(id);
+        return getClass().hashCode();
     }
+
 }

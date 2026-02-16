@@ -1,6 +1,7 @@
 package app.dtos;
 
 import app.enums.UserRole;
+import app.persistence.entities.Station;
 
 public record CreateUserRequest(
     String firstName,

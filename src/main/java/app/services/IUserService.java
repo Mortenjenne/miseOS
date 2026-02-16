@@ -4,19 +4,19 @@ import app.dtos.CreateUserRequest;
 import app.dtos.LoginRequest;
 import app.dtos.UserDTO;
 
-import java.util.List;
+import java.util.Set;
 
-public interface UserService
+public interface IUserService
 {
-    UserDTO register(CreateUserRequest request, String plainPassword);
+    UserDTO register(CreateUserRequest request);
 
-    UserDTO findById(int id);
+    UserDTO findById(Long id);
 
-    List<UserDTO> findAll();
+    Set<UserDTO> findAll();
 
     UserDTO login(LoginRequest loginRequest);
 
     UserDTO update(UserDTO updateDTO);
 
-    void delete(int id);
+    boolean delete(Long id);
 }

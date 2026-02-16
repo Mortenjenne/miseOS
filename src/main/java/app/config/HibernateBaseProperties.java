@@ -1,4 +1,4 @@
-package app.persistence.config;
+package app.config;
 
 import java.util.Properties;
 

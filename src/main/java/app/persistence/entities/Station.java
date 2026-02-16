@@ -1,12 +1,9 @@
 package app.persistence.entities;
 
-import app.enums.UserRole;
-import app.exceptions.UnauthorizedActionException;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.Objects;
 
 @NoArgsConstructor
 @Getter
@@ -29,32 +26,30 @@ public class Station implements IEntity
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @ManyToOne
-    @JoinColumn(name = "created_by_user_id")
-    private User createdBy;
-
-    public static Station create(String stationName, String description, User creator)
+    public Station(String stationName, String description)
     {
-        if (creator.getUserRole() != UserRole.HEAD_CHEF) {
-            throw new UnauthorizedActionException("Only head chefs can create stations");
-        }
-
-        if (stationName == null || stationName.trim().isEmpty())
-        {
-            throw new IllegalArgumentException("Station name cannot be empty");
-        }
-
-        String normalized = stationName.trim().toUpperCase();
-
-        Station station = new Station();
-        station.stationName = normalized;
-        station.description = description;
-        station.createdBy = creator;
-        return station;
+        this.stationName = stationName;
+        this.description = description;
     }
 
     @PrePersist
     private void onCreate() {
         this.createdAt = LocalDateTime.now();
     }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o) return true;
+        if (!(o instanceof Station)) return false;
+        Station other = (Station) o;
+        return id != null && id.equals(other.id);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return getClass().hashCode();
+    }
+
 }

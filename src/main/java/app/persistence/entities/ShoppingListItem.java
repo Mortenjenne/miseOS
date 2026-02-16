@@ -5,8 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.Objects;
-
 @NoArgsConstructor
 @Getter
 @Entity
@@ -46,23 +44,29 @@ public class ShoppingListItem implements IEntity
     @JoinColumn(name = "shopping_list_id", nullable = false)
     private ShoppingList shoppingList;
 
-    //TODO Use @Setter(AcessLevel.Protected)
-    protected void set(ShoppingList shoppingList)
+    public ShoppingListItem(String ingredientName, double quantity, String unit, String supplier, String notes)
     {
-        this.shoppingList = shoppingList;
+        this.ingredientName = ingredientName;
+        this.quantity = quantity;
+        this.unit = unit;
+        this.supplier = supplier;
+        this.notes = notes;
+        this.isOrdered = false;
     }
 
     @Override
     public boolean equals(Object o)
     {
-        if (o == null || getClass() != o.getClass()) return false;
-        ShoppingListItem that = (ShoppingListItem) o;
-        return Objects.equals(id, that.id);
+        if (this == o) return true;
+        if (!(o instanceof ShoppingListItem)) return false;
+        ShoppingListItem other = (ShoppingListItem) o;
+        return id != null && id.equals(other.id);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hashCode(id);
+        return getClass().hashCode();
     }
+
 }

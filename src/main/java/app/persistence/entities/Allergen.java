@@ -3,8 +3,6 @@ package app.persistence.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.Objects;
-
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -20,27 +18,28 @@ public class Allergen implements IEntity
     @Column(name = "name", nullable = false, unique = true)
     private String name;
 
-    @Setter
-    @Column(name = "icon_code", nullable = true)
-    private String iconCode;
 
-    public Allergen(String name, String iconCode)
+    public Allergen(String name)
     {
-        this.name = name;
-        this.iconCode = iconCode;
+        if (name == null || name.isBlank())
+        {
+            throw new IllegalArgumentException("Allergen name cannot be blank");
+        }
+        this.name = name.trim();
     }
 
     @Override
     public boolean equals(Object o)
     {
-        if (o == null || getClass() != o.getClass()) return false;
-        Allergen allergen = (Allergen) o;
-        return Objects.equals(id, allergen.id) && Objects.equals(name, allergen.name);
+        if (this == o) return true;
+        if (!(o instanceof Allergen)) return false;
+        Allergen other = (Allergen) o;
+        return id != null && id.equals(other.id);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(id, name);
+        return getClass().hashCode();
     }
 }

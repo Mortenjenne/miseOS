@@ -6,8 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.Objects;
-
 @NoArgsConstructor
 @Getter
 @Entity
@@ -42,26 +40,27 @@ public class WeeklyMenuSlot implements IEntity
     @Column(name = "is_empty", nullable = false)
     private boolean isEmpty;
 
-    public WeeklyMenuSlot(DayOfWeek dayOfWeek, DishSuggestion dishSuggestion, Station station, WeeklyMenu weeklyMenu, boolean isEmpty)
+    public WeeklyMenuSlot(DayOfWeek dayOfWeek, DishSuggestion dishSuggestion, Station station)
     {
         this.dayOfWeek = dayOfWeek;
         this.dishSuggestion = dishSuggestion;
         this.station = station;
-        this.weeklyMenu = weeklyMenu;
-        this.isEmpty = isEmpty;
+        this.isEmpty = (dishSuggestion == null);
     }
 
     @Override
     public boolean equals(Object o)
     {
-        if (o == null || getClass() != o.getClass()) return false;
-        WeeklyMenuSlot that = (WeeklyMenuSlot) o;
-        return Objects.equals(id, that.id);
+        if (this == o) return true;
+        if (!(o instanceof WeeklyMenuSlot)) return false;
+        WeeklyMenuSlot other = (WeeklyMenuSlot) o;
+        return id != null && id.equals(other.id);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hashCode(id);
+        return getClass().hashCode();
     }
+
 }

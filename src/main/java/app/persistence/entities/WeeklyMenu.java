@@ -1,7 +1,6 @@
 package app.persistence.entities;
 
 import app.enums.MenuStatus;
-import app.enums.UserRole;
 import app.exceptions.UnauthorizedActionException;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -10,7 +9,6 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 @NoArgsConstructor
@@ -46,11 +44,11 @@ public class WeeklyMenu implements IEntity
     @OneToMany(mappedBy = "weeklyMenu", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<WeeklyMenuSlot> weeklyMenuSlots = new HashSet<>();
 
-    public WeeklyMenu(int weekNumber, int year, MenuStatus menuStatus)
+    public WeeklyMenu(int weekNumber, int year)
     {
         this.weekNumber = weekNumber;
         this.year = year;
-        this.menuStatus = menuStatus;
+        this.menuStatus = MenuStatus.DRAFT;
     }
 
     public void publish(User headChef)
@@ -91,14 +89,16 @@ public class WeeklyMenu implements IEntity
     @Override
     public boolean equals(Object o)
     {
-        if (o == null || getClass() != o.getClass()) return false;
-        WeeklyMenu that = (WeeklyMenu) o;
-        return Objects.equals(id, that.id);
+        if (this == o) return true;
+        if (!(o instanceof WeeklyMenu)) return false;
+        WeeklyMenu other = (WeeklyMenu) o;
+        return id != null && id.equals(other.id);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hashCode(id);
+        return getClass().hashCode();
     }
+
 }

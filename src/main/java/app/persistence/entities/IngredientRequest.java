@@ -71,13 +71,14 @@ public class IngredientRequest implements IEntity
     @JoinColumn(name = "dish_suggestion_id")
     private DishSuggestion dishSuggestion;
 
-    public IngredientRequest(String name, double unit, String preferredSupplier, String note, Status status, RequestType requestType, LocalDate deliveryDate, DishSuggestion dishSuggestion, User createdBy)
+    public IngredientRequest(String name, double quantity, String unit, String preferredSupplier, String note, RequestType requestType, LocalDate deliveryDate, DishSuggestion dishSuggestion, User createdBy)
     {
         this.name = name;
+        this.quantity = quantity;
         this.unit = unit;
         this.preferredSupplier = preferredSupplier;
         this.note = note;
-        this.requestStatus = status;
+        this.requestStatus = Status.PENDING;
         this.requestType = requestType;
         this.deliveryDate = deliveryDate;
         this.dishSuggestion = dishSuggestion;
@@ -101,16 +102,18 @@ public class IngredientRequest implements IEntity
     @Override
     public boolean equals(Object o)
     {
-        if (o == null || getClass() != o.getClass()) return false;
-        IngredientRequest that = (IngredientRequest) o;
-        return Objects.equals(id, that.id);
+        if (this == o) return true;
+        if (!(o instanceof IngredientRequest)) return false;
+        IngredientRequest other = (IngredientRequest) o;
+        return id != null && id.equals(other.id);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hashCode(id);
+        return getClass().hashCode();
     }
+
 
     private void valideIngredientRequest()
     {

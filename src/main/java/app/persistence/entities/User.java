@@ -6,7 +6,6 @@ import app.utils.ValidationUtil;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
-import java.util.Objects;
 
 @NoArgsConstructor
 @Entity
@@ -56,7 +55,7 @@ public class User implements IEntity
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    public User(String firstName, String lastName, String email, String hashedPassword, UserRole userRole, Station station)
+    public User(String firstName, String lastName, String email, String hashedPassword, UserRole userRole)
     {
         ValidationUtil.validateEmail(email);
 
@@ -65,8 +64,9 @@ public class User implements IEntity
         this.email = email.toLowerCase().trim();
         this.hashedPassword = hashedPassword;
         this.userRole = userRole;
-        this.station = station;
     }
+
+
 
     public boolean isHeadChef()
     {
@@ -103,14 +103,16 @@ public class User implements IEntity
     @Override
     public boolean equals(Object o)
     {
-        if (o == null || getClass() != o.getClass()) return false;
-        User user = (User) o;
-        return Objects.equals(id, user.id) && Objects.equals(email, user.email);
+        if (this == o) return true;
+        if (!(o instanceof User)) return false;
+        User other = (User) o;
+        return id != null && id.equals(other.id);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(id, email);
+        return getClass().hashCode();
     }
+
 }

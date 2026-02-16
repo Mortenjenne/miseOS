@@ -29,4 +29,12 @@ public class DBValidator
             throw new IllegalArgumentException(entityName + " cannot be null.");
         }
     }
+
+    public static void validateRange(int number, int min, int max, String fieldName) {
+        if (number < min || number > max)
+        {
+            String errorMsg = String.format("%s must be between %d and %d, got: %d", fieldName, min, max, number);
+            throw new IllegalArgumentException(errorMsg);
+        }
+    }
 }

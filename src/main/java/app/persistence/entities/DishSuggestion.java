@@ -9,7 +9,6 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 @NoArgsConstructor
@@ -67,6 +66,33 @@ public class DishSuggestion implements IEntity
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    public DishSuggestion(String nameDA, String descriptionDA, Station station, User createdBy)
+    {
+        if (nameDA == null || nameDA.isBlank())
+        {
+            throw new IllegalArgumentException("Danish name is required");
+        }
+        if (descriptionDA == null || descriptionDA.isBlank())
+        {
+            throw new IllegalArgumentException("Danish description is required");
+        }
+        if (station == null) {
+
+            throw new IllegalArgumentException("Station is required");
+        }
+
+        if (createdBy == null)
+        {
+            throw new IllegalArgumentException("Creator (User) is required");
+        }
+
+        this.nameDA = nameDA;
+        this.descriptionDA = descriptionDA;
+        this.station = station;
+        this.createdBy = createdBy;
+        this.dishStatus = Status.PENDING;
+    }
 
 
     public String getName(String language)
@@ -145,15 +171,15 @@ public class DishSuggestion implements IEntity
     @Override
     public boolean equals(Object o)
     {
-        if (o == null || getClass() != o.getClass()) return false;
-        DishSuggestion that = (DishSuggestion) o;
-        return Objects.equals(id, that.id);
+        if (this == o) return true;
+        if (!(o instanceof DishSuggestion)) return false;
+        DishSuggestion other = (DishSuggestion) o;
+        return id != null && id.equals(other.id);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hashCode(id);
+        return getClass().hashCode();
     }
-
 }
