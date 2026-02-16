@@ -3,8 +3,6 @@ package app.persistence.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.Objects;
-
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -44,5 +42,4 @@ public class Allergen implements IEntity
     {
         return getClass().hashCode();
     }
-
 }

@@ -1,12 +1,9 @@
 package app.persistence.entities;
 
-import app.enums.UserRole;
-import app.exceptions.UnauthorizedActionException;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.Objects;
 
 @NoArgsConstructor
 @Getter

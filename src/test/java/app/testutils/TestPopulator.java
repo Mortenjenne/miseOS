@@ -20,7 +20,7 @@ public class TestPopulator
     private final IWeeklyMenuDAO menuDAO;
     private final IIngredientRequestDAO ingredientRequestDAO;
     private final IShoppingListDAO shoppingListDAO;
-    private Map<String, IEntity> seeded;
+    private final Map<String, IEntity> seeded;
 
     public TestPopulator(EntityManagerFactory emf) {
         this.stationDAO = new StationDAO(emf);
@@ -215,7 +215,6 @@ public class TestPopulator
     }
 
     private void populateWeeklyMenus() {
-        User gordon = (User) seeded.get("user_gordon");
         Station hotStation = (Station) seeded.get("station_hot");
         Station coldStation = (Station) seeded.get("station_cold");
 

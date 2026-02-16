@@ -1,7 +1,6 @@
 package app.persistence.entities;
 
 import app.enums.MenuStatus;
-import app.enums.UserRole;
 import app.exceptions.UnauthorizedActionException;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -10,7 +9,6 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 @NoArgsConstructor

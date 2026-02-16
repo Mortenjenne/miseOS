@@ -6,7 +6,6 @@ import app.utils.ValidationUtil;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
-import java.util.Objects;
 
 @NoArgsConstructor
 @Entity
