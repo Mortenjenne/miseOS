@@ -1,8 +1,8 @@
 package app.services;
 
-import app.dtos.DeepLRequestDTO;
-import app.dtos.DeepLResponseDTO;
-import app.dtos.TranslationDTO;
+import app.dtos.translation.DeepLRequestDTO;
+import app.dtos.translation.DeepLResponseDTO;
+import app.dtos.translation.TranslationDTO;
 import app.exceptions.TranslationException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 

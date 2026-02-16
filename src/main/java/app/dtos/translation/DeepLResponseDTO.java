@@ -1,4 +1,4 @@
-package app.dtos;
+package app.dtos.translation;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;

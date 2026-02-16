@@ -93,6 +93,14 @@ public class IngredientRequest implements IEntity
         this.reviewedAt = LocalDateTime.now();
     }
 
+    public void reject(User headChef)
+    {
+        validateHeadChef(headChef);
+        valideIngredientRequest();
+        this.requestStatus = Status.REJECTED;
+        this.reviewedAt = LocalDateTime.now();
+    }
+
     @PrePersist
     public void createdAt()
     {
