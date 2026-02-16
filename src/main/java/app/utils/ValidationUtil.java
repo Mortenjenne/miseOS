@@ -1,7 +1,52 @@
 package app.utils;
 
+import java.time.LocalDate;
+
 public class ValidationUtil
 {
+    public static void validateNotNull(Object obj, String entityName)
+    {
+        if (obj == null)
+        {
+            throw new IllegalArgumentException(entityName + " cannot be null.");
+        }
+    }
+
+    public static void validateNotBlank(String value, String fieldName)
+    {
+        if (value == null || value.isBlank())
+        {
+            throw new IllegalArgumentException(fieldName + " cannot be blank");
+        }
+
+    }
+
+    public static void validatePositive(double value, String fieldName)
+    {
+        if (value <= 0)
+        {
+            throw new IllegalArgumentException(fieldName + " must be greater than 0");
+        }
+    }
+
+    public static void validateFutureDate(LocalDate date, String fieldName)
+    {
+        if (date == null)
+        {
+            throw new IllegalArgumentException(fieldName + " is required");
+        }
+        if (date.isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException(fieldName + " must be in the future");
+        }
+    }
+
+    public static void validateId(Long id)
+    {
+        if (id == null || id <= 0) {
+            throw new IllegalArgumentException("Invalid ID: must be provided and greater than 0");
+        }
+    }
+
     public static String validateEmail(String email)
     {
         if (email == null || email.trim().isEmpty())
