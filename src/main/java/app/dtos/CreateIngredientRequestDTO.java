@@ -1,8 +1,6 @@
 package app.dtos;
 
 import app.enums.RequestType;
-import app.persistence.entities.DishSuggestion;
-import app.persistence.entities.User;
 
 import java.time.LocalDate;
 

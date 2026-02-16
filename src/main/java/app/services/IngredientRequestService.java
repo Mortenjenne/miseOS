@@ -16,7 +16,7 @@ import java.time.LocalDate;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class IngredientRequestService
+public class IngredientRequestService implements IIngredientRequestService
 {
     private final IIngredientRequestDAO ingredientRequestDAO;
     private final IDishSuggestionDAO dishDAO;
@@ -28,6 +28,7 @@ public class IngredientRequestService
         this.dishDAO = dishDAO;
     }
 
+    @Override
     public IngredientRequestDTO createRequest(User creator, CreateIngredientRequestDTO requestDTO)
     {
         ValidationUtil.validateNotNull(creator, "User");
@@ -40,11 +41,7 @@ public class IngredientRequestService
         validateCanCreateRequest(creator);
         validateDeliveryDateRange(requestDTO.deliveryDate());
 
-        DishSuggestion dish = null;
-        if(requestDTO.requestType() == RequestType.DISH_SPECIFIC)
-        {
-            dish = validateDishForIngredientRequest(requestDTO.dishSuggestionId());
-        }
+        DishSuggestion dish = validateAndGetDishSuggestionForRequest(requestDTO.requestType(), requestDTO.dishSuggestionId());
 
         IngredientRequest ingredientRequest = new IngredientRequest(
             requestDTO.name(),
@@ -63,6 +60,7 @@ public class IngredientRequestService
         return mapToDTO(saved);
     }
 
+    @Override
     public IngredientRequestDTO approveIngredientRequest(User headChef, Long ingredientRequestId)
     {
         ValidationUtil.validateNotNull(headChef, "User");
@@ -79,6 +77,7 @@ public class IngredientRequestService
         return mapToDTO(updated);
     }
 
+    @Override
     public IngredientRequestDTO rejectIngredientRequest(User headChef, Long requestId)
     {
         ValidationUtil.validateNotNull(headChef, "User");
@@ -95,6 +94,7 @@ public class IngredientRequestService
         return mapToDTO(updated);
     }
 
+    @Override
     public Set<IngredientRequestDTO> getAllPendingRequests()
     {
         return ingredientRequestDAO.getAll()
@@ -103,20 +103,88 @@ public class IngredientRequestService
             .collect(Collectors.toSet());
     }
 
+    @Override
     public Set<IngredientRequestDTO> getRequestByStatus(Status status)
     {
+        ValidationUtil.validateNotNull(status, "Status");
+
         return ingredientRequestDAO.findByStatus(status)
             .stream()
             .map(this::mapToDTO)
             .collect(Collectors.toSet());
     }
 
+    @Override
+    public Set<IngredientRequestDTO> getRequestByStatusAndDate(Status status, LocalDate deliveryDate)
+    {
+        ValidationUtil.validateNotNull(status, "Status");
+        ValidationUtil.validateNotNull(deliveryDate, "Delivery date");
+
+        return ingredientRequestDAO.findByStatusAndDeliveryDate(status, deliveryDate)
+            .stream()
+            .map(this::mapToDTO)
+            .collect(Collectors.toSet());
+    }
+
+    @Override
     public IngredientRequestDTO getById(Long id)
     {
         ValidationUtil.validateId(id);
 
         IngredientRequest request = ingredientRequestDAO.getByID(id);
         return mapToDTO(request);
+    }
+
+    @Override
+    public IngredientRequestDTO updateRequest(User creator, IngredientRequestDTO requestDTO)
+    {
+        ValidationUtil.validateNotNull(creator, "User");
+        ValidationUtil.validateNotNull(requestDTO, "Ingredient request");
+        ValidationUtil.validateNotBlank(requestDTO.name(), "Ingredient name");
+        ValidationUtil.validatePositive(requestDTO.quantity(), "Quantity");
+        ValidationUtil.validateNotBlank(requestDTO.unit(), "Unit");
+        ValidationUtil.validateFutureDate(requestDTO.deliveryDate(), "Delivery date");
+
+        validateCanCreateRequest(creator);
+        validateDeliveryDateRange(requestDTO.deliveryDate());
+
+        DishSuggestion dish = validateAndGetDishSuggestionForRequest(requestDTO.requestType(), requestDTO.id());
+
+        IngredientRequest existing = ingredientRequestDAO.getByID(requestDTO.id());
+        ValidationUtil.validateNotNull(existing, "Ingredient request");
+
+        existing.setName(requestDTO.name());
+        existing.setQuantity(requestDTO.quantity());
+        existing.setUnit(requestDTO.unit());
+        existing.setNote(requestDTO.note());
+        existing.setDeliveryDate(requestDTO.deliveryDate());
+        existing.setPreferredSupplier(requestDTO.preferredSupplier());
+        existing.setDishSuggestion(dish);
+
+        IngredientRequest updated = ingredientRequestDAO.update(existing);
+
+        return mapToDTO(updated);
+    }
+
+    @Override
+    public boolean deleteRequest(Long id, User headChef)
+    {
+        ValidationUtil.validateNotNull(headChef, "User");
+        ValidationUtil.validateId(id);
+
+        validateIsHeadChef(headChef);
+
+        return ingredientRequestDAO.delete(id);
+    }
+
+    private DishSuggestion validateAndGetDishSuggestionForRequest(RequestType requestType, Long dishId)
+    {
+        DishSuggestion dish = null;
+        if(requestType == RequestType.DISH_SPECIFIC)
+        {
+            dish = validateDishForIngredientRequest(dishId);
+        }
+        return dish;
     }
 
     private void validateCanCreateRequest(User user)
@@ -135,7 +203,6 @@ public class IngredientRequestService
 
     private void validateDeliveryDateRange(LocalDate date)
     {
-
         LocalDate maxDate = LocalDate.now().plusDays(30);
         if (date.isAfter(maxDate))
         {
@@ -184,8 +251,4 @@ public class IngredientRequestService
             request.getDishSuggestion() != null ? request.getDishSuggestion().getId() : null
         );
     }
-
-
-
-
 }

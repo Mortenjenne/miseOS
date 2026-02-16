@@ -67,6 +67,7 @@ public class IngredientRequest implements IEntity
     @JoinColumn(name = "created_by_user_id")
     private User createdBy;
 
+    @Setter
     @ManyToOne
     @JoinColumn(name = "dish_suggestion_id")
     private DishSuggestion dishSuggestion;
