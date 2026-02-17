@@ -114,8 +114,6 @@ class DishSuggestionDAOTest {
     @DisplayName("Get with Allergens - should return empty Optional for missing id")
     void getByIdWithAllergensNotFoundReturnsEmpty()
     {
-        // Bemærk: getByIdWithAllergens returnerer Optional, så den bør ikke kaste exception ved "not found"
-        // (medmindre du specifikt kaster det i din DAO). Standard er at returnere Optional.empty().
         Optional<DishSuggestion> fetched = dishSuggestionDAO.getByIdWithAllergens(9999L);
         assertTrue(fetched.isEmpty());
     }

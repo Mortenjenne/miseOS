@@ -57,11 +57,9 @@ public class User implements IEntity
 
     public User(String firstName, String lastName, String email, String hashedPassword, UserRole userRole)
     {
-        ValidationUtil.validateEmail(email);
-
         this.firstName = firstName;
         this.lastName = lastName;
-        this.email = email.toLowerCase().trim();
+        this.email = ValidationUtil.validateEmail(email);
         this.hashedPassword = hashedPassword;
         this.userRole = userRole;
     }

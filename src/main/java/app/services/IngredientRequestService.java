@@ -5,6 +5,7 @@ import app.dtos.IngredientRequestDTO;
 import app.enums.RequestType;
 import app.enums.Status;
 import app.exceptions.UnauthorizedActionException;
+import app.exceptions.ValidationException;
 import app.persistence.daos.IDishSuggestionDAO;
 import app.persistence.daos.IIngredientRequestDAO;
 import app.persistence.entities.DishSuggestion;
@@ -213,14 +214,14 @@ public class IngredientRequestService implements IIngredientRequestService
     private DishSuggestion validateDishForIngredientRequest(Long dishId) {
         if (dishId == null)
         {
-            throw new IllegalArgumentException("Dish ID is required for dish-specific requests");
+            throw new ValidationException("Dish ID is required for dish-specific requests");
         }
 
         DishSuggestion dish = dishDAO.getByID(dishId);
 
         if (dish.getDishStatus() != Status.APPROVED)
         {
-            throw new IllegalArgumentException("Can only request ingredients for approved dishes. Current status: " + dish.getDishStatus());
+            throw new ValidationException("Can only request ingredients for approved dishes. Current status: " + dish.getDishStatus());
         }
 
         return dish;
