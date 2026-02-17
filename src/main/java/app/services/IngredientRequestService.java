@@ -1,7 +1,7 @@
 package app.services;
 
-import app.dtos.CreateIngredientRequestDTO;
-import app.dtos.IngredientRequestDTO;
+import app.dtos.ingredient.CreateIngredientRequestDTO;
+import app.dtos.ingredient.IngredientRequestDTO;
 import app.enums.RequestType;
 import app.enums.Status;
 import app.exceptions.UnauthorizedActionException;

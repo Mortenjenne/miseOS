@@ -1,8 +1,8 @@
 package app.services.impl;
 
-import app.dtos.CreateUserRequest;
-import app.dtos.LoginRequest;
-import app.dtos.UserDTO;
+import app.dtos.user.CreateUserRequestDTO;
+import app.dtos.user.LoginRequestDTO;
+import app.dtos.user.UserDTO;
 import app.enums.UserRole;
 import app.persistence.daos.IUserDAO;
 import app.persistence.entities.User;
@@ -23,7 +23,7 @@ public UserService(IUserDAO userDAO)
     }
 
     @Override
-    public UserDTO register(CreateUserRequest request)
+    public UserDTO register(CreateUserRequestDTO request)
     {
         validateUserRegistration(request);
 
@@ -62,7 +62,7 @@ public UserService(IUserDAO userDAO)
 
 
     @Override
-    public UserDTO login(LoginRequest loginRequest)
+    public UserDTO login(LoginRequestDTO loginRequest)
     {
         ValidationUtil.validatePassword(loginRequest.password());
         ValidationUtil.validateEmail(loginRequest.email());
@@ -109,7 +109,7 @@ public UserService(IUserDAO userDAO)
         return userDAO.delete(id);
     }
 
-    private void validateUserRegistration(CreateUserRequest request)
+    private void validateUserRegistration(CreateUserRequestDTO request)
     {
         ValidationUtil.validateName(request.firstName(), "Fornavn");
         ValidationUtil.validateName(request.lastName(), "Efternavn");

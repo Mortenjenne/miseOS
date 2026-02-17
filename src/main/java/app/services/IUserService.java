@@ -1,20 +1,20 @@
 package app.services;
 
-import app.dtos.CreateUserRequest;
-import app.dtos.LoginRequest;
-import app.dtos.UserDTO;
+import app.dtos.user.CreateUserRequestDTO;
+import app.dtos.user.LoginRequestDTO;
+import app.dtos.user.UserDTO;
 
 import java.util.Set;
 
 public interface IUserService
 {
-    UserDTO register(CreateUserRequest request);
+    UserDTO register(CreateUserRequestDTO request);
 
     UserDTO findById(Long id);
 
     Set<UserDTO> findAll();
 
-    UserDTO login(LoginRequest loginRequest);
+    UserDTO login(LoginRequestDTO loginRequest);
 
     UserDTO update(UserDTO updateDTO);
 

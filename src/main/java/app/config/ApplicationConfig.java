@@ -1,6 +1,6 @@
 package app.config;
 
-import app.dtos.DishTranslationDTO;
+import app.dtos.dish.DishTranslationDTO;
 import app.enums.UserRole;
 import app.persistence.entities.DishSuggestion;
 import app.persistence.entities.Station;
