@@ -46,12 +46,7 @@ public class DishSuggestionService
         }
 
         User user = userDAO.getByID(createRequest.userCreatedById());
-
-        if(user == null)
-        {
-            throw new EntityNotFoundException("User was not found.");
-        }
-
+        validateUserNotNull(user);
         validateCanCreateRequest(user);
 
         //TODO How should allergens be implemented!
@@ -69,7 +64,19 @@ public class DishSuggestionService
 
     public DishSuggestionDTO approveDish(Long dishId, Long chefId)
     {
-        return null;
+        ValidationUtil.validateId(dishId);
+        ValidationUtil.validateId(chefId);
+
+        DishSuggestion dishSuggestion = dishSuggestionDAO.getByID(dishId);
+        User chef = userDAO.getByID(chefId);
+
+
+
+        dishSuggestion.approve(chef);
+
+        DishSuggestion updated = dishSuggestionDAO.update(dishSuggestion);
+
+        return mapToDTO(updated);
     }
 
     public DishSuggestion updateDish(DishSuggestionDTO dishSuggestionDTO)
@@ -77,9 +84,19 @@ public class DishSuggestionService
         return null;
     }
 
-    public boolean deleteDish(Long id)
+    public boolean deleteDish(Long dishId, Long chefId)
     {
-        return false;
+        ValidationUtil.validateId(dishId);
+        ValidationUtil.validateId(chefId);
+
+        User chef = userDAO.getByID(chefId);
+        DishSuggestion dishSuggestion = dishSuggestionDAO.getByID(dishId);
+
+        validateUserNotNull(chef);
+        validateIsHeadChef(chef);
+        validateDishNotNull(dishSuggestion);
+
+        return dishSuggestionDAO.delete(dishId);
     }
 
     public DishSuggestionDTO getById(Long id)
@@ -131,11 +148,34 @@ public class DishSuggestionService
         return null;
     }
 
+    private void validateIsHeadChef(User user)
+    {
+        if (!user.isHeadChef()) {
+            throw new UnauthorizedActionException("Only head chefs can approve/reject requests");
+        }
+    }
+
     private void validateCanCreateRequest(User user)
     {
         if (!user.isLineCook() && !user.isHeadChef())
         {
             throw new UnauthorizedActionException("Only kitchen staff can create ingredient requests");
+        }
+    }
+
+    private void validateUserNotNull(User user)
+    {
+        if(user == null)
+        {
+            throw new EntityNotFoundException("User was not found.");
+        }
+    }
+
+    private void validateDishNotNull(DishSuggestion dishSuggestion)
+    {
+        if(dishSuggestion == null)
+        {
+            throw new EntityNotFoundException("Dish was not found.");
         }
     }
 
