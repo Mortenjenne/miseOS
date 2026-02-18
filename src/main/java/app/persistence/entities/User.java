@@ -1,6 +1,7 @@
 package app.persistence.entities;
 
 import app.enums.UserRole;
+import app.exceptions.UnauthorizedActionException;
 import app.utils.PasswordUtil;
 import app.utils.ValidationUtil;
 import jakarta.persistence.*;
@@ -85,9 +86,19 @@ public class User implements IEntity
         return PasswordUtil.verifyPassword(plainTextPassword, this.hashedPassword);
     }
 
-    public boolean canCreateDishSuggestion()
+    public boolean isKitchenStaff()
     {
-        return userRole != UserRole.GUEST;
+        return userRole == UserRole.HEAD_CHEF || userRole == UserRole.SOUS_CHEF || userRole == UserRole.LINE_COOK;
+    }
+
+    public void ensureCanCreateDishSuggestion()
+    {
+        if(!isKitchenStaff())
+        {
+            throw new UnauthorizedActionException(
+                "Only kitchen staff can create dish suggestions"
+            );
+        }
     }
 
     @PrePersist

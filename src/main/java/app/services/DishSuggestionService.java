@@ -51,10 +51,7 @@ public class DishSuggestionService
         Station station = stationDAO.getByID(dto.stationId());
         User user = userDAO.getByID(dto.userCreatedById());
 
-        if(!user.canCreateDishSuggestion())
-        {
-            throw new UnauthorizedActionException("Only kitchen staff can create suggestions");
-        }
+        user.ensureCanCreateDishSuggestion();
 
 
         Set<Allergen> allergens = dto.allergenIds().stream()
@@ -212,15 +209,7 @@ public class DishSuggestionService
             throw new IllegalArgumentException("Cannot create suggestion: deadline for week " + targetWeek + " was " + deadline);
         }
     }
-
-    private void validateCanCreateRequest(User user)
-    {
-        if (!user.isLineCook() && !user.isHeadChef() && !user.isSousChef())
-        {
-            throw new UnauthorizedActionException("Only kitchen staff can create ingredient requests");
-        }
-    }
-
+    
     private void validateUserNotNull(User user)
     {
         if(user == null)
