@@ -13,6 +13,8 @@ public record DishSuggestionDTO(Long id,
                                 String feedback,
                                 String stationName,
                                 String createdByUsername,
-                                Set<String> allergenNames
+                                Set<String> allergenNames,
+                                Integer targetWeek,
+                                Integer targetYear
 )
 {}

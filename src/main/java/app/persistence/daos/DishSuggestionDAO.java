@@ -39,26 +39,24 @@ public class DishSuggestionDAO implements IDishSuggestionDAO
         }
     }
 
-    public Set<DishSuggestion> findByWeekAndYear(int weekNumber, int year)
+    public Set<DishSuggestion> findByWeekYearAndStatus(int weekNumber, int year, Status status)
     {
         DBValidator.validateRange(weekNumber, 1, 53, "Week number");
         DBValidator.validateRange(year, 2000, 2100, "Year");
+        DBValidator.validateNotNull(Status.class, "Status");
 
         try (EntityManager em = emf.createEntityManager())
         {
             TypedQuery<DishSuggestion> query = em.createQuery(
-                "SELECT DISTINCT wms.dishSuggestion " +
-                    "FROM WeeklyMenuSlot wms " +
-                    "WHERE wms.weeklyMenu.weekNumber = :weekNumber " +
-                    "AND wms.weeklyMenu.year = :year " +
-                    "AND wms.dishSuggestion IS NOT NULL",
+                "SELECT DISTINCT d FROM DishSuggestion d WHERE d.targetWeek = :weekNumber AND d.targetYear = :year AND d.dishStatus = :status",
                 DishSuggestion.class
             );
 
             query.setParameter("weekNumber", weekNumber);
             query.setParameter("year", year);
+            query.setParameter("status", status);
 
-            return new LinkedHashSet<>(query.getResultList());
+            return new HashSet<>(query.getResultList());
         }
     }
 

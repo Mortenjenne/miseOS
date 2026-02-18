@@ -64,8 +64,6 @@ public class User implements IEntity
         this.userRole = userRole;
     }
 
-
-
     public boolean isHeadChef()
     {
         return this.userRole == UserRole.HEAD_CHEF;
@@ -76,6 +74,8 @@ public class User implements IEntity
         return this.userRole == UserRole.LINE_COOK;
     }
 
+    public boolean isSousChef(){return this.userRole == UserRole.SOUS_CHEF; }
+
     public boolean hasRole(UserRole role)
     {
         return this.userRole == role;
@@ -83,6 +83,11 @@ public class User implements IEntity
 
     public boolean verifyPassword(String plainTextPassword) {
         return PasswordUtil.verifyPassword(plainTextPassword, this.hashedPassword);
+    }
+
+    public boolean canCreateDishSuggestion()
+    {
+        return userRole != UserRole.GUEST;
     }
 
     @PrePersist
