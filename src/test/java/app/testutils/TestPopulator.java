@@ -9,7 +9,9 @@ import jakarta.persistence.EntityManagerFactory;
 
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class TestPopulator
 {
@@ -115,39 +117,65 @@ public class TestPopulator
         User cookClaire = (User) seeded.get("user_claire");
         User cookMarco = (User) seeded.get("user_marco");
 
+        Allergen gluten = (Allergen) seeded.get("allergen_gluten");
+        Allergen dairy = (Allergen) seeded.get("allergen_dairy");
+        Allergen eggs = (Allergen) seeded.get("allergen_eggs");
+        Allergen fish = (Allergen) seeded.get("allergen_fish");
+
+        Set<Allergen> allergens = new HashSet<>();
+        allergens.add(gluten);
+        allergens.add(dairy);
+        allergens.add(eggs);
+        allergens.add(fish);
+
         DishSuggestion d1 = new DishSuggestion(
             "Røget Laks",
             "Laks med dildcreme og rugbrødschips",
+            7,
+            2026,
             coldStation,
-            cookClaire
+            cookClaire,
+            allergens
         );
 
         DishSuggestion d2 = new DishSuggestion(
             "Bøf Bearnaise",
             "Oksemørbrad med hjemmelavet bearnaise",
+            7,
+            2026,
             hotStation,
-            cookMarco
+            cookMarco,
+            allergens
         );
 
         DishSuggestion d3 = new DishSuggestion(
             "Tarteletter",
             "Høns i asparges",
+            7,
+            2026,
             hotStation,
-            cookClaire
+            cookClaire,
+            allergens
         );
 
         DishSuggestion d4 = new DishSuggestion(
             "Roastbeef",
             "Roastbeef med remoulade, syltet agurk og sprøde løg",
+            7,
+            2026,
             coldStation,
-            cookMarco
+            cookMarco,
+            allergens
         );
 
         DishSuggestion d5 = new DishSuggestion(
             "Sushi",
             "sashimi og syltet ingefær",
+            8,
+            2026,
             coldStation,
-            cookClaire
+            cookClaire,
+            allergens
         );
 
         dishDAO.create(d1);

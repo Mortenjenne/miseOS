@@ -43,17 +43,5 @@ public class ApplicationConfig
         IDishTranslationService dishTranslationService = new DishTranslationService(translationService);
 
 
-        Station s1 = new Station("Cold Kitchen", "Salads & Starters");
-        User u1 = new User("Gordon", "Ramsay", "gordon@kitchen.com", "hash1", UserRole.HEAD_CHEF);
-
-        DishSuggestion d1 = new DishSuggestion(
-            "Røget Laks",
-            "Laks med dildcreme og rugbrødschips",
-            s1,
-            u1
-        );
-
-        DishTranslationDTO dishTranslationDTO = dishTranslationService.translateTo(d1, "EN");
-        System.out.println(dishTranslationDTO);
     }
 }

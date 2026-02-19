@@ -5,10 +5,7 @@ import app.dtos.dish.DishSuggestionDTO;
 import app.dtos.dish.DishUpdateRequestDTO;
 import app.enums.Status;
 import app.exceptions.UnauthorizedActionException;
-import app.persistence.daos.IAllergenDAO;
-import app.persistence.daos.IDishSuggestionDAO;
-import app.persistence.daos.IStationDAO;
-import app.persistence.daos.IUserDAO;
+import app.persistence.daos.*;
 import app.persistence.entities.Allergen;
 import app.persistence.entities.DishSuggestion;
 import app.persistence.entities.Station;
@@ -24,14 +21,14 @@ import java.util.stream.Collectors;
 public class DishSuggestionService
 {
     private final IDishSuggestionDAO dishSuggestionDAO;
-    private final IUserDAO userDAO;
+    private final IUserReader userReader;
     private final IStationDAO stationDAO;
     private final IAllergenDAO allergenDAO;
 
-    public DishSuggestionService(IDishSuggestionDAO dishSuggestionDAO, IUserDAO userDAO, IStationDAO stationDAO, IAllergenDAO allergenDAO)
+    public DishSuggestionService(IDishSuggestionDAO dishSuggestionDAO, IUserReader userReader, IStationDAO stationDAO, IAllergenDAO allergenDAO)
     {
         this.dishSuggestionDAO = dishSuggestionDAO;
-        this.userDAO = userDAO;
+        this.userReader = userReader;
         this.stationDAO = stationDAO;
         this.allergenDAO = allergenDAO;
     }
@@ -42,7 +39,7 @@ public class DishSuggestionService
         ValidationUtil.validateId(dto.userCreatedById());
 
         Station station = stationDAO.getByID(dto.stationId());
-        User user = userDAO.getByID(dto.userCreatedById());
+        User user = userReader.getByID(dto.userCreatedById());
 
         user.ensureIsKitchenStaff();
 
@@ -72,7 +69,7 @@ public class DishSuggestionService
         ValidationUtil.validateId(approverId);
 
         DishSuggestion dish = dishSuggestionDAO.getByID(dishId);
-        User approver = userDAO.getByID(approverId);
+        User approver = userReader.getByID(approverId);
 
         dish.approve(approver);
         DishSuggestion updated = dishSuggestionDAO.update(dish);
@@ -86,7 +83,7 @@ public class DishSuggestionService
         ValidationUtil.validateId(approverId);
 
         DishSuggestion dish = dishSuggestionDAO.getByID(dishId);
-        User approver = userDAO.getByID(approverId);
+        User approver = userReader.getByID(approverId);
 
         dish.reject(approver, feedback);
         DishSuggestion updated = dishSuggestionDAO.update(dish);
@@ -103,7 +100,7 @@ public class DishSuggestionService
         {
             throw new EntityNotFoundException("Dish was not found");
         }
-        User editor = userDAO.getByID(dto.editorId());
+        User editor = userReader.getByID(dto.editorId());
 
         editor.ensureIsKitchenStaff();
 
@@ -130,7 +127,7 @@ public class DishSuggestionService
         ValidationUtil.validateId(dishId);
         ValidationUtil.validateId(userId);
 
-        User user = userDAO.getByID(userId);
+        User user = userReader.getByID(userId);
         DishSuggestion dish = dishSuggestionDAO.getByID(dishId);
 
         boolean isCreator = dish.getCreatedBy().getId().equals(userId);
