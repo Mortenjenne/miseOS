@@ -22,14 +22,14 @@ public class DishSuggestionService
 {
     private final IDishSuggestionDAO dishSuggestionDAO;
     private final IUserReader userReader;
-    private final IStationDAO stationDAO;
+    private final IStationReader stationReader;
     private final IAllergenDAO allergenDAO;
 
-    public DishSuggestionService(IDishSuggestionDAO dishSuggestionDAO, IUserReader userReader, IStationDAO stationDAO, IAllergenDAO allergenDAO)
+    public DishSuggestionService(IDishSuggestionDAO dishSuggestionDAO, IUserReader userReader, IStationReader stationReader, IAllergenDAO allergenDAO)
     {
         this.dishSuggestionDAO = dishSuggestionDAO;
         this.userReader = userReader;
-        this.stationDAO = stationDAO;
+        this.stationReader = stationReader;
         this.allergenDAO = allergenDAO;
     }
 
@@ -38,7 +38,7 @@ public class DishSuggestionService
         ValidationUtil.validateId(dto.stationId());
         ValidationUtil.validateId(dto.userCreatedById());
 
-        Station station = stationDAO.getByID(dto.stationId());
+        Station station = stationReader.getByID(dto.stationId());
         User user = userReader.getByID(dto.userCreatedById());
 
         user.ensureIsKitchenStaff();
