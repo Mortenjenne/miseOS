@@ -91,7 +91,7 @@ public class User implements IEntity
         return userRole == UserRole.HEAD_CHEF || userRole == UserRole.SOUS_CHEF || userRole == UserRole.LINE_COOK;
     }
 
-    public void ensureCanCreateDishSuggestion()
+    public void ensureIsKitchenStaff()
     {
         if(!isKitchenStaff())
         {

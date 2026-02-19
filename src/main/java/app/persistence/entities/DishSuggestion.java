@@ -2,6 +2,7 @@ package app.persistence.entities;
 
 import app.enums.Status;
 import app.exceptions.UnauthorizedActionException;
+import app.exceptions.ValidationException;
 import app.utils.ValidationUtil;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -97,6 +98,26 @@ public class DishSuggestion implements IEntity
         this.dishStatus = Status.PENDING;
     }
 
+    public void updateContent(String newNameDA, String newNameEN, String newDescriptionDA, String newDescriptionEN, Set<Allergen> newAllergens, User editor)
+    {
+        if (newNameDA != null && !newNameDA.isBlank())
+        {
+            this.nameDA = newNameDA.trim();
+        }
+        if (newDescriptionDA != null && !newDescriptionDA.isBlank())
+        {
+            this.descriptionDA = newDescriptionDA.trim();
+        }
+
+        this.nameEN = newNameEN != null ? newNameEN.trim() : this.nameEN;
+        this.descriptionEN = newDescriptionEN != null ? newDescriptionEN.trim() : this.descriptionEN;
+
+        if (newAllergens != null)
+        {
+            this.allergens.clear();
+            this.allergens.addAll(newAllergens);
+        }
+    }
 
     public String getName(String language)
     {
@@ -199,7 +220,7 @@ public class DishSuggestion implements IEntity
     {
         if (week < 1 || week > 53)
         {
-            throw new IllegalArgumentException("Week must be between 1 and 53");
+            throw new ValidationException("Week must be between 1 and 53");
         }
     }
 
@@ -207,7 +228,7 @@ public class DishSuggestion implements IEntity
     {
         if (year < 2020 || year > 2100)
         {
-            throw new IllegalArgumentException("Year must be between 2020 and 2100");
+            throw new ValidationException("Year must be between 2020 and 2100");
         }
     }
 

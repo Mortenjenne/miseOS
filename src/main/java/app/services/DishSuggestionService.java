@@ -2,6 +2,7 @@ package app.services;
 
 import app.dtos.dish.DishCreateRequestDTO;
 import app.dtos.dish.DishSuggestionDTO;
+import app.dtos.dish.DishUpdateRequestDTO;
 import app.enums.Status;
 import app.exceptions.UnauthorizedActionException;
 import app.persistence.daos.IAllergenDAO;
@@ -35,31 +36,19 @@ public class DishSuggestionService
         this.allergenDAO = allergenDAO;
     }
 
-    //TODO remove dobbel validation
     public DishSuggestionDTO submitSuggestion(DishCreateRequestDTO dto)
     {
         ValidationUtil.validateId(dto.stationId());
         ValidationUtil.validateId(dto.userCreatedById());
 
-        //REMOVE
-        ValidationUtil.validateNotNull(dto.allergenIds(), "Allergies");
-        ValidationUtil.validateNotNull(dto.targetWeek(), "Target week");
-        ValidationUtil.validateNotNull(dto.targetYear(), "Target year");
-        validateDeadlineNotPassed(dto.targetWeek(), dto.targetYear());
-        //
-
         Station station = stationDAO.getByID(dto.stationId());
         User user = userDAO.getByID(dto.userCreatedById());
 
-        user.ensureCanCreateDishSuggestion();
-
+        user.ensureIsKitchenStaff();
 
         Set<Allergen> allergens = dto.allergenIds().stream()
             .map(allergenDAO::getByID)
             .collect(Collectors.toSet());
-
-        validateUserNotNull(user);
-        validateStationNotNull(station);
 
         DishSuggestion dishRequest = new DishSuggestion(
             dto.nameDA(),
@@ -74,7 +63,6 @@ public class DishSuggestionService
         dishRequest.checkCreationAllowed(LocalDate.now());
 
         DishSuggestion saved = dishSuggestionDAO.create(dishRequest);
-
         return mapToDTO(saved);
     }
 
@@ -106,9 +94,35 @@ public class DishSuggestionService
         return mapToDTO(updated);
     }
 
-    public DishSuggestion updateDish(DishSuggestionDTO dishSuggestionDTO)
+    public DishSuggestionDTO updateDish(DishUpdateRequestDTO dto)
     {
-        return null;
+        ValidationUtil.validateId(dto.id());
+
+        Optional<DishSuggestion> dish = dishSuggestionDAO.getByIdWithAllergens(dto.id());
+        if(dish.isEmpty())
+        {
+            throw new EntityNotFoundException("Dish was not found");
+        }
+        User editor = userDAO.getByID(dto.editorId());
+
+        editor.ensureIsKitchenStaff();
+
+        Set<Allergen> allergens = dto.allergenIds().stream()
+            .map(allergenDAO::getByID)
+            .collect(Collectors.toSet());
+
+        dish.get().updateContent(
+            dto.nameDA(),
+            dto.nameEN(),
+            dto.descriptionDA(),
+            dto.descriptionEN(),
+            allergens,
+            editor
+        );
+
+        DishSuggestion updated = dishSuggestionDAO.update(dish.get());
+
+        return mapToDTO(updated);
     }
 
     public boolean deleteDish(Long dishId, Long userId)
@@ -117,9 +131,7 @@ public class DishSuggestionService
         ValidationUtil.validateId(userId);
 
         User user = userDAO.getByID(userId);
-        validateUserNotNull(user);
         DishSuggestion dish = dishSuggestionDAO.getByID(dishId);
-        validateDishNotNull(dish);
 
         boolean isCreator = dish.getCreatedBy().getId().equals(userId);
 
@@ -167,7 +179,6 @@ public class DishSuggestionService
             .collect(Collectors.toSet());
     }
 
-
     public Set<DishSuggestionDTO> getPendingForWeek(int week, int year)
     {
         Set<DishSuggestion> dishes = dishSuggestionDAO.findByWeekYearAndStatus(week, year, Status.PENDING);
@@ -207,30 +218,6 @@ public class DishSuggestionService
         if (!today.isBefore(deadline))
         {
             throw new IllegalArgumentException("Cannot create suggestion: deadline for week " + targetWeek + " was " + deadline);
-        }
-    }
-    
-    private void validateUserNotNull(User user)
-    {
-        if(user == null)
-        {
-            throw new EntityNotFoundException("User was not found.");
-        }
-    }
-
-    private void validateStationNotNull(Station station)
-    {
-        if(station == null)
-        {
-            throw new EntityNotFoundException("Station was not found.");
-        }
-    }
-
-    private void validateDishNotNull(DishSuggestion dishSuggestion)
-    {
-        if(dishSuggestion == null)
-        {
-            throw new EntityNotFoundException("Dish was not found.");
         }
     }
 
