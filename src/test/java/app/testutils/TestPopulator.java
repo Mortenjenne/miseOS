@@ -88,15 +88,15 @@ public class TestPopulator
     }
 
     private void populateAllergens() {
-        Allergen gluten = allergenDAO.create(new Allergen("Gluten"));
-        Allergen dairy = allergenDAO.create(new Allergen("Dairy"));
-        Allergen eggs = allergenDAO.create(new Allergen("Eggs"));
-        Allergen nuts = allergenDAO.create(new Allergen("Nuts"));
-        Allergen shellfish = allergenDAO.create(new Allergen("Shellfish"));
-        Allergen fish = allergenDAO.create(new Allergen("Fish"));
-        Allergen soy = allergenDAO.create(new Allergen("Soy"));
-        Allergen celery = allergenDAO.create(new Allergen("Celery"));
-        Allergen mustard = allergenDAO.create(new Allergen("Mustard"));
+        Allergen gluten = allergenDAO.create(new Allergen("Gluten", "Cereals containing gluten", 1));
+        Allergen dairy = allergenDAO.create(new Allergen("Dairy", "Milk and products thereof (including lactose)",2));
+        Allergen eggs = allergenDAO.create(new Allergen("Eggs", "Eggs and products thereof",3));
+        Allergen nuts = allergenDAO.create(new Allergen("Nuts", "Tree nuts", 4));
+        Allergen shellfish = allergenDAO.create(new Allergen("Shellfish", "Fish and products thereof", 5));
+        Allergen fish = allergenDAO.create(new Allergen("Fish", "Fish and products thereof", 6));
+        Allergen soy = allergenDAO.create(new Allergen("Soy", "Cereals containing gluten", 7));
+        Allergen celery = allergenDAO.create(new Allergen("Celery", "Celery and products thereof", 8));
+        Allergen mustard = allergenDAO.create(new Allergen("Mustard", "Mustard and products thereof", 9));
 
         seeded.put("allergen_gluten", gluten);
         seeded.put("allergen_dairy", dairy);
