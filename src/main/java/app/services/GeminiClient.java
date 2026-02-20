@@ -14,13 +14,13 @@ import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.Map;
 
-public class GeminiClient
+public class GeminiClient implements AiClient
 {
     private final HttpClient client;
     private final ObjectMapper objectMapper;
     private final String apiKey;
     private final String API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=%s";
-    private String finalApiUrl;
+    private final String finalApiUrl;
 
     public GeminiClient(HttpClient client, ObjectMapper objectMapper, String apiKey)
     {
@@ -30,6 +30,7 @@ public class GeminiClient
         this.finalApiUrl = String.format(API_URL, apiKey);
     }
 
+    @Override
     public Map<String, String> normalizeIngredientList(List<String> ingredients, String targetLanguage)
     {
         String languageName = targetLanguage.equals("da") ? "Danish" : "English";
@@ -38,7 +39,7 @@ public class GeminiClient
         {
             String userInput = objectMapper.writeValueAsString(ingredients);
             List<Content> contents = mapInputToContent(userInput);
-            GeminiRequest geminiRequest = new GeminiRequest(contents, systemInstruction);
+            GeminiRequest geminiRequest = new GeminiRequest(contents, systemInstruction, new GenerationConfig("application/json"));
             String geminiRequestBody = objectMapper.writeValueAsString(geminiRequest);
             HttpRequest request = buildHttpRequest(geminiRequestBody);
             HttpResponse<String> response = sendRequest(request);
@@ -112,16 +113,17 @@ public class GeminiClient
     private SystemInstruction getSystemInstructions(String languageName)
     {
         String systemPrompt = String.format(
-            "You are an ingredient normalizer. " +
-                "Normalize ingredient names to standard %s culinary terminology.\n" +
-                "Return ONLY valid JSON mapping original names to normalized names.\n" +
-                "Format: {\"original1\": \"Normalized1\", \"original2\": \"Normalized2\"}\n" +
-                "Rules:\n" +
-                "- Use singular form\n" +
-                "- Proper capitalization\n" +
-                "- Fix spelling mistakes\n" +
-                "- Translate to %s if needed\n" +
-                "- NO markdown, NO explanation, ONLY JSON",
+            """
+                You are an ingredient normalizer. \
+                Normalize ingredient names to standard %s culinary terminology.
+                Return ONLY valid JSON mapping original names to normalized names.
+                Format: {"original1": "Normalized1", "original2": "Normalized2"}
+                Rules:
+                - Use singular form
+                - Proper capitalization
+                - Fix spelling mistakes
+                - Translate to %s if needed
+                - NO markdown, NO explanation, ONLY JSON""",
             languageName,
             languageName
         );

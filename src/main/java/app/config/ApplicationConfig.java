@@ -41,6 +41,7 @@ public class ApplicationConfig
         ObjectMapper objectMapper = new ObjectMapper();
         String url = properties.getProperty("DEEPL_URL");
         String deepLApiKey = System.getenv("DEEPL_APIKEY");
+        String geminiApiKey = System.getenv("GEMINI_API_KEY");
 
         ITranslationService translationService = new DeepLTranslationClient(client, objectMapper, url, deepLApiKey);
         IDishTranslationService dishTranslationService = new DishTranslationService(translationService);

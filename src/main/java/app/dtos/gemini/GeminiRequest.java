@@ -4,7 +4,8 @@ import java.util.List;
 
 public record GeminiRequest(
     List<Content> contents,
-    SystemInstruction systemInstruction
+    SystemInstruction systemInstruction,
+    GenerationConfig generationConfig
     )
 {
 }
