@@ -1,5 +1,18 @@
 package app.dtos.gemini;
 
-public record Candidate(Content content)
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+public record Candidate(
+    @JsonProperty("content")
+    Content content,
+
+    @JsonProperty("finishReason")
+    String finishReason,
+
+    @JsonProperty("index")
+    Integer index
+)
 {
 }

@@ -1,5 +1,9 @@
 package app.dtos.gemini;
 
-public record Part(String text)
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+public record Part(
+    @JsonProperty("text")
+    String text)
 {
 }

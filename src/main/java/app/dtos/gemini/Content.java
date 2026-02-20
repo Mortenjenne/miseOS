@@ -1,7 +1,11 @@
 package app.dtos.gemini;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.util.List;
 
-public record Content(List<Part> parts)
+@JsonIgnoreProperties(ignoreUnknown = true)
+public record Content(
+    List<Part> parts)
 {
 }

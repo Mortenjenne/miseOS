@@ -14,12 +14,12 @@ import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.Map;
 
-public class GeminiClient implements AiClient
+public class GeminiClient implements IAiClient
 {
     private final HttpClient client;
     private final ObjectMapper objectMapper;
     private final String apiKey;
-    private final String API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=%s";
+    private final String API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=%s";
     private final String finalApiUrl;
 
     public GeminiClient(HttpClient client, ObjectMapper objectMapper, String apiKey)
@@ -34,12 +34,10 @@ public class GeminiClient implements AiClient
     public Map<String, String> normalizeIngredientList(List<String> ingredients, String targetLanguage)
     {
         String languageName = targetLanguage.equals("da") ? "Danish" : "English";
-        SystemInstruction systemInstruction = getSystemInstructions(languageName);
         try
         {
-            String userInput = objectMapper.writeValueAsString(ingredients);
-            List<Content> contents = mapInputToContent(userInput);
-            GeminiRequest geminiRequest = new GeminiRequest(contents, systemInstruction, new GenerationConfig("application/json"));
+            String prompt = buildPrompt(ingredients, targetLanguage);
+            GeminiRequest geminiRequest = buildGeminiRequest(prompt);
             String geminiRequestBody = objectMapper.writeValueAsString(geminiRequest);
             HttpRequest request = buildHttpRequest(geminiRequestBody);
             HttpResponse<String> response = sendRequest(request);
@@ -51,31 +49,52 @@ public class GeminiClient implements AiClient
         catch (IOException | InterruptedException e)
         {
             throw new AIIntegrationException("Could not connect to gemini service");
+        } catch (Exception e)
+        {
+            throw new AIIntegrationException("Could not normalize list");
         }
     }
 
     private String deSerializeResponse(String responseBody) throws JsonProcessingException
     {
-        GeminiResponse geminiResponse = objectMapper.readValue(responseBody, GeminiResponse.class);
+        System.out.println("Parsing response...");
 
-        if (geminiResponse.candidates() == null || geminiResponse.candidates().isEmpty())
-        {
-            throw new AIIntegrationException("No response from Gemini");
+        try {
+            GeminiResponse geminiResponse = objectMapper.readValue(responseBody, GeminiResponse.class);
+
+            if (geminiResponse.candidates() == null || geminiResponse.candidates().isEmpty()) {
+                throw new AIIntegrationException("No candidates in Gemini response");
+            }
+
+            Candidate candidate = geminiResponse.candidates().get(0);
+
+            if (candidate.content() == null || candidate.content().parts().isEmpty()) {
+                throw new AIIntegrationException("Empty content in Gemini response");
+            }
+
+            // Check finish reason
+            if (!"STOP".equals(candidate.finishReason())) {
+                System.err.println("Warning: Finish reason was: " + candidate.finishReason());
+            }
+
+            String text = candidate.content().parts().get(0).text();
+
+            System.out.println("Successfully extracted text from response");
+
+            return text;
+
+        } catch (JsonProcessingException e) {
+            System.err.println("Failed to parse JSON response!");
+            System.err.println("Response was: " + responseBody);
+            throw e;
         }
-
-        Candidate candidate = geminiResponse.candidates().get(0);
-
-        if (candidate.content() == null || candidate.content().parts().isEmpty())
-        {
-            throw new AIIntegrationException("Empty response from Gemini");
-        }
-
-        return candidate.content().parts().get(0).text();
     }
 
     private HttpResponse<String> sendRequest(HttpRequest request) throws IOException, InterruptedException
     {
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        System.out.println("Response status: " + response.statusCode());
+        System.out.println("Response body: " + response.body());
 
         if (response.statusCode() == 429)
         {
@@ -86,7 +105,6 @@ public class GeminiClient implements AiClient
         {
             throw new AIIntegrationException("Gemini returned error code: " + response.statusCode());
         }
-
         return response;
     }
 
@@ -97,37 +115,43 @@ public class GeminiClient implements AiClient
 
     private HttpRequest buildHttpRequest(String jsonBody)
     {
-        String url = String.format(finalApiUrl);
         return HttpRequest.newBuilder()
-            .uri(URI.create(url))
+            .uri(URI.create(finalApiUrl))
             .header("Content-Type", "application/json")
             .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
             .build();
     }
 
-    private List<Content> mapInputToContent(String userInput)
+    private GeminiRequest buildGeminiRequest(String prompt)
     {
-        return List.of(new Content(List.of(new Part(userInput))));
+        return new GeminiRequest(List.of(new Content(List.of(new Part(prompt)))));
     }
 
-    private SystemInstruction getSystemInstructions(String languageName)
+    private String buildPrompt(List<String> ingredients, String languageName) throws Exception
     {
-        String systemPrompt = String.format(
+        String ingredientsJson = objectMapper.writeValueAsString(ingredients);
+
+        return String.format(
             """
-                You are an ingredient normalizer. \
-                Normalize ingredient names to standard %s culinary terminology.
-                Return ONLY valid JSON mapping original names to normalized names.
-                Format: {"original1": "Normalized1", "original2": "Normalized2"}
-                Rules:
-                - Use singular form
-                - Proper capitalization
-                - Fix spelling mistakes
-                - Translate to %s if needed
-                - NO markdown, NO explanation, ONLY JSON""",
+            Normalize these ingredient names to standard %s culinary terminology.
+
+            Return ONLY valid JSON in this exact format:
+            {"ingredient1": "Normalized1", "ingredient2": "Normalized2"}
+
+            Rules:
+            - Singular form
+            - Capitalize first letter
+            - Fix spelling
+            - Translate to %s
+            - NO markdown, NO explanation
+
+            Ingredients: %s
+
+            JSON:""",
             languageName,
-            languageName
+            languageName,
+            ingredientsJson
         );
-        return new SystemInstruction(List.of(new Part(systemPrompt)));
     }
 
 

@@ -1,23 +1,17 @@
 package app.config;
 
-import app.dtos.dish.DishTranslationDTO;
 import app.enums.UserRole;
 import app.persistence.entities.Allergen;
 import app.persistence.entities.DishSuggestion;
 import app.persistence.entities.Station;
 import app.persistence.entities.User;
-import app.services.DeepLTranslationClient;
-import app.services.DishTranslationService;
-import app.services.IDishTranslationService;
-import app.services.ITranslationService;
+import app.services.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.http.HttpClient;
-import java.util.HashSet;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
 public class ApplicationConfig
 {
@@ -45,6 +39,52 @@ public class ApplicationConfig
 
         ITranslationService translationService = new DeepLTranslationClient(client, objectMapper, url, deepLApiKey);
         IDishTranslationService dishTranslationService = new DishTranslationService(translationService);
+        IAiClient aiClient = new GeminiClient(client, objectMapper, geminiApiKey);
+
+        //AD Hoc test
+
+        List<String> ingredientsToNormalize = List.of(
+            "onions",
+            "løg",
+            "red onion",
+            "rødløg",
+            "hvidløg",
+            "garlic",
+            "hvidløch",           // Stavefejl
+            "potatoes",
+            "nye kartofler",
+            "carots",             // Stavefejl
+            "gulerødder",
+            "gulerod",
+            "piskefløde",
+            "heavy cream",
+            "cream",
+            "smør",
+            "unsalted butter",
+            "butter",
+            "salt",
+            "havsalt",
+            "pepper",
+            "sort peber",
+            "peber",
+            "shallots",
+            "skalotteløg",
+            "skalotte løg",       // Særskrivning
+            "spring onions",
+            "forårsløg",
+            "chives",
+            "purløg",
+            "parsley",
+            "persille",
+            "lemon",
+            "citron",
+            "lime juice",
+            "limes",
+            "olive oil",
+            "olivenolie",
+            "extra virgin olive oil"
+        );
+
         User u1 = new User("Gordon", "Ramsay", "gordon@kitchen.com", "hash1", UserRole.HEAD_CHEF);
         User u2 = new User("Claire", "Smyth", "claire@pastry.com", "hash2", UserRole.LINE_COOK);
 
@@ -70,6 +110,10 @@ public class ApplicationConfig
         //DishTranslationDTO dishTranslationDTO = dishTranslationService.translateTo(d1, "DE");
 
         //System.out.println(dishTranslationDTO);
+
+        Map<String, String> result = aiClient.normalizeIngredientList(ingredientsToNormalize, "da");
+
+        result.forEach((k, v) -> System.out.println("Key: " + k + " Value " + v));
 
 
     }
