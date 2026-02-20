@@ -1,6 +1,7 @@
 package app.persistence.entities;
 
 import app.enums.UserRole;
+import app.exceptions.UnauthorizedActionException;
 import app.utils.PasswordUtil;
 import app.utils.ValidationUtil;
 import jakarta.persistence.*;
@@ -57,16 +58,12 @@ public class User implements IEntity
 
     public User(String firstName, String lastName, String email, String hashedPassword, UserRole userRole)
     {
-        ValidationUtil.validateEmail(email);
-
         this.firstName = firstName;
         this.lastName = lastName;
-        this.email = email.toLowerCase().trim();
+        this.email = ValidationUtil.validateEmail(email);
         this.hashedPassword = hashedPassword;
         this.userRole = userRole;
     }
-
-
 
     public boolean isHeadChef()
     {
@@ -78,6 +75,8 @@ public class User implements IEntity
         return this.userRole == UserRole.LINE_COOK;
     }
 
+    public boolean isSousChef(){return this.userRole == UserRole.SOUS_CHEF; }
+
     public boolean hasRole(UserRole role)
     {
         return this.userRole == role;
@@ -85,6 +84,21 @@ public class User implements IEntity
 
     public boolean verifyPassword(String plainTextPassword) {
         return PasswordUtil.verifyPassword(plainTextPassword, this.hashedPassword);
+    }
+
+    public boolean isKitchenStaff()
+    {
+        return userRole == UserRole.HEAD_CHEF || userRole == UserRole.SOUS_CHEF || userRole == UserRole.LINE_COOK;
+    }
+
+    public void ensureIsKitchenStaff()
+    {
+        if(!isKitchenStaff())
+        {
+            throw new UnauthorizedActionException(
+                "Only kitchen staff can create dish suggestions"
+            );
+        }
     }
 
     @PrePersist

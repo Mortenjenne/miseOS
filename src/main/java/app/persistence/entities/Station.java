@@ -1,5 +1,6 @@
 package app.persistence.entities;
 
+import app.utils.ValidationUtil;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,7 +21,7 @@ public class Station implements IEntity
     private String stationName;
 
     @Setter
-    @Column(name = "description", nullable = true, length = 255)
+    @Column(name = "description", nullable = false, length = 255)
     private String description;
 
     @Column(name = "created_at")
@@ -28,6 +29,16 @@ public class Station implements IEntity
 
     public Station(String stationName, String description)
     {
+        ValidationUtil.validateNotBlank(stationName, "Station name");
+        ValidationUtil.validateNotBlank(description, "Description");
+        this.stationName = stationName;
+        this.description = description;
+    }
+
+    public void update(String stationName, String description)
+    {
+        ValidationUtil.validateNotBlank(stationName, "Station name");
+        ValidationUtil.validateNotBlank(description, "Description");
         this.stationName = stationName;
         this.description = description;
     }

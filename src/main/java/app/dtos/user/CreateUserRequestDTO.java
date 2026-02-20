@@ -1,9 +1,9 @@
-package app.dtos;
+package app.dtos.user;
 
 import app.enums.UserRole;
 import app.persistence.entities.Station;
 
-public record CreateUserRequest(
+public record CreateUserRequestDTO(
     String firstName,
     String lastName,
     String email,

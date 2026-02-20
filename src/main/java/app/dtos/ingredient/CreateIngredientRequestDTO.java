@@ -1,4 +1,4 @@
-package app.dtos;
+package app.dtos.ingredient;
 
 import app.enums.RequestType;
 

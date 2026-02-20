@@ -1,4 +1,4 @@
-package app.dtos;
+package app.dtos.user;
 
 import app.persistence.entities.Station;
 import app.persistence.entities.User;

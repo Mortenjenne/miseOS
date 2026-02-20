@@ -1,11 +1,13 @@
 package app.services;
 
-import app.dtos.CreateIngredientRequestDTO;
-import app.dtos.IngredientRequestDTO;
+import app.dtos.ingredient.CreateIngredientRequestDTO;
+import app.dtos.ingredient.IngredientRequestDTO;
 import app.enums.RequestType;
 import app.enums.Status;
 import app.exceptions.UnauthorizedActionException;
+import app.exceptions.ValidationException;
 import app.persistence.daos.IDishSuggestionDAO;
+import app.persistence.daos.IDishSuggestionReader;
 import app.persistence.daos.IIngredientRequestDAO;
 import app.persistence.entities.DishSuggestion;
 import app.persistence.entities.IngredientRequest;
@@ -19,13 +21,13 @@ import java.util.stream.Collectors;
 public class IngredientRequestService implements IIngredientRequestService
 {
     private final IIngredientRequestDAO ingredientRequestDAO;
-    private final IDishSuggestionDAO dishDAO;
+    private final IDishSuggestionReader dishReader;
 
 
-    public IngredientRequestService(IIngredientRequestDAO ingredientRequestDAO, IDishSuggestionDAO dishDAO)
+    public IngredientRequestService(IIngredientRequestDAO ingredientRequestDAO, IDishSuggestionReader dishReader)
     {
         this.ingredientRequestDAO = ingredientRequestDAO;
-        this.dishDAO = dishDAO;
+        this.dishReader = dishReader;
     }
 
     @Override
@@ -213,14 +215,14 @@ public class IngredientRequestService implements IIngredientRequestService
     private DishSuggestion validateDishForIngredientRequest(Long dishId) {
         if (dishId == null)
         {
-            throw new IllegalArgumentException("Dish ID is required for dish-specific requests");
+            throw new ValidationException("Dish ID is required for dish-specific requests");
         }
 
-        DishSuggestion dish = dishDAO.getByID(dishId);
+        DishSuggestion dish = dishReader.getByID(dishId);
 
         if (dish.getDishStatus() != Status.APPROVED)
         {
-            throw new IllegalArgumentException("Can only request ingredients for approved dishes. Current status: " + dish.getDishStatus());
+            throw new ValidationException("Can only request ingredients for approved dishes. Current status: " + dish.getDishStatus());
         }
 
         return dish;

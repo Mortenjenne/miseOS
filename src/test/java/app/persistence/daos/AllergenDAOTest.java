@@ -40,7 +40,7 @@ class AllergenDAOTest
     @DisplayName("Create - should persist a new allergen")
     void create()
     {
-        Allergen newAllergen = new Allergen("Peanuts");
+        Allergen newAllergen = new Allergen("Peanuts", "Peanuts and products thereof", 2);
         Allergen result = allergenDAO.create(newAllergen);
 
         assertThat(result.getId(), notNullValue());
@@ -108,7 +108,7 @@ class AllergenDAOTest
     {
         assertThrows(IllegalArgumentException.class, () -> allergenDAO.update(null));
 
-        Allergen transientAllergen = new Allergen("Shellfish");
+        Allergen transientAllergen = new Allergen("Shellfish", "Fish and products thereof", 4);
         assertThrows(IllegalArgumentException.class, () -> allergenDAO.update(transientAllergen));
     }
 

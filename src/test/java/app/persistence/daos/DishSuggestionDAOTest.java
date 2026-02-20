@@ -11,6 +11,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.*;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -43,7 +44,16 @@ class DishSuggestionDAOTest {
         Station station = (Station) seeded.get("station_hot");
         User gordon = (User) seeded.get("user_gordon");
 
-        DishSuggestion dish = new DishSuggestion("Pasta Carbonara", "Classic pasta", station, gordon);
+        Allergen gluten = (Allergen) seeded.get("allergen_gluten");
+        Allergen dairy = (Allergen) seeded.get("allergen_dairy");
+        Allergen eggs = (Allergen) seeded.get("allergen_eggs");
+
+        Set<Allergen> allergens = new HashSet<>();
+        allergens.add(gluten);
+        allergens.add(dairy);
+        allergens.add(eggs);
+
+        DishSuggestion dish = new DishSuggestion("Pasta Carbonara", "Classic pasta", 7, 2026, station, gordon, allergens);
 
         Allergen lactose = (Allergen) seeded.get("allergen_lactose");
         dish.addAllergen(lactose);
@@ -52,6 +62,9 @@ class DishSuggestionDAOTest {
 
         assertThat(result.getId(), notNullValue());
         assertThat(result.getNameDA(), is("Pasta Carbonara"));
+        assertThat(result.getTargetWeek(), is(7));
+        assertThat(result.getTargetYear(), is(2026));
+        assertThat(result.getAllergens(), hasSize(3));
     }
 
     @Test
@@ -114,8 +127,6 @@ class DishSuggestionDAOTest {
     @DisplayName("Get with Allergens - should return empty Optional for missing id")
     void getByIdWithAllergensNotFoundReturnsEmpty()
     {
-        // Bemærk: getByIdWithAllergens returnerer Optional, så den bør ikke kaste exception ved "not found"
-        // (medmindre du specifikt kaster det i din DAO). Standard er at returnere Optional.empty().
         Optional<DishSuggestion> fetched = dishSuggestionDAO.getByIdWithAllergens(9999L);
         assertTrue(fetched.isEmpty());
     }
@@ -180,7 +191,7 @@ class DishSuggestionDAOTest {
     {
         Station station = (Station) seeded.get("station_hot");
         User marco = (User) seeded.get("user_marco");
-        DishSuggestion transientDish = new DishSuggestion("New Dish", "Test", station, marco);
+        DishSuggestion transientDish = new DishSuggestion("New Dish", "Test", 7, 2026, station, marco, new HashSet<>());
 
         assertThrows(IllegalArgumentException.class, () -> dishSuggestionDAO.update(transientDish));
     }
@@ -261,10 +272,10 @@ class DishSuggestionDAOTest {
     }
 
     @Test
-    @DisplayName("Find by Week and Year - should return matching dishes")
+    @DisplayName("Find by Week, Year and Status - should return matching dishes")
     void findByWeekAndYear()
     {
-        Set<DishSuggestion> dishes = dishSuggestionDAO.findByWeekAndYear(7, 2025);
+        Set<DishSuggestion> dishes = dishSuggestionDAO.findByWeekYearAndStatus(7, 2026, Status.PENDING);
         assertThat(dishes, notNullValue());
         assertThat(dishes, hasSize(4));
         assertThat(dishes, containsInAnyOrder(
@@ -276,24 +287,24 @@ class DishSuggestionDAOTest {
     }
 
     @Test
-    @DisplayName("Find by Week and Year - should return empty set for empty week")
+    @DisplayName("Find by Week, Year and Status - should return empty set for empty week")
     void findByWeekAndYearNoDishesReturnsEmpty()
     {
-        Set<DishSuggestion> dishes = dishSuggestionDAO.findByWeekAndYear(52, 2025);
+        Set<DishSuggestion> dishes = dishSuggestionDAO.findByWeekYearAndStatus(52, 2025, Status.PENDING);
         assertThat(dishes, is(empty()));
     }
 
     @Test
-    @DisplayName("Find by Week and Year - should throw exception for invalid week")
+    @DisplayName("Find by Week, Year and Status - should throw exception for invalid week")
     void findByWeekAndYearInvalidWeekThrowsException()
     {
-        assertThrows(IllegalArgumentException.class, () -> dishSuggestionDAO.findByWeekAndYear(60, 2025));
+        assertThrows(IllegalArgumentException.class, () -> dishSuggestionDAO.findByWeekYearAndStatus(60, 2025, Status.PENDING));
     }
 
     @Test
-    @DisplayName("Find by Week and Year - should throw exception for invalid year")
+    @DisplayName("Find by Week, Year and status - should throw exception for invalid year")
     void findByWeekAndYearInvalidYearThrowsException()
     {
-        assertThrows(IllegalArgumentException.class, () -> dishSuggestionDAO.findByWeekAndYear(10, 1990));
+        assertThrows(IllegalArgumentException.class, () -> dishSuggestionDAO.findByWeekYearAndStatus(10, 1990, Status.PENDING));
     }
 }
