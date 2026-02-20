@@ -12,7 +12,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.List;
 
-public class DeepLTranslationService implements ITranslationService
+public class DeepLTranslationClient implements ITranslationService
 {
     private final HttpClient client;
     private final ObjectMapper objectMapper;
@@ -20,7 +20,7 @@ public class DeepLTranslationService implements ITranslationService
     private final String apiKey;
 
 
-    public DeepLTranslationService(HttpClient client, ObjectMapper objectMapper, String apiUrl, String apiKey)
+    public DeepLTranslationClient(HttpClient client, ObjectMapper objectMapper, String apiUrl, String apiKey)
     {
         this.client = client;
         this.objectMapper = objectMapper;

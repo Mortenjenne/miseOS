@@ -1,11 +1,6 @@
 package app.config;
 
-import app.dtos.dish.DishTranslationDTO;
-import app.enums.UserRole;
-import app.persistence.entities.DishSuggestion;
-import app.persistence.entities.Station;
-import app.persistence.entities.User;
-import app.services.DeepLTranslationService;
+import app.services.DeepLTranslationClient;
 import app.services.DishTranslationService;
 import app.services.IDishTranslationService;
 import app.services.ITranslationService;
@@ -39,7 +34,7 @@ public class ApplicationConfig
         String url = properties.getProperty("DEEPL_URL");
         String deepLApiKey = System.getenv("DEEPL_APIKEY");
 
-        ITranslationService translationService = new DeepLTranslationService(client, objectMapper, url, deepLApiKey);
+        ITranslationService translationService = new DeepLTranslationClient(client, objectMapper, url, deepLApiKey);
         IDishTranslationService dishTranslationService = new DishTranslationService(translationService);
 
 
