@@ -2,6 +2,7 @@ package app.testutils;
 
 import app.enums.DayOfWeek;
 import app.enums.RequestType;
+import app.enums.Unit;
 import app.enums.UserRole;
 import app.persistence.daos.*;
 import app.persistence.entities.*;
@@ -200,7 +201,7 @@ public class TestPopulator
         IngredientRequest req1 = new IngredientRequest(
             "Frisk Dild",
             10.0,
-            "Bundter",
+            Unit.BUNCH,
             "Grønttorvet",
             "Skal bruges til laksen",
             RequestType.DISH_SPECIFIC,
@@ -212,7 +213,7 @@ public class TestPopulator
         IngredientRequest req2 = new IngredientRequest(
             "Hvedemel Type 00",
             25.0,
-            "kg",
+            Unit.KG,
             "Valsemøllen",
             "Lageret er næsten tomt",
             RequestType.GENERAL_STOCK,
@@ -224,7 +225,7 @@ public class TestPopulator
         IngredientRequest req3 = new IngredientRequest(
             "Trøffelolie",
             2.0,
-            "Liter",
+            Unit.L,
             "Inco",
             "Haster til weekendmenuen",
             RequestType.GENERAL_STOCK,
@@ -276,8 +277,8 @@ public class TestPopulator
 
         ShoppingList list1 = new ShoppingList(LocalDate.now().plusDays(3), claire);
 
-        ShoppingListItem item1 = new ShoppingListItem("Frisk Dild", 15.0, "Bundter", "Grønttorvet", "Til fiskefrikadeller og garniture");
-        ShoppingListItem item2 = new ShoppingListItem("Laks", 5.0, "Sider", "Hvide Sande Fiskehus", "Til rygning");
+        ShoppingListItem item1 = new ShoppingListItem("Frisk Dild", 15.0, Unit.BUNCH, "Grønttorvet", "Til fiskefrikadeller og garniture");
+        ShoppingListItem item2 = new ShoppingListItem("Laks", 5.0, Unit.SIDES, "Hvide Sande Fiskehus", "Til rygning");
 
         list1.addItem(item1);
         list1.addItem(item2);

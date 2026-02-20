@@ -1,5 +1,6 @@
 package app.persistence.entities;
 
+import app.enums.Unit;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,8 +25,9 @@ public class ShoppingListItem implements IEntity
     private double quantity;
 
     @Setter
+    @Enumerated(EnumType.STRING)
     @Column(name = "unit", nullable = false)
-    private String unit;
+    private Unit unit;
 
     @Setter
     @Column(name = "supplier")
@@ -44,7 +46,7 @@ public class ShoppingListItem implements IEntity
     @JoinColumn(name = "shopping_list_id", nullable = false)
     private ShoppingList shoppingList;
 
-    public ShoppingListItem(String ingredientName, double quantity, String unit, String supplier, String notes)
+    public ShoppingListItem(String ingredientName, double quantity, Unit unit, String supplier, String notes)
     {
         this.ingredientName = ingredientName;
         this.quantity = quantity;
