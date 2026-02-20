@@ -36,7 +36,7 @@ public class GeminiClient implements IAiClient
         String languageName = targetLanguage.equals("da") ? "Danish" : "English";
         try
         {
-            String prompt = buildPrompt(ingredients, targetLanguage);
+            String prompt = buildPrompt(ingredients, languageName);
             GeminiRequest geminiRequest = buildGeminiRequest(prompt);
             String geminiRequestBody = objectMapper.writeValueAsString(geminiRequest);
             HttpRequest request = buildHttpRequest(geminiRequestBody);
@@ -44,12 +44,13 @@ public class GeminiClient implements IAiClient
             String geminiResponse = deSerializeResponse(response.body());
             String cleanedGeminiResponse = cleanGeminiResponse(geminiResponse);
 
-            return objectMapper.readValue(cleanedGeminiResponse, new TypeReference<Map<String, String>>() {});
+            return objectMapper.readValue(cleanedGeminiResponse, new TypeReference<>() {});
         }
         catch (IOException | InterruptedException e)
         {
             throw new AIIntegrationException("Could not connect to gemini service");
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
             throw new AIIntegrationException("Could not normalize list");
         }
@@ -57,44 +58,24 @@ public class GeminiClient implements IAiClient
 
     private String deSerializeResponse(String responseBody) throws JsonProcessingException
     {
-        System.out.println("Parsing response...");
+         GeminiResponse geminiResponse = objectMapper.readValue(responseBody, GeminiResponse.class);
 
-        try {
-            GeminiResponse geminiResponse = objectMapper.readValue(responseBody, GeminiResponse.class);
-
-            if (geminiResponse.candidates() == null || geminiResponse.candidates().isEmpty()) {
-                throw new AIIntegrationException("No candidates in Gemini response");
-            }
-
-            Candidate candidate = geminiResponse.candidates().get(0);
-
-            if (candidate.content() == null || candidate.content().parts().isEmpty()) {
-                throw new AIIntegrationException("Empty content in Gemini response");
-            }
-
-            // Check finish reason
-            if (!"STOP".equals(candidate.finishReason())) {
-                System.err.println("Warning: Finish reason was: " + candidate.finishReason());
-            }
-
-            String text = candidate.content().parts().get(0).text();
-
-            System.out.println("Successfully extracted text from response");
-
-            return text;
-
-        } catch (JsonProcessingException e) {
-            System.err.println("Failed to parse JSON response!");
-            System.err.println("Response was: " + responseBody);
-            throw e;
+        if (geminiResponse.candidates() == null || geminiResponse.candidates().isEmpty()) {
+            throw new AIIntegrationException("No candidates in Gemini response");
         }
+
+        Candidate candidate = geminiResponse.candidates().get(0);
+
+        if (candidate.content() == null || candidate.content().parts().isEmpty()) {
+            throw new AIIntegrationException("Empty content in Gemini response");
+        }
+
+        return candidate.content().parts().get(0).text();
     }
 
     private HttpResponse<String> sendRequest(HttpRequest request) throws IOException, InterruptedException
     {
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        System.out.println("Response status: " + response.statusCode());
-        System.out.println("Response body: " + response.body());
 
         if (response.statusCode() == 429)
         {
@@ -153,6 +134,4 @@ public class GeminiClient implements IAiClient
             ingredientsJson
         );
     }
-
-
 }
