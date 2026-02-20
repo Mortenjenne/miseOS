@@ -45,6 +45,7 @@ public class TestPopulator
         populateIngredientRequest();
         populateWeeklyMenus();
         populateShoppingLists();
+        populateForGeminiIngredientRequest();
     }
 
     public Map<String, IEntity> getSeededData()
@@ -242,6 +243,49 @@ public class TestPopulator
         seeded.put("req_flour", req2);
         seeded.put("req_truffle", req3);
     }
+
+    private void populateForGeminiIngredientRequest()
+    {
+        User headChef = (User) seeded.get("user_gordon");
+        User lineCook = (User) seeded.get("user_claire");
+
+        LocalDate deliveryDate = LocalDate.now().plusDays(7);
+
+        Object[][] rawData = {
+            {"onions", 5.0, Unit.KG, "Løg til sauce"},
+            {"løg", 2.0, Unit.KG, "Garniture"},
+            {"rødløg", 1.5, Unit.KG, "Salat"},
+            {"red onion", 1.0, Unit.KG, "Burger"},
+            {"hvidløch", 10.0, Unit.PCS, "Massevis af hvidløg"},
+            {"garlic", 5.0, Unit.PCS, "Mere hvidløg"},
+            {"potatoes", 20.0, Unit.KG, "Mos"},
+            {"nye kartofler", 5.0, Unit.KG, "Side dish"}
+        };
+
+        for (Object[] row : rawData) {
+            String name = (String) row[0];
+            double quantity = (Double) row[1];
+            Unit unit = (Unit) row[2];
+            String note = (String) row[3];
+
+            IngredientRequest req = new IngredientRequest(
+                name,
+                quantity,
+                unit,
+                "Inco",
+                note,
+                RequestType.GENERAL_STOCK,
+                deliveryDate,
+                null,
+                lineCook
+            );
+
+            req.approve(headChef);
+            ingredientRequestDAO.create(req);
+        }
+    }
+
+
 
     private void populateWeeklyMenus() {
         Station hotStation = (Station) seeded.get("station_hot");

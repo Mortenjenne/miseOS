@@ -37,7 +37,7 @@ public class IngredientRequestService implements IIngredientRequestService
         ValidationUtil.validateNotNull(requestDTO, "Ingredient request");
         ValidationUtil.validateNotBlank(requestDTO.name(), "Ingredient name");
         ValidationUtil.validatePositive(requestDTO.quantity(), "Quantity");
-        ValidationUtil.validateNotBlank(requestDTO.unit(), "Unit");
+        ValidationUtil.validateNotNull(requestDTO.unit(), "Unit");
         ValidationUtil.validateFutureDate(requestDTO.deliveryDate(), "Delivery date");
 
         validateCanCreateRequest(creator);
@@ -144,7 +144,7 @@ public class IngredientRequestService implements IIngredientRequestService
         ValidationUtil.validateNotNull(requestDTO, "Ingredient request");
         ValidationUtil.validateNotBlank(requestDTO.name(), "Ingredient name");
         ValidationUtil.validatePositive(requestDTO.quantity(), "Quantity");
-        ValidationUtil.validateNotBlank(requestDTO.unit(), "Unit");
+        ValidationUtil.validateNotNull(requestDTO.unit(), "Unit");
         ValidationUtil.validateFutureDate(requestDTO.deliveryDate(), "Delivery date");
 
         validateCanCreateRequest(creator);

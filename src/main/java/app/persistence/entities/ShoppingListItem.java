@@ -38,7 +38,7 @@ public class ShoppingListItem implements IEntity
     private boolean isOrdered;
 
     @Setter
-    @Column(name = "notes")
+    @Column(name = "notes", columnDefinition = "TEXT")
     private String notes;
 
     @Setter

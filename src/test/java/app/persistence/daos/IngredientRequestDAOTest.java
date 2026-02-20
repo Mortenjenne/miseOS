@@ -73,7 +73,7 @@ class IngredientRequestDAOTest
     void getAll()
     {
         Set<IngredientRequest> requests = ingredientRequestDAO.getAll();
-        assertThat(requests, hasSize(3));
+        assertThat(requests, hasSize(11));
     }
 
     @Test
