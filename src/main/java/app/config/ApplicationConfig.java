@@ -1,12 +1,15 @@
 package app.config;
 
+import app.dtos.weather.WeatherForecastDTO;
 import app.enums.UserRole;
+import app.integrations.WeatherClient;
 import app.persistence.entities.Allergen;
 import app.persistence.entities.DishSuggestion;
 import app.persistence.entities.Station;
 import app.persistence.entities.User;
 import app.services.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,6 +36,7 @@ public class ApplicationConfig
 
         HttpClient client = HttpClient.newHttpClient();
         ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
         String url = properties.getProperty("DEEPL_URL");
         String deepLApiKey = System.getenv("DEEPL_APIKEY");
         String geminiApiKey = System.getenv("GEMINI_API_KEY");
@@ -40,8 +44,11 @@ public class ApplicationConfig
         ITranslationService translationService = new DeepLTranslationClient(client, objectMapper, url, deepLApiKey);
         IDishTranslationService dishTranslationService = new DishTranslationService(translationService);
         IAiClient aiClient = new GeminiClient(client, objectMapper, geminiApiKey);
+        WeatherClient weatherClient = new WeatherClient(client, objectMapper);
 
-        //AD Hoc test
+        WeatherForecastDTO weatherForecastDTO = weatherClient.getWeatherForecast();
+        System.out.println(weatherForecastDTO);
+
 
         List<String> ingredientsToNormalize = List.of(
             "onions",
@@ -50,10 +57,10 @@ public class ApplicationConfig
             "rødløg",
             "hvidløg",
             "garlic",
-            "hvidløch",           // Stavefejl
+            "hvidløch",
             "potatoes",
             "nye kartofler",
-            "carots",             // Stavefejl
+            "carots",
             "gulerødder",
             "gulerod",
             "piskefløde",
@@ -69,7 +76,7 @@ public class ApplicationConfig
             "peber",
             "shallots",
             "skalotteløg",
-            "skalotte løg",       // Særskrivning
+            "skalotte løg",
             "spring onions",
             "forårsløg",
             "chives",
@@ -111,9 +118,9 @@ public class ApplicationConfig
 
         //System.out.println(dishTranslationDTO);
 
-        Map<String, String> result = aiClient.normalizeIngredientList(ingredientsToNormalize, "da");
+        //Map<String, String> result = aiClient.normalizeIngredientList(ingredientsToNormalize, "da");
 
-        result.forEach((k, v) -> System.out.println("Key: " + k + " Value " + v));
+        //result.forEach((k, v) -> System.out.println("Key: " + k + " Value " + v));
 
 
     }

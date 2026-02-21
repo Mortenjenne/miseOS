@@ -3,23 +3,23 @@ package app.dtos.weather;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.time.LocalDate;
+import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record WeatherDTO(
+public record DailyWeatherDTO(
     @JsonProperty("time")
-    LocalDate date,
+    List<String> time,
 
     @JsonProperty("temperature_2m_max")
-    double maxTemperature,
+    List<Double> maxTemperatures,
 
     @JsonProperty("temperature_2m_min")
-    double minTemperature,
+    List<Double> minTemperatures,
 
     @JsonProperty("precipitation_sum")
-    double precipitationSumInMM,
+    List<Double> precipitationSums,
 
     @JsonProperty("weathercode")
-    int weatherCode
+    List<Integer> weatherCodes
 )
 {}
