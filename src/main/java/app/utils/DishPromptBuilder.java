@@ -32,6 +32,7 @@ public class DishPromptBuilder
         1. Adapt dishes to the weather (e.g., heartier meals for cold/rainy weather, lighter for sun).
         2. Use professional Danish culinary terminology (e.g., braiseret, fermenteret, emulsion, glace).
         3. International inspiration is allowed, but must prioritize local seasonal ingredients.
+        4. TONE & LENGTH: Keep descriptions STRICTLY factual, pragmatic, and short (chef-to-chef communication). Avoid ALL flowery, poetic, and marketing-like language (no "umamiglæde", "silkeblød", "fantastisk"). Maximum 1 sentences per description
 
         OUTPUT FORMAT:
         Return ONLY a raw JSON array with exactly 3 objects. No markdown, no intro.

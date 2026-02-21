@@ -1,4 +1,4 @@
-package app.services;
+package app.integrations.translation;
 
 import app.dtos.translation.DeepLRequestDTO;
 import app.dtos.translation.DeepLResponseDTO;
@@ -12,7 +12,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.List;
 
-public class DeepLTranslationClient implements ITranslationService
+public class DeepLTranslationClient implements ITranslationClient
 {
     private final HttpClient client;
     private final ObjectMapper objectMapper;

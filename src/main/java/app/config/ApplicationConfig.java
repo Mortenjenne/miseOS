@@ -1,13 +1,19 @@
 package app.config;
 
+import app.dtos.gemini.AiDishSuggestionDTO;
 import app.dtos.weather.WeatherForecastDTO;
 import app.enums.UserRole;
-import app.integrations.WeatherClient;
+import app.integrations.ai.GeminiClient;
+import app.integrations.ai.IAiClient;
+import app.integrations.translation.DeepLTranslationClient;
+import app.integrations.translation.ITranslationClient;
+import app.integrations.weather.WeatherClient;
 import app.persistence.entities.Allergen;
 import app.persistence.entities.DishSuggestion;
 import app.persistence.entities.Station;
 import app.persistence.entities.User;
 import app.services.*;
+import app.utils.WeatherForecastBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
@@ -41,13 +47,17 @@ public class ApplicationConfig
         String deepLApiKey = System.getenv("DEEPL_APIKEY");
         String geminiApiKey = System.getenv("GEMINI_API_KEY");
 
-        ITranslationService translationService = new DeepLTranslationClient(client, objectMapper, url, deepLApiKey);
+        ITranslationClient translationService = new DeepLTranslationClient(client, objectMapper, url, deepLApiKey);
         IDishTranslationService dishTranslationService = new DishTranslationService(translationService);
         IAiClient aiClient = new GeminiClient(client, objectMapper, geminiApiKey);
         WeatherClient weatherClient = new WeatherClient(client, objectMapper);
 
         WeatherForecastDTO weatherForecastDTO = weatherClient.getWeatherForecast();
-        System.out.println(weatherForecastDTO);
+        String forecast = WeatherForecastBuilder.getWeatherForecast(weatherForecastDTO);
+        System.out.println(forecast);
+
+        List<AiDishSuggestionDTO> dishSuggestionDTOs = aiClient.getAiDishSuggestion(forecast, "Salad station");
+        dishSuggestionDTOs.forEach(System.out::println);
 
 
         List<String> ingredientsToNormalize = List.of(

@@ -1,7 +1,8 @@
-package app.services;
+package app.integrations.ai;
 
 import app.dtos.gemini.*;
 import app.exceptions.AIIntegrationException;
+import app.utils.DishPromptBuilder;
 import app.utils.NormalizeTextPromptBuilder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -12,6 +13,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -30,6 +32,27 @@ public class GeminiClient implements IAiClient
         this.apiKey = apiKey;
         this.finalApiUrl = String.format(API_URL, apiKey);
     }
+
+    public String generateResponse(String prompt)
+    {
+        try
+        {
+            GeminiRequest geminiRequest = buildGeminiRequest(prompt);
+            String jsonBody = objectMapper.writeValueAsString(geminiRequest);
+
+            HttpRequest request = buildHttpRequest(jsonBody);
+            HttpResponse<String> response = sendRequest(request);
+
+            String content = deSerializeResponse(response.body());
+            return cleanGeminiResponse(content);
+        }
+        catch (IOException | InterruptedException e)
+        {
+            throw new AIIntegrationException("Could not connect to gemini service");
+        }
+    }
+
+
 
     @Override
     public Map<String, String> normalizeIngredientList(List<String> ingredients, String targetLanguage)
@@ -58,11 +81,33 @@ public class GeminiClient implements IAiClient
         }
     }
 
-    
+    @Override
+    public List<AiDishSuggestionDTO> getAiDishSuggestion(String weatherForecast, String stationName)
+    {
+        String prompt = DishPromptBuilder.buildMenuInspirationPrompt(weatherForecast, stationName);
+        GeminiRequest geminiRequest = buildGeminiRequest(prompt);
+        try
+        {
+            String geminiRequestBody = objectMapper.writeValueAsString(geminiRequest);
+            HttpRequest request = buildHttpRequest(geminiRequestBody);
+            HttpResponse<String> response = sendRequest(request);
+            String geminiResponse = deSerializeResponse(response.body());
+            String cleanedGeminiResponse = cleanGeminiResponse(geminiResponse);
+            return Arrays.asList(objectMapper.readValue(cleanedGeminiResponse, AiDishSuggestionDTO[].class));
+        }
+        catch (InterruptedException | IOException e)
+        {
+            throw new AIIntegrationException("Could not connect to gemini service");
+        }
+        catch (Exception e)
+        {
+            throw new AIIntegrationException("Could not get dish suggestion");
+        }
+    }
 
     private String deSerializeResponse(String responseBody) throws JsonProcessingException
     {
-         GeminiResponse geminiResponse = objectMapper.readValue(responseBody, GeminiResponse.class);
+        GeminiResponse geminiResponse = objectMapper.readValue(responseBody, GeminiResponse.class);
 
         if (geminiResponse.candidates() == null || geminiResponse.candidates().isEmpty()) {
             throw new AIIntegrationException("No candidates in Gemini response");

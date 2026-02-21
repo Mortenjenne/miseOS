@@ -1,4 +1,4 @@
-package app.integrations;
+package app.integrations.weather;
 
 import app.dtos.weather.WeatherForecastDTO;
 import app.exceptions.WeatherIntegrationException;
@@ -10,7 +10,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
-public class WeatherClient
+public class WeatherClient implements IWeatherClient
 {
     private final HttpClient client;
     private final ObjectMapper objectMapper;
@@ -23,13 +23,13 @@ public class WeatherClient
         this.objectMapper = objectMapper;
     }
 
+    @Override
     public WeatherForecastDTO getWeatherForecast()
     {
         HttpRequest request = buildHttpRequest();
         try
         {
             HttpResponse<String> response = sendRequest(request);
-            System.out.println(response.body());
             WeatherForecastDTO weatherForecastDTO = objectMapper.readValue(response.body(), WeatherForecastDTO.class);
 
             if(weatherForecastDTO == null)

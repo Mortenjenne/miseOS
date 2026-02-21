@@ -8,7 +8,7 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record DailyWeatherDTO(
     @JsonProperty("time")
-    List<String> time,
+    List<String> days,
 
     @JsonProperty("temperature_2m_max")
     List<Double> maxTemperatures,

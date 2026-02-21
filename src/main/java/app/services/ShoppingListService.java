@@ -6,6 +6,7 @@ import app.dtos.shopping.ShoppingListDTO;
 import app.dtos.shopping.ShoppingListItemDTO;
 import app.enums.Status;
 import app.exceptions.UnauthorizedActionException;
+import app.integrations.ai.IAiClient;
 import app.persistence.daos.IIngredientRequestDAO;
 import app.persistence.daos.IShoppingListDAO;
 import app.persistence.daos.IUserReader;
@@ -15,7 +16,6 @@ import app.persistence.entities.ShoppingListItem;
 import app.persistence.entities.User;
 import app.utils.ValidationUtil;
 
-import java.time.LocalDate;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
