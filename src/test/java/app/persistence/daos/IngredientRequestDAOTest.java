@@ -26,7 +26,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class IngredientRequestDAOTest
 {
-
     private final EntityManagerFactory emf = HibernateTestConfig.getEntityManagerFactory();
     private IngredientRequestDAO ingredientRequestDAO;
     private Map<String, IEntity> seeded;
