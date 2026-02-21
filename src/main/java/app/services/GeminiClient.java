@@ -2,6 +2,7 @@ package app.services;
 
 import app.dtos.gemini.*;
 import app.exceptions.AIIntegrationException;
+import app.utils.NormalizeTextPromptBuilder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -36,7 +37,8 @@ public class GeminiClient implements IAiClient
         String languageName = targetLanguage.equals("da") ? "Danish" : "English";
         try
         {
-            String prompt = buildPrompt(ingredients, languageName);
+            String ingredientsJson = objectMapper.writeValueAsString(ingredients);
+            String prompt = NormalizeTextPromptBuilder.buildNormalizeTextPrompt(ingredientsJson, languageName);
             GeminiRequest geminiRequest = buildGeminiRequest(prompt);
             String geminiRequestBody = objectMapper.writeValueAsString(geminiRequest);
             HttpRequest request = buildHttpRequest(geminiRequestBody);
@@ -55,6 +57,8 @@ public class GeminiClient implements IAiClient
             throw new AIIntegrationException("Could not normalize list");
         }
     }
+
+    
 
     private String deSerializeResponse(String responseBody) throws JsonProcessingException
     {
@@ -106,32 +110,5 @@ public class GeminiClient implements IAiClient
     private GeminiRequest buildGeminiRequest(String prompt)
     {
         return new GeminiRequest(List.of(new Content(List.of(new Part(prompt)))));
-    }
-
-    private String buildPrompt(List<String> ingredients, String languageName) throws Exception
-    {
-        String ingredientsJson = objectMapper.writeValueAsString(ingredients);
-
-        return String.format(
-            """
-            Normalize these ingredient names to standard %s culinary terminology.
-
-            Return ONLY valid JSON in this exact format:
-            {"ingredient1": "Normalized1", "ingredient2": "Normalized2"}
-
-            Rules:
-            - Singular form
-            - Capitalize first letter
-            - Fix spelling
-            - Translate to %s
-            - NO markdown, NO explanation
-
-            Ingredients: %s
-
-            JSON:""",
-            languageName,
-            languageName,
-            ingredientsJson
-        );
     }
 }
