@@ -77,7 +77,7 @@ public class ShoppingList implements IEntity
     public void finalizeShoppingList()
     {
         requireDraft("finalize");
-        
+
         this.shoppingListStatus = ShoppingListStatus.FINALIZED;
         this.finalizedAt = LocalDateTime.now();
     }

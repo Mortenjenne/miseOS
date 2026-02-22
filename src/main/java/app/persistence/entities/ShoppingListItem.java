@@ -142,5 +142,4 @@ public class ShoppingListItem implements IEntity
     {
         return getClass().hashCode();
     }
-
 }

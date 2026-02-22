@@ -8,7 +8,9 @@ public record ShoppingListDTO(
     LocalDate deliveryDate,
     String status,
     String createdBy,
-    List<ShoppingListItemDTO> items
+    int itemCount,
+    List<ShoppingListItemDTO> items,
+    boolean allOrdered
 )
 {
 }

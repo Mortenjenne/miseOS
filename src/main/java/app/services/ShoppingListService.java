@@ -174,11 +174,6 @@ public class ShoppingListService
         User user = userReader.getByID(dto.userId());
         requireChef(user);
 
-        if (list.getShoppingListStatus() != ShoppingListStatus.DRAFT)
-        {
-            throw new IllegalStateException("Cannot add items to finalized list");
-        }
-
         String note = "Manual entry by: " + user.getFirstName() + " " + user.getLastName();
 
         ShoppingListItem item = new ShoppingListItem(
@@ -337,7 +332,9 @@ public class ShoppingListService
             shoppingList.getDeliveryDate(),
             shoppingList.getShoppingListStatus().name(),
             shoppingList.getCreatedBy().getFirstName(),
-            shoppingListItemDTOS
+            shoppingList.getItemCount(),
+            shoppingListItemDTOS,
+            shoppingList.allItemsOrdered()
         );
     }
 
