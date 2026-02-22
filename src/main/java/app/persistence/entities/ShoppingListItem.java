@@ -1,6 +1,7 @@
 package app.persistence.entities;
 
 import app.enums.Unit;
+import app.exceptions.ValidationException;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -48,21 +49,40 @@ public class ShoppingListItem implements IEntity
 
     public ShoppingListItem(String ingredientName, double quantity, Unit unit, String supplier, String notes)
     {
-        this.ingredientName = ingredientName;
+        requireNotBlank(ingredientName, "Ingredient name");
+        requirePositive(quantity, "Quantity");
+        requireNotNull(unit, "Unit");
+
+        this.ingredientName = ingredientName.trim();
         this.quantity = quantity;
         this.unit = unit;
-        this.supplier = supplier;
+        this.supplier = supplier != null ? supplier.trim() : null;
         this.notes = notes;
         this.isOrdered = false;
     }
 
     public void markAsOrdered()
     {
+        if (this.isOrdered)
+        {
+            throw new IllegalStateException("Item is already marked as ordered");
+        }
         this.isOrdered = true;
+    }
+
+    public void unmarkAsOrdered()
+    {
+        if (!this.isOrdered)
+        {
+            throw new IllegalStateException("Item is not marked as ordered");
+        }
+        this.isOrdered = false;
     }
 
     public void update(Double quantity, Unit unit, String supplier)
     {
+        requireDraftStatus();
+
         if (quantity != null && quantity > 0)
         {
             this.quantity = quantity;
@@ -73,6 +93,38 @@ public class ShoppingListItem implements IEntity
         }
         if (supplier != null && !supplier.isBlank()) {
             this.supplier = supplier;
+        }
+    }
+
+    private void requireNotBlank(String value, String fieldName)
+    {
+        if (value == null || value.isBlank())
+        {
+            throw new ValidationException(fieldName + " is required");
+        }
+    }
+
+    private void requirePositive(double value, String fieldName)
+    {
+        if (value <= 0)
+        {
+            throw new ValidationException(fieldName + " must be greater than 0");
+        }
+    }
+
+    private void requireNotNull(Object value, String fieldName)
+    {
+        if (value == null)
+        {
+            throw new ValidationException(fieldName + " is required");
+        }
+    }
+
+    private void requireDraftStatus()
+    {
+        if (shoppingList != null && !shoppingList.isDraft())
+        {
+            throw new IllegalStateException("Cannot modify items in finalized list");
         }
     }
 

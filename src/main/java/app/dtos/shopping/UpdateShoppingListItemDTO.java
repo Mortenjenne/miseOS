@@ -1,4 +1,14 @@
 package app.dtos.shopping;
 
-public record UpdateShoppingListItemDTO() {
+import app.enums.Unit;
+
+public record UpdateShoppingListItemDTO(
+    Long itemId,
+    Long shoppingListId,
+    Long userId,
+    Double quantity,
+    Unit unit,
+    String supplier
+)
+{
 }

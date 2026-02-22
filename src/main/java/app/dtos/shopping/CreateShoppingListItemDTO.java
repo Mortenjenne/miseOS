@@ -10,5 +10,4 @@ public record CreateShoppingListItemDTO(
     Unit unit,
     String supplier
 )
-{
-}
+{}

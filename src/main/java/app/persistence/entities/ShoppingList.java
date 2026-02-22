@@ -1,6 +1,7 @@
 package app.persistence.entities;
 
 import app.enums.ShoppingListStatus;
+import app.exceptions.ValidationException;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -45,6 +46,9 @@ public class ShoppingList implements IEntity
 
     public ShoppingList(LocalDate deliveryDate, User createdBy)
     {
+        requireNotNull(deliveryDate, "Delivery date");
+        requireNotNull(createdBy, "Created by user");
+
         this.deliveryDate = deliveryDate;
         this.createdBy = createdBy;
         this.shoppingListStatus = ShoppingListStatus.DRAFT;
@@ -52,35 +56,84 @@ public class ShoppingList implements IEntity
 
     public void addItem(ShoppingListItem shoppingListItem)
     {
-        if(shoppingListItem != null)
-        {
-            shoppingListItems.add(shoppingListItem);
-            shoppingListItem.setShoppingList(this);
-        }
+        requireNotNull(shoppingListItem, "Shopping list item");
+        requireDraft("add items");
+
+        shoppingListItems.add(shoppingListItem);
+        shoppingListItem.setShoppingList(this);
+
     }
 
     public void removeItem(ShoppingListItem shoppingListItem)
     {
-        if(shoppingListItem != null)
-        {
-            shoppingListItems.remove(shoppingListItem);
-            shoppingListItem.setShoppingList(null);
-        }
+        requireNotNull(shoppingListItem, "Shopping list item");
+        requireDraft("remove items");
+
+        shoppingListItems.remove(shoppingListItem);
+        shoppingListItem.setShoppingList(null);
+
     }
 
     public void finalizeShoppingList()
     {
-        if (this.shoppingListStatus != ShoppingListStatus.DRAFT) {
-            throw new IllegalStateException("Can only finalize draft lists");
-        }
+        requireDraft("finalize");
+        
         this.shoppingListStatus = ShoppingListStatus.FINALIZED;
         this.finalizedAt = LocalDateTime.now();
+    }
+
+    public void updateDeliveryDate(LocalDate newDate)
+    {
+        requireNotNull(newDate, "Delivery date");
+        requireDraft("update delivery date");
+
+        this.deliveryDate = newDate;
     }
 
     @PrePersist
     private void createdAt()
     {
         this.createdAt = LocalDateTime.now();
+    }
+
+    public boolean isDraft()
+    {
+        return this.shoppingListStatus == ShoppingListStatus.DRAFT;
+    }
+
+    public boolean isFinalized()
+    {
+        return this.shoppingListStatus == ShoppingListStatus.FINALIZED;
+    }
+
+    public int getItemCount()
+    {
+        return shoppingListItems.size();
+    }
+
+    public boolean allItemsOrdered()
+    {
+        if (shoppingListItems.isEmpty())
+        {
+            return false;
+        }
+        return shoppingListItems.stream().allMatch(ShoppingListItem::isOrdered);
+    }
+
+    private void requireNotNull(Object value, String fieldName)
+    {
+        if (value == null)
+        {
+            throw new ValidationException(fieldName + " is required");
+        }
+    }
+
+    private void requireDraft(String action)
+    {
+        if (this.shoppingListStatus != ShoppingListStatus.DRAFT)
+        {
+            throw new ValidationException("Cannot " + action + " - list is " + shoppingListStatus);
+        }
     }
 
     @Override
@@ -97,5 +150,4 @@ public class ShoppingList implements IEntity
     {
         return getClass().hashCode();
     }
-
 }

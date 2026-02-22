@@ -38,11 +38,13 @@ public class ShoppingListService
     {
         ValidationUtil.validateId(dto.userId());
 
+        checkIfShoppingListExists(dto);
+
         User creator = userReader.getByID(dto.userId());
         requireChef(creator);
 
         Set<IngredientRequest> approvedRequests = ingredientRequestDAO.findByStatusAndDeliveryDate(Status.APPROVED, dto.deliveryDate());
-        checkRequestNotEmpty(approvedRequests);
+        checkRequestNotEmpty(approvedRequests, dto.deliveryDate());
 
         List<String> uniqueIngredientNames = getUniqueIngredientNames(approvedRequests);
         Map<String, String> normalizedNames = aiService.normalizeIngredientList(uniqueIngredientNames, dto.targetLanguage());
@@ -187,8 +189,72 @@ public class ShoppingListService
             note
         );
 
+        list.addItem(item);
 
+        ShoppingList updated = shoppingListDAO.update(list);
+        return mapToShoppingListDTO(updated);
+    }
 
+    public ShoppingListDTO removeItem(Long shoppingListId, Long itemId, Long userId)
+    {
+        ValidationUtil.validateId(shoppingListId);
+        ValidationUtil.validateId(itemId);
+        ValidationUtil.validateId(userId);
+
+        User user = userReader.getByID(userId);
+        requireChef(user);
+
+        ShoppingList list = shoppingListDAO.getByID(shoppingListId);
+
+        if (list.getShoppingListStatus() != ShoppingListStatus.DRAFT)
+        {
+            throw new IllegalStateException("Cannot remove items from finalized list");
+        }
+
+        ShoppingListItem item = list.getShoppingListItems().stream()
+            .filter(i -> i.getId().equals(itemId))
+            .findFirst()
+            .orElseThrow(() -> new EntityNotFoundException("Item not found: " + itemId));
+
+        list.removeItem(item);
+
+        ShoppingList updated = shoppingListDAO.update(list);
+        return mapToShoppingListDTO(updated);
+    }
+
+    public ShoppingListDTO updateItem(UpdateShoppingListItemDTO dto)
+    {
+        ValidationUtil.validateId(dto.shoppingListId());
+        ValidationUtil.validateId(dto.itemId());
+        ValidationUtil.validateId(dto.userId());
+
+        User user = userReader.getByID(dto.userId());
+        requireChef(user);
+
+        ShoppingList list = shoppingListDAO.getByID(dto.shoppingListId());
+
+        if (list.getShoppingListStatus() != ShoppingListStatus.DRAFT)
+        {
+            throw new IllegalStateException("Cannot update items in finalized list");
+        }
+
+        ShoppingListItem item = list.getShoppingListItems().stream()
+            .filter(i -> i.getId().equals(dto.itemId()))
+            .findFirst()
+            .orElseThrow(() -> new EntityNotFoundException("Item not found: " + dto.itemId()));
+
+        item.update(dto.quantity(), dto.unit(), dto.supplier());
+
+        ShoppingList updated = shoppingListDAO.update(list);
+        return mapToShoppingListDTO(updated);
+    }
+
+    public ShoppingListDTO getById(Long shoppingListId)
+    {
+        ValidationUtil.validateId(shoppingListId);
+
+        ShoppingList list = shoppingListDAO.getByID(shoppingListId);
+        return mapToShoppingListDTO(list);
     }
 
     public ShoppingListDTO findByDeliveryDate(LocalDate deliveryDate)
@@ -242,11 +308,21 @@ public class ShoppingListService
         }
     }
 
-    private void checkRequestNotEmpty(Set<IngredientRequest> ingredientRequests)
+    private void checkRequestNotEmpty(Set<IngredientRequest> requests, LocalDate deliveryDate)
     {
-        if (ingredientRequests == null || ingredientRequests.isEmpty())
+        if (requests == null || requests.isEmpty())
         {
-            throw new IllegalStateException("No approved requests for date: " + ingredientRequests);
+            throw new IllegalStateException("No approved requests for date: " + deliveryDate);
+        }
+    }
+
+    private void checkIfShoppingListExists(CreateShoppingListDTO dto)
+    {
+        Optional<ShoppingList> existing = shoppingListDAO.findByDeliveryDate(dto.deliveryDate());
+
+        if (existing.isPresent())
+        {
+            throw new IllegalStateException("Shopping list already exists for date: " + dto.deliveryDate());
         }
     }
 
