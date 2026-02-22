@@ -11,5 +11,4 @@ public record AiDishSuggestionDTO(
     @JsonProperty("descriptionDA")
     String descriptionDA
 )
-{
-}
+{}

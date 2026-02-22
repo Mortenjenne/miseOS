@@ -56,6 +56,26 @@ public class ShoppingListItem implements IEntity
         this.isOrdered = false;
     }
 
+    public void markAsOrdered()
+    {
+        this.isOrdered = true;
+    }
+
+    public void update(Double quantity, Unit unit, String supplier)
+    {
+        if (quantity != null && quantity > 0)
+        {
+            this.quantity = quantity;
+        }
+        if (unit != null)
+        {
+            this.unit = unit;
+        }
+        if (supplier != null && !supplier.isBlank()) {
+            this.supplier = supplier;
+        }
+    }
+
     @Override
     public boolean equals(Object o)
     {

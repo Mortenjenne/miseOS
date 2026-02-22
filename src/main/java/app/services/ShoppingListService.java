@@ -1,9 +1,7 @@
 package app.services;
 
-import app.dtos.shopping.AggregationKey;
-import app.dtos.shopping.CreateShoppingListDTO;
-import app.dtos.shopping.ShoppingListDTO;
-import app.dtos.shopping.ShoppingListItemDTO;
+import app.dtos.shopping.*;
+import app.enums.ShoppingListStatus;
 import app.enums.Status;
 import app.exceptions.UnauthorizedActionException;
 import app.integrations.ai.IAiClient;
@@ -15,11 +13,10 @@ import app.persistence.entities.ShoppingList;
 import app.persistence.entities.ShoppingListItem;
 import app.persistence.entities.User;
 import app.utils.ValidationUtil;
+import jakarta.persistence.EntityNotFoundException;
 
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.List;
+import java.time.LocalDate;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class ShoppingListService
@@ -46,7 +43,6 @@ public class ShoppingListService
 
         Set<IngredientRequest> approvedRequests = ingredientRequestDAO.findByStatusAndDeliveryDate(Status.APPROVED, dto.deliveryDate());
         checkRequestNotEmpty(approvedRequests);
-
 
         List<String> uniqueIngredientNames = getUniqueIngredientNames(approvedRequests);
         Map<String, String> normalizedNames = aiService.normalizeIngredientList(uniqueIngredientNames, dto.targetLanguage());
@@ -78,7 +74,139 @@ public class ShoppingListService
         return mapToShoppingListDTO(saved);
     }
 
-    private String getMostCommonSupplier(List<IngredientRequest> requests) {
+    public ShoppingListDTO finalizeShoppingList(Long shoppingListId, Long userId)
+    {
+        ValidationUtil.validateId(shoppingListId);
+        ValidationUtil.validateId(userId);
+
+        User approver = userReader.getByID(userId);
+        ShoppingList list = shoppingListDAO.getByID(shoppingListId);
+
+        requireChef(approver);
+
+        list.finalizeShoppingList();
+
+        ShoppingList finalized = shoppingListDAO.update(list);
+
+        return mapToShoppingListDTO(finalized);
+    }
+
+    public boolean deleteShoppingList(Long shoppingListId, Long userId)
+    {
+        ValidationUtil.validateId(shoppingListId);
+        ValidationUtil.validateId(userId);
+
+        User approver = userReader.getByID(userId);
+        ShoppingList list = shoppingListDAO.getByID(shoppingListId);
+
+        requireChef(approver);
+
+        return shoppingListDAO.delete(list.getId());
+    }
+
+    public ShoppingListDTO updateShoppingList()
+    {
+        return null;
+    }
+
+    public Set<ShoppingListDTO> getAll()
+    {
+        return shoppingListDAO.getAll().stream()
+            .map(this::mapToShoppingListDTO)
+            .collect(Collectors.toSet());
+    }
+
+    public Set<ShoppingListDTO> findByStatus(ShoppingListStatus status)
+    {
+        ValidationUtil.validateNotNull(status, "Status");
+
+        return shoppingListDAO.findByStatus(status).stream()
+            .map(this::mapToShoppingListDTO)
+            .collect(Collectors.toSet());
+    }
+
+    public ShoppingListDTO markItemOrdered(Long shoppingListId, Long itemId, Long userId)
+    {
+        ValidationUtil.validateId(shoppingListId);
+        ValidationUtil.validateId(itemId);
+        ValidationUtil.validateId(userId);
+
+        User user = userReader.getByID(userId);
+        requireChef(user);
+
+        ShoppingList list = shoppingListDAO.getByID(shoppingListId);
+
+        ShoppingListItem item = list.getShoppingListItems().stream()
+            .filter(i -> i.getId().equals(itemId))
+            .findFirst()
+            .orElseThrow(() -> new EntityNotFoundException("Item not found: " + itemId));
+
+        item.markAsOrdered();
+
+        ShoppingList updated = shoppingListDAO.update(list);
+        return mapToShoppingListDTO(updated);
+    }
+
+    public ShoppingListDTO markAllItemsOrdered(Long shoppingListId, Long userId)
+    {
+        ValidationUtil.validateId(shoppingListId);
+        ValidationUtil.validateId(userId);
+
+        User user = userReader.getByID(userId);
+        requireChef(user);
+
+        ShoppingList list = shoppingListDAO.getByID(shoppingListId);
+
+        list.getShoppingListItems().forEach(ShoppingListItem::markAsOrdered);
+
+        ShoppingList updated = shoppingListDAO.update(list);
+        return mapToShoppingListDTO(updated);
+    }
+
+    public ShoppingListDTO addItemToShoppingList(CreateShoppingListItemDTO dto)
+    {
+        ValidationUtil.validateId(dto.shoppingListId());
+        ValidationUtil.validateId(dto.userId());
+
+        ShoppingList list = shoppingListDAO.getByID(dto.shoppingListId());
+        User user = userReader.getByID(dto.userId());
+        requireChef(user);
+
+        if (list.getShoppingListStatus() != ShoppingListStatus.DRAFT)
+        {
+            throw new IllegalStateException("Cannot add items to finalized list");
+        }
+
+        String note = "Manual entry by: " + user.getFirstName() + " " + user.getLastName();
+
+        ShoppingListItem item = new ShoppingListItem(
+            dto.ingredientName(),
+            dto.quantity(),
+            dto.unit(),
+            dto.supplier(),
+            note
+        );
+
+
+
+    }
+
+    public ShoppingListDTO findByDeliveryDate(LocalDate deliveryDate)
+    {
+        ValidationUtil.validateNotNull(deliveryDate, "Local date");
+
+        Optional<ShoppingList> list = shoppingListDAO.findByDeliveryDate(deliveryDate);
+
+        if(list.isEmpty())
+        {
+            throw new EntityNotFoundException("ShoppingList not found");
+        }
+
+        return mapToShoppingListDTO(list.get());
+    }
+
+    private String getMostCommonSupplier(List<IngredientRequest> requests)
+    {
         return requests.stream()
             .map(IngredientRequest::getPreferredSupplier)
             .filter(Objects::nonNull)
@@ -88,7 +216,6 @@ public class ShoppingListService
             .map(Map.Entry::getKey)
             .orElse("AB Catering");
     }
-
 
     private Map<AggregationKey, List<IngredientRequest>> getIngredientsGrouped(Set<IngredientRequest> approved, Map<String, String> normalizedNames)
     {

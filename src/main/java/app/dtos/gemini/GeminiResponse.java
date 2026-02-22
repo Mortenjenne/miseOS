@@ -13,5 +13,4 @@ public record GeminiResponse(
     @JsonProperty("usageMetadata")
     UsageMetaData usageMetadata
 )
-{
-}
+{}

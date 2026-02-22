@@ -1,7 +1,5 @@
 package app.utils;
 
-import java.util.List;
-
 public class NormalizeTextPromptBuilder
 {
     public static String buildNormalizeTextPrompt(String ingredientsJson, String languageName) throws Exception
