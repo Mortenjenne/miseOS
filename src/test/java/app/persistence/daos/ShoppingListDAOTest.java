@@ -2,6 +2,7 @@ package app.persistence.daos;
 
 import app.config.HibernateTestConfig;
 import app.enums.ShoppingListStatus;
+import app.enums.Unit;
 import app.persistence.entities.IEntity;
 import app.persistence.entities.ShoppingList;
 import app.persistence.entities.ShoppingListItem;
@@ -46,8 +47,8 @@ class ShoppingListDAOTest
         User user = (User) seeded.get("user_gordon");
         ShoppingList newList = new ShoppingList(LocalDate.now().plusDays(2), user);
 
-        ShoppingListItem item1 = new ShoppingListItem("Smør", 10, "kg", "Arla", "Usaltet");
-        ShoppingListItem item2 = new ShoppingListItem("Fløde", 5, "Liter", "Arla", "38%");
+        ShoppingListItem item1 = new ShoppingListItem("Smør", 10, Unit.KG, "Arla", "Usaltet");
+        ShoppingListItem item2 = new ShoppingListItem("Fløde", 5, Unit.L, "Arla", "38%");
 
         newList.addItem(item1);
         newList.addItem(item2);
@@ -192,7 +193,7 @@ class ShoppingListDAOTest
         ShoppingList seed = (ShoppingList) seeded.get("shopping_list_1");
         int originalSize = seed.getShoppingListItems().size();
 
-        ShoppingListItem newItem = new ShoppingListItem("Sukker", 5, "kg", "Danisco", "Rørsukker");
+        ShoppingListItem newItem = new ShoppingListItem("Sukker", 5, Unit.KG, "Danisco", "Rørsukker");
         seed.addItem(newItem);
 
         ShoppingList updated = shoppingListDAO.update(seed);

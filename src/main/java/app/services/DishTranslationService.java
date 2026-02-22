@@ -1,13 +1,14 @@
 package app.services;
 
 import app.dtos.dish.DishTranslationDTO;
+import app.integrations.translation.ITranslationClient;
 import app.persistence.entities.DishSuggestion;
 
 public class DishTranslationService implements IDishTranslationService
 {
-    private final ITranslationService translationService;
+    private final ITranslationClient translationService;
 
-    public DishTranslationService(ITranslationService translationService)
+    public DishTranslationService(ITranslationClient translationService)
     {
         this.translationService = translationService;
     }

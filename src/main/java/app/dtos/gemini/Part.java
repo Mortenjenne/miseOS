@@ -4,6 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public record Part(
     @JsonProperty("text")
-    String text)
-{
-}
+    String text
+)
+{}

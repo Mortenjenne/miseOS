@@ -3,14 +3,12 @@ package app.dtos.gemini;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.List;
-
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record GeminiResponse(
-    @JsonProperty("candidates")
-    List<Candidate> candidates,
+public record AiDishSuggestionDTO(
+    @JsonProperty("nameDA")
+    String nameDA,
 
-    @JsonProperty("usageMetadata")
-    UsageMetaData usageMetadata
+    @JsonProperty("descriptionDA")
+    String descriptionDA
 )
 {}

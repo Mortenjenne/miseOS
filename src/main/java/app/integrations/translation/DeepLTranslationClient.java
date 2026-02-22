@@ -1,4 +1,4 @@
-package app.services;
+package app.integrations.translation;
 
 import app.dtos.translation.DeepLRequestDTO;
 import app.dtos.translation.DeepLResponseDTO;
@@ -6,13 +6,14 @@ import app.dtos.translation.TranslationDTO;
 import app.exceptions.TranslationException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.List;
 
-public class DeepLTranslationClient implements ITranslationService
+public class DeepLTranslationClient implements ITranslationClient
 {
     private final HttpClient client;
     private final ObjectMapper objectMapper;
@@ -40,9 +41,13 @@ public class DeepLTranslationClient implements ITranslationService
 
             return handleResponse(response);
         }
+        catch (IOException | InterruptedException e)
+        {
+            throw new TranslationException("Translation network call failed: " + e.getMessage());
+        }
         catch (Exception e)
         {
-            throw new TranslationException("Translation call failed " + e.getMessage());
+            throw new TranslationException("Translation error: " + e.getMessage());
         }
     }
 

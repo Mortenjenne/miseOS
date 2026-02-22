@@ -1,9 +1,8 @@
-package app.services;
+package app.integrations.ai;
 
 import app.dtos.gemini.*;
 import app.exceptions.AIIntegrationException;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
@@ -12,53 +11,44 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.List;
-import java.util.Map;
 
 public class GeminiClient implements IAiClient
 {
     private final HttpClient client;
     private final ObjectMapper objectMapper;
     private final String apiKey;
-    private final String API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=%s";
-    private final String finalApiUrl;
+    private final String apiUrl;
 
-    public GeminiClient(HttpClient client, ObjectMapper objectMapper, String apiKey)
+    public GeminiClient(HttpClient client, ObjectMapper objectMapper, String apiKey, String apiUrl)
     {
         this.client = client;
         this.objectMapper = objectMapper;
         this.apiKey = apiKey;
-        this.finalApiUrl = String.format(API_URL, apiKey);
+        this.apiUrl = apiUrl;
     }
 
-    @Override
-    public Map<String, String> normalizeIngredientList(List<String> ingredients, String targetLanguage)
+    public String generateResponse(String prompt)
     {
-        String languageName = targetLanguage.equals("da") ? "Danish" : "English";
         try
         {
-            String prompt = buildPrompt(ingredients, languageName);
             GeminiRequest geminiRequest = buildGeminiRequest(prompt);
-            String geminiRequestBody = objectMapper.writeValueAsString(geminiRequest);
-            HttpRequest request = buildHttpRequest(geminiRequestBody);
-            HttpResponse<String> response = sendRequest(request);
-            String geminiResponse = deSerializeResponse(response.body());
-            String cleanedGeminiResponse = cleanGeminiResponse(geminiResponse);
+            String jsonBody = objectMapper.writeValueAsString(geminiRequest);
 
-            return objectMapper.readValue(cleanedGeminiResponse, new TypeReference<>() {});
+            HttpRequest request = buildHttpRequest(jsonBody);
+            HttpResponse<String> response = sendRequest(request);
+
+            String content = deSerializeResponse(response.body());
+            return cleanGeminiResponse(content);
         }
         catch (IOException | InterruptedException e)
         {
             throw new AIIntegrationException("Could not connect to gemini service");
         }
-        catch (Exception e)
-        {
-            throw new AIIntegrationException("Could not normalize list");
-        }
     }
 
     private String deSerializeResponse(String responseBody) throws JsonProcessingException
     {
-         GeminiResponse geminiResponse = objectMapper.readValue(responseBody, GeminiResponse.class);
+        GeminiResponse geminiResponse = objectMapper.readValue(responseBody, GeminiResponse.class);
 
         if (geminiResponse.candidates() == null || geminiResponse.candidates().isEmpty()) {
             throw new AIIntegrationException("No candidates in Gemini response");
@@ -97,8 +87,9 @@ public class GeminiClient implements IAiClient
     private HttpRequest buildHttpRequest(String jsonBody)
     {
         return HttpRequest.newBuilder()
-            .uri(URI.create(finalApiUrl))
+            .uri(URI.create(apiUrl))
             .header("Content-Type", "application/json")
+            .header("x-goog-api-key", apiKey)
             .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
             .build();
     }
@@ -106,32 +97,5 @@ public class GeminiClient implements IAiClient
     private GeminiRequest buildGeminiRequest(String prompt)
     {
         return new GeminiRequest(List.of(new Content(List.of(new Part(prompt)))));
-    }
-
-    private String buildPrompt(List<String> ingredients, String languageName) throws Exception
-    {
-        String ingredientsJson = objectMapper.writeValueAsString(ingredients);
-
-        return String.format(
-            """
-            Normalize these ingredient names to standard %s culinary terminology.
-
-            Return ONLY valid JSON in this exact format:
-            {"ingredient1": "Normalized1", "ingredient2": "Normalized2"}
-
-            Rules:
-            - Singular form
-            - Capitalize first letter
-            - Fix spelling
-            - Translate to %s
-            - NO markdown, NO explanation
-
-            Ingredients: %s
-
-            JSON:""",
-            languageName,
-            languageName,
-            ingredientsJson
-        );
     }
 }

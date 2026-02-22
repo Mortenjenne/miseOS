@@ -6,7 +6,6 @@ import app.enums.RequestType;
 import app.enums.Status;
 import app.exceptions.UnauthorizedActionException;
 import app.exceptions.ValidationException;
-import app.persistence.daos.IDishSuggestionDAO;
 import app.persistence.daos.IDishSuggestionReader;
 import app.persistence.daos.IIngredientRequestDAO;
 import app.persistence.entities.DishSuggestion;
@@ -37,7 +36,7 @@ public class IngredientRequestService implements IIngredientRequestService
         ValidationUtil.validateNotNull(requestDTO, "Ingredient request");
         ValidationUtil.validateNotBlank(requestDTO.name(), "Ingredient name");
         ValidationUtil.validatePositive(requestDTO.quantity(), "Quantity");
-        ValidationUtil.validateNotBlank(requestDTO.unit(), "Unit");
+        ValidationUtil.validateNotNull(requestDTO.unit(), "Unit");
         ValidationUtil.validateFutureDate(requestDTO.deliveryDate(), "Delivery date");
 
         validateCanCreateRequest(creator);
@@ -144,7 +143,7 @@ public class IngredientRequestService implements IIngredientRequestService
         ValidationUtil.validateNotNull(requestDTO, "Ingredient request");
         ValidationUtil.validateNotBlank(requestDTO.name(), "Ingredient name");
         ValidationUtil.validatePositive(requestDTO.quantity(), "Quantity");
-        ValidationUtil.validateNotBlank(requestDTO.unit(), "Unit");
+        ValidationUtil.validateNotNull(requestDTO.unit(), "Unit");
         ValidationUtil.validateFutureDate(requestDTO.deliveryDate(), "Delivery date");
 
         validateCanCreateRequest(creator);

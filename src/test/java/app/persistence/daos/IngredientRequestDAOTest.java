@@ -3,6 +3,7 @@ package app.persistence.daos;
 import app.config.HibernateTestConfig;
 import app.enums.RequestType;
 import app.enums.Status;
+import app.enums.Unit;
 import app.persistence.entities.DishSuggestion;
 import app.persistence.entities.IEntity;
 import app.persistence.entities.IngredientRequest;
@@ -25,7 +26,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class IngredientRequestDAOTest
 {
-
     private final EntityManagerFactory emf = HibernateTestConfig.getEntityManagerFactory();
     private IngredientRequestDAO ingredientRequestDAO;
     private Map<String, IEntity> seeded;
@@ -48,7 +48,7 @@ class IngredientRequestDAOTest
         DishSuggestion dish = (DishSuggestion) seeded.get("dish_salmon");
 
         IngredientRequest request = new IngredientRequest(
-            "Citroner", 5.0, "kg", "Torvehallernes grønt", "Til fisken",
+            "Citroner", 5.0, Unit.KG, "Torvehallernes grønt", "Til fisken",
             RequestType.DISH_SPECIFIC, LocalDate.now().plusDays(2), dish, user
         );
 
@@ -72,7 +72,7 @@ class IngredientRequestDAOTest
     void getAll()
     {
         Set<IngredientRequest> requests = ingredientRequestDAO.getAll();
-        assertThat(requests, hasSize(3));
+        assertThat(requests, hasSize(11));
     }
 
     @Test

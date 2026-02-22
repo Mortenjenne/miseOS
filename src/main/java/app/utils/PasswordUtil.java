@@ -15,7 +15,7 @@ public class PasswordUtil
 
     public static boolean verifyPassword(String plainPassword, String hashedPassword)
     {
-        if (plainPassword == null || plainPassword == null)
+        if (plainPassword == null || plainPassword.isBlank())
         {
             return false;
         }

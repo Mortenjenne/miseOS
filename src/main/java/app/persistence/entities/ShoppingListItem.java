@@ -1,5 +1,7 @@
 package app.persistence.entities;
 
+import app.enums.Unit;
+import app.exceptions.ValidationException;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,8 +26,9 @@ public class ShoppingListItem implements IEntity
     private double quantity;
 
     @Setter
+    @Enumerated(EnumType.STRING)
     @Column(name = "unit", nullable = false)
-    private String unit;
+    private Unit unit;
 
     @Setter
     @Column(name = "supplier")
@@ -36,7 +39,7 @@ public class ShoppingListItem implements IEntity
     private boolean isOrdered;
 
     @Setter
-    @Column(name = "notes")
+    @Column(name = "notes", columnDefinition = "TEXT")
     private String notes;
 
     @Setter
@@ -44,14 +47,85 @@ public class ShoppingListItem implements IEntity
     @JoinColumn(name = "shopping_list_id", nullable = false)
     private ShoppingList shoppingList;
 
-    public ShoppingListItem(String ingredientName, double quantity, String unit, String supplier, String notes)
+    public ShoppingListItem(String ingredientName, double quantity, Unit unit, String supplier, String notes)
     {
-        this.ingredientName = ingredientName;
+        requireNotBlank(ingredientName);
+        requirePositive(quantity);
+        requireNotNull(unit);
+
+        this.ingredientName = ingredientName.trim();
         this.quantity = quantity;
         this.unit = unit;
-        this.supplier = supplier;
+        this.supplier = supplier != null ? supplier.trim() : null;
         this.notes = notes;
         this.isOrdered = false;
+    }
+
+    public void markAsOrdered()
+    {
+        if (this.isOrdered)
+        {
+            throw new IllegalStateException("Item is already marked as ordered");
+        }
+        this.isOrdered = true;
+    }
+
+    public void unmarkAsOrdered()
+    {
+        if (!this.isOrdered)
+        {
+            throw new IllegalStateException("Item is not marked as ordered");
+        }
+        this.isOrdered = false;
+    }
+
+    public void update(Double quantity, Unit unit, String supplier)
+    {
+        requireDraftStatus();
+
+        if (quantity != null && quantity > 0)
+        {
+            this.quantity = quantity;
+        }
+        if (unit != null)
+        {
+            this.unit = unit;
+        }
+        if (supplier != null && !supplier.isBlank()) {
+            this.supplier = supplier;
+        }
+    }
+
+    private void requireNotBlank(String value)
+    {
+        if (value == null || value.isBlank())
+        {
+            throw new ValidationException("Ingredient name" + " is required");
+        }
+    }
+
+    private void requirePositive(double value)
+    {
+        if (value <= 0)
+        {
+            throw new ValidationException("Quantity" + " must be greater than 0");
+        }
+    }
+
+    private void requireNotNull(Object value)
+    {
+        if (value == null)
+        {
+            throw new ValidationException("Unit" + " is required");
+        }
+    }
+
+    private void requireDraftStatus()
+    {
+        if (shoppingList != null && !shoppingList.isDraft())
+        {
+            throw new IllegalStateException("Cannot modify items in finalized list");
+        }
     }
 
     @Override
@@ -68,5 +142,4 @@ public class ShoppingListItem implements IEntity
     {
         return getClass().hashCode();
     }
-
 }

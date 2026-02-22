@@ -1,12 +1,22 @@
 package app.config;
 
+import app.dtos.dish.DishTranslationDTO;
+import app.dtos.gemini.AiDishSuggestionDTO;
+import app.dtos.weather.WeatherForecastDTO;
 import app.enums.UserRole;
+import app.integrations.ai.GeminiClient;
+import app.integrations.ai.IAiClient;
+import app.integrations.translation.DeepLTranslationClient;
+import app.integrations.translation.ITranslationClient;
+import app.integrations.weather.WeatherClient;
 import app.persistence.entities.Allergen;
 import app.persistence.entities.DishSuggestion;
 import app.persistence.entities.Station;
 import app.persistence.entities.User;
 import app.services.*;
+import app.utils.WeatherForecastBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,19 +39,27 @@ public class ApplicationConfig
             throw new RuntimeException(e);
         }
 
-
-
         HttpClient client = HttpClient.newHttpClient();
         ObjectMapper objectMapper = new ObjectMapper();
-        String url = properties.getProperty("DEEPL_URL");
+        objectMapper.registerModule(new JavaTimeModule());
+        String deeplUrl = properties.getProperty("DEEPL_URL");
+        String geminiUrl = properties.getProperty("GEMINI_URL");
+        String openMeteoUrl = properties.getProperty("OPEN_METEO_URL");
         String deepLApiKey = System.getenv("DEEPL_APIKEY");
         String geminiApiKey = System.getenv("GEMINI_API_KEY");
 
-        ITranslationService translationService = new DeepLTranslationClient(client, objectMapper, url, deepLApiKey);
-        IDishTranslationService dishTranslationService = new DishTranslationService(translationService);
-        IAiClient aiClient = new GeminiClient(client, objectMapper, geminiApiKey);
+        ITranslationClient translationService = new DeepLTranslationClient(client, objectMapper, deeplUrl, deepLApiKey);
+        IAiClient aiClient = new GeminiClient(client, objectMapper, geminiApiKey, geminiUrl);
+        IAiService aiService = new AiService(objectMapper, aiClient);
+        WeatherClient weatherClient = new WeatherClient(client, objectMapper, openMeteoUrl);
 
-        //AD Hoc test
+
+        IDishTranslationService dishTranslationService = new DishTranslationService(translationService);
+        WeatherForecastDTO weatherForecastDTO = weatherClient.getWeatherForecast();
+        String forecast = WeatherForecastBuilder.getWeatherForecast(weatherForecastDTO);
+
+        List<AiDishSuggestionDTO> dishSuggestionDTOs = aiService.getAiDishSuggestion(forecast, "Sandwich station");
+        dishSuggestionDTOs.forEach(System.out::println);
 
         List<String> ingredientsToNormalize = List.of(
             "onions",
@@ -50,10 +68,10 @@ public class ApplicationConfig
             "rødløg",
             "hvidløg",
             "garlic",
-            "hvidløch",           // Stavefejl
+            "hvidløch",
             "potatoes",
             "nye kartofler",
-            "carots",             // Stavefejl
+            "carots",
             "gulerødder",
             "gulerod",
             "piskefløde",
@@ -69,7 +87,7 @@ public class ApplicationConfig
             "peber",
             "shallots",
             "skalotteløg",
-            "skalotte løg",       // Særskrivning
+            "skalotte løg",
             "spring onions",
             "forårsløg",
             "chives",
@@ -107,11 +125,11 @@ public class ApplicationConfig
             allergens
         );
 
-        //DishTranslationDTO dishTranslationDTO = dishTranslationService.translateTo(d1, "DE");
+        DishTranslationDTO dishTranslationDTO = dishTranslationService.translateTo(d1, "EN");
 
-        //System.out.println(dishTranslationDTO);
+        System.out.println(dishTranslationDTO);
 
-        Map<String, String> result = aiClient.normalizeIngredientList(ingredientsToNormalize, "da");
+        Map<String, String> result = aiService.normalizeIngredientList(ingredientsToNormalize, "da");
 
         result.forEach((k, v) -> System.out.println("Key: " + k + " Value " + v));
 

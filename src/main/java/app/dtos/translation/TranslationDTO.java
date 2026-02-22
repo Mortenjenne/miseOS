@@ -8,7 +8,7 @@ public record TranslationDTO(
     @JsonProperty("detected_source_language")
     String detectedSourceLanguage,
 
+    @JsonProperty("text")
     String text
 )
-{
-}
+{}

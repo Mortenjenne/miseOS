@@ -2,6 +2,7 @@ package app.persistence.entities;
 
 import app.enums.RequestType;
 import app.enums.Status;
+import app.enums.Unit;
 import app.enums.UserRole;
 import app.exceptions.UnauthorizedActionException;
 import jakarta.persistence.*;
@@ -32,8 +33,9 @@ public class IngredientRequest implements IEntity
     private double quantity;
 
     @Setter
+    @Enumerated(EnumType.STRING)
     @Column(name = "unit", nullable = false)
-    private String unit;
+    private Unit unit;
 
     @Setter
     @Column(name = "preferred_supplier")
@@ -72,7 +74,7 @@ public class IngredientRequest implements IEntity
     @JoinColumn(name = "dish_suggestion_id")
     private DishSuggestion dishSuggestion;
 
-    public IngredientRequest(String name, double quantity, String unit, String preferredSupplier, String note, RequestType requestType, LocalDate deliveryDate, DishSuggestion dishSuggestion, User createdBy)
+    public IngredientRequest(String name, double quantity, Unit unit, String preferredSupplier, String note, RequestType requestType, LocalDate deliveryDate, DishSuggestion dishSuggestion, User createdBy)
     {
         this.name = name;
         this.quantity = quantity;
