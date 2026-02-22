@@ -64,4 +64,5 @@ public final class HibernateConfig
         props.put("hibernate.connection.username", username);
         props.put("hibernate.connection.password", password);
     }
+
 }
