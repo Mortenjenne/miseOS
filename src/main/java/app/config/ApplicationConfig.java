@@ -1,5 +1,6 @@
 package app.config;
 
+import app.dtos.dish.DishTranslationDTO;
 import app.dtos.gemini.AiDishSuggestionDTO;
 import app.dtos.weather.WeatherForecastDTO;
 import app.enums.UserRole;
@@ -38,27 +39,27 @@ public class ApplicationConfig
             throw new RuntimeException(e);
         }
 
-
-
         HttpClient client = HttpClient.newHttpClient();
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
-        String url = properties.getProperty("DEEPL_URL");
+        String deeplUrl = properties.getProperty("DEEPL_URL");
+        String geminiUrl = properties.getProperty("GEMINI_URL");
+        String openMeteoUrl = properties.getProperty("OPEN_METEO_URL");
         String deepLApiKey = System.getenv("DEEPL_APIKEY");
         String geminiApiKey = System.getenv("GEMINI_API_KEY");
 
-        ITranslationClient translationService = new DeepLTranslationClient(client, objectMapper, url, deepLApiKey);
+        ITranslationClient translationService = new DeepLTranslationClient(client, objectMapper, deeplUrl, deepLApiKey);
+        IAiClient aiClient = new GeminiClient(client, objectMapper, geminiApiKey, geminiUrl);
+        IAiService aiService = new AiService(objectMapper, aiClient);
+        WeatherClient weatherClient = new WeatherClient(client, objectMapper, openMeteoUrl);
+
+
         IDishTranslationService dishTranslationService = new DishTranslationService(translationService);
-        IAiClient aiClient = new GeminiClient(client, objectMapper, geminiApiKey);
-        WeatherClient weatherClient = new WeatherClient(client, objectMapper);
+        //WeatherForecastDTO weatherForecastDTO = weatherClient.getWeatherForecast();
+        //String forecast = WeatherForecastBuilder.getWeatherForecast(weatherForecastDTO);
 
-        WeatherForecastDTO weatherForecastDTO = weatherClient.getWeatherForecast();
-        String forecast = WeatherForecastBuilder.getWeatherForecast(weatherForecastDTO);
-        System.out.println(forecast);
-
-        List<AiDishSuggestionDTO> dishSuggestionDTOs = aiClient.getAiDishSuggestion(forecast, "Salad station");
-        dishSuggestionDTOs.forEach(System.out::println);
-
+        //List<AiDishSuggestionDTO> dishSuggestionDTOs = aiService.getAiDishSuggestion(forecast, "Salad station");
+        //dishSuggestionDTOs.forEach(System.out::println);
 
         List<String> ingredientsToNormalize = List.of(
             "onions",
@@ -124,13 +125,13 @@ public class ApplicationConfig
             allergens
         );
 
-        //DishTranslationDTO dishTranslationDTO = dishTranslationService.translateTo(d1, "DE");
+        DishTranslationDTO dishTranslationDTO = dishTranslationService.translateTo(d1, "DE");
 
-        //System.out.println(dishTranslationDTO);
+        System.out.println(dishTranslationDTO);
 
-        //Map<String, String> result = aiClient.normalizeIngredientList(ingredientsToNormalize, "da");
+        Map<String, String> result = aiService.normalizeIngredientList(ingredientsToNormalize, "da");
 
-        //result.forEach((k, v) -> System.out.println("Key: " + k + " Value " + v));
+        result.forEach((k, v) -> System.out.println("Key: " + k + " Value " + v));
 
 
     }

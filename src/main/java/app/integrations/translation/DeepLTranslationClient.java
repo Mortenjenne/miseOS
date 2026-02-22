@@ -6,6 +6,7 @@ import app.dtos.translation.TranslationDTO;
 import app.exceptions.TranslationException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -40,9 +41,13 @@ public class DeepLTranslationClient implements ITranslationClient
 
             return handleResponse(response);
         }
+        catch (IOException | InterruptedException e)
+        {
+            throw new TranslationException("Translation network call failed: " + e.getMessage());
+        }
         catch (Exception e)
         {
-            throw new TranslationException("Translation call failed " + e.getMessage());
+            throw new TranslationException("Translation error: " + e.getMessage());
         }
     }
 

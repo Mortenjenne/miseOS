@@ -14,13 +14,14 @@ public class WeatherClient implements IWeatherClient
 {
     private final HttpClient client;
     private final ObjectMapper objectMapper;
-    private final String URL = "https://api.open-meteo.com/v1/forecast?latitude=55.6759&longitude=12.5655&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weathercode&timezone=Europe/Copenhagen&forecast_days=7";
+    private final String apiUrl;
 
 
-    public WeatherClient(HttpClient client, ObjectMapper objectMapper)
+    public WeatherClient(HttpClient client, ObjectMapper objectMapper, String apiUrl)
     {
         this.client = client;
         this.objectMapper = objectMapper;
+        this.apiUrl = apiUrl;
     }
 
     @Override
@@ -59,7 +60,7 @@ public class WeatherClient implements IWeatherClient
     private HttpRequest buildHttpRequest()
     {
         return HttpRequest.newBuilder()
-            .uri(URI.create(URL))
+            .uri(URI.create(apiUrl))
             .GET()
             .header("Content-Type", "application/json")
             .build();

@@ -27,14 +27,14 @@ public class ShoppingListService
     private final IShoppingListDAO shoppingListDAO;
     private final IIngredientRequestDAO ingredientRequestDAO;
     private final IUserReader userReader;
-    private final IAiClient aiClient;
+    private final IAiService aiService;
 
-    public ShoppingListService(IShoppingListDAO shoppingListDAO, IIngredientRequestDAO ingredientRequestDAO, IUserReader userReader, IAiClient aiClient)
+    public ShoppingListService(IShoppingListDAO shoppingListDAO, IIngredientRequestDAO ingredientRequestDAO, IUserReader userReader, IAiService aiService)
     {
         this.shoppingListDAO = shoppingListDAO;
         this.ingredientRequestDAO = ingredientRequestDAO;
         this.userReader = userReader;
-        this.aiClient = aiClient;
+        this.aiService = aiService;
     }
 
     public ShoppingListDTO generateShoppingList(CreateShoppingListDTO dto)
@@ -49,7 +49,7 @@ public class ShoppingListService
 
 
         List<String> uniqueIngredientNames = getUniqueIngredientNames(approvedRequests);
-        Map<String, String> normalizedNames = aiClient.normalizeIngredientList(uniqueIngredientNames, dto.targetLanguage());
+        Map<String, String> normalizedNames = aiService.normalizeIngredientList(uniqueIngredientNames, dto.targetLanguage());
 
         Map<AggregationKey, List<IngredientRequest>> grouped = getIngredientsGrouped(approvedRequests, normalizedNames);
         ShoppingList shoppingList = new ShoppingList(dto.deliveryDate(), creator);
