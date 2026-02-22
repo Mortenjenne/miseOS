@@ -4,7 +4,6 @@ import app.dtos.shopping.*;
 import app.enums.ShoppingListStatus;
 import app.enums.Status;
 import app.exceptions.UnauthorizedActionException;
-import app.integrations.ai.IAiClient;
 import app.persistence.daos.IIngredientRequestDAO;
 import app.persistence.daos.IShoppingListDAO;
 import app.persistence.daos.IUserReader;

@@ -6,7 +6,6 @@ import app.enums.RequestType;
 import app.enums.Status;
 import app.exceptions.UnauthorizedActionException;
 import app.exceptions.ValidationException;
-import app.persistence.daos.IDishSuggestionDAO;
 import app.persistence.daos.IDishSuggestionReader;
 import app.persistence.daos.IIngredientRequestDAO;
 import app.persistence.entities.DishSuggestion;

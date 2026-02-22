@@ -55,11 +55,11 @@ public class ApplicationConfig
 
 
         IDishTranslationService dishTranslationService = new DishTranslationService(translationService);
-        //WeatherForecastDTO weatherForecastDTO = weatherClient.getWeatherForecast();
-        //String forecast = WeatherForecastBuilder.getWeatherForecast(weatherForecastDTO);
+        WeatherForecastDTO weatherForecastDTO = weatherClient.getWeatherForecast();
+        String forecast = WeatherForecastBuilder.getWeatherForecast(weatherForecastDTO);
 
-        //List<AiDishSuggestionDTO> dishSuggestionDTOs = aiService.getAiDishSuggestion(forecast, "Salad station");
-        //dishSuggestionDTOs.forEach(System.out::println);
+        List<AiDishSuggestionDTO> dishSuggestionDTOs = aiService.getAiDishSuggestion(forecast, "Sandwich station");
+        dishSuggestionDTOs.forEach(System.out::println);
 
         List<String> ingredientsToNormalize = List.of(
             "onions",
@@ -125,7 +125,7 @@ public class ApplicationConfig
             allergens
         );
 
-        DishTranslationDTO dishTranslationDTO = dishTranslationService.translateTo(d1, "DE");
+        DishTranslationDTO dishTranslationDTO = dishTranslationService.translateTo(d1, "EN");
 
         System.out.println(dishTranslationDTO);
 
