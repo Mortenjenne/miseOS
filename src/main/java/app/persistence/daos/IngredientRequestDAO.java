@@ -1,12 +1,10 @@
 package app.persistence.daos;
 
 import app.enums.Status;
+import app.exceptions.DatabaseException;
 import app.persistence.entities.IngredientRequest;
-import app.persistence.entities.User;
 import app.utils.DBValidator;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.TypedQuery;
+import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -53,10 +51,18 @@ public class IngredientRequestDAO implements IIngredientRequestDAO
 
         try(EntityManager em = emf.createEntityManager())
         {
-            em.getTransaction().begin();
-            em.persist(ingredientRequest);
-            em.getTransaction().commit();
-            return ingredientRequest;
+            try
+            {
+                em.getTransaction().begin();
+                em.persist(ingredientRequest);
+                em.getTransaction().commit();
+                return ingredientRequest;
+            }
+            catch (PersistenceException e)
+            {
+                rollback(em);
+                throw new DatabaseException("Failed to create IngredientRequest", e);
+            }
         }
     }
 
@@ -99,13 +105,15 @@ public class IngredientRequestDAO implements IIngredientRequestDAO
                 em.getTransaction().commit();
                 return merged;
             }
-            catch (RuntimeException e)
+            catch (EntityNotFoundException e)
             {
-                if (em.getTransaction().isActive())
-                {
-                    em.getTransaction().rollback();
-                }
+                rollback(em);
                 throw e;
+            }
+            catch (PersistenceException e)
+            {
+                rollback(em);
+                throw new DatabaseException("Failed to update IngredientRequest: " + ingredientRequest.getId(), e);
             }
         }
     }
@@ -126,14 +134,23 @@ public class IngredientRequestDAO implements IIngredientRequestDAO
                 em.getTransaction().commit();
                 return true;
 
-            } catch (RuntimeException e)
+            }
+            catch (EntityNotFoundException e)
             {
-                if (em.getTransaction().isActive())
-                {
-                    em.getTransaction().rollback();
-                }
+                rollback(em);
                 throw e;
+            }
+            catch (PersistenceException e)
+            {
+                rollback(em);
+                throw new DatabaseException("Failed to delete IngredientRequest: " + id, e);
             }
         }
     }
+
+    private void rollback(EntityManager em)
+    {
+        if (em.getTransaction().isActive())
+            em.getTransaction().rollback();
+        }
 }
