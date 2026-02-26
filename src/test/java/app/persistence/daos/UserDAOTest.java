@@ -2,6 +2,8 @@ package app.persistence.daos;
 
 import app.config.HibernateTestConfig;
 import app.enums.UserRole;
+import app.persistence.daos.impl.UserDAO;
+import app.persistence.daos.interfaces.IUserDAO;
 import app.persistence.entities.IEntity;
 import app.persistence.entities.User;
 import app.testutils.TestCleanDB;

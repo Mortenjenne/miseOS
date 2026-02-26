@@ -1,7 +1,8 @@
-package app.persistence.daos;
+package app.persistence.daos.impl;
 
 import app.enums.UserRole;
 import app.exceptions.DatabaseException;
+import app.persistence.daos.interfaces.IUserDAO;
 import app.persistence.entities.User;
 import app.utils.DBValidator;
 import app.utils.TransactionUtil;

@@ -4,7 +4,7 @@ import app.dtos.user.CreateUserRequestDTO;
 import app.dtos.user.LoginRequestDTO;
 import app.dtos.user.UserDTO;
 import app.enums.UserRole;
-import app.persistence.daos.IUserDAO;
+import app.persistence.daos.interfaces.IUserDAO;
 import app.persistence.entities.User;
 import app.services.IUserService;
 import app.utils.ValidationUtil;

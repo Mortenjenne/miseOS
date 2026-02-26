@@ -1,8 +1,7 @@
-package app.persistence.daos;
+package app.persistence.daos.interfaces;
 
 import app.persistence.entities.Allergen;
 
-import java.util.List;
 import java.util.Optional;
 
 public interface IAllergenDAO extends IEntityDAO<Allergen, Long>

@@ -3,6 +3,7 @@ package app.persistence.daos;
 import app.config.HibernateTestConfig;
 import app.enums.ShoppingListStatus;
 import app.enums.Unit;
+import app.persistence.daos.impl.ShoppingListDAO;
 import app.persistence.entities.IEntity;
 import app.persistence.entities.ShoppingList;
 import app.persistence.entities.ShoppingListItem;

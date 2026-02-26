@@ -1,15 +1,14 @@
-package app.persistence.daos;
+package app.persistence.daos.impl;
 
 import app.enums.Status;
 import app.exceptions.DatabaseException;
+import app.persistence.daos.interfaces.IDishSuggestionDAO;
 import app.persistence.entities.DishSuggestion;
-import app.persistence.entities.User;
 import app.utils.DBValidator;
 import app.utils.TransactionUtil;
 import jakarta.persistence.*;
 
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
 

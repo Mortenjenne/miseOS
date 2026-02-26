@@ -1,6 +1,7 @@
-package app.persistence.daos;
+package app.persistence.daos.impl;
 
 import app.exceptions.DatabaseException;
+import app.persistence.daos.interfaces.IAllergenDAO;
 import app.persistence.entities.Allergen;
 import app.utils.DBValidator;
 import app.utils.TransactionUtil;

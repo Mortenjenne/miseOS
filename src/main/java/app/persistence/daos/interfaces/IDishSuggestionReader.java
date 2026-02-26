@@ -1,4 +1,4 @@
-package app.persistence.daos;
+package app.persistence.daos.interfaces;
 
 import app.persistence.entities.DishSuggestion;
 
