@@ -1,10 +1,9 @@
 package app.persistence.daos;
 
+import app.exceptions.DatabaseException;
 import app.persistence.entities.Allergen;
 import app.utils.DBValidator;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.TypedQuery;
+import jakarta.persistence.*;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -41,10 +40,18 @@ public class AllergenDAO implements IAllergenDAO
 
         try(EntityManager em = emf.createEntityManager())
         {
-            em.getTransaction().begin();
-            em.persist(allergen);
-            em.getTransaction().commit();
-            return allergen;
+            try
+            {
+                em.getTransaction().begin();
+                em.persist(allergen);
+                em.getTransaction().commit();
+                return allergen;
+            }
+            catch (PersistenceException e)
+            {
+                rollback(em);
+                throw new DatabaseException("Failed to create Allergen", e);
+            }
         }
     }
 
@@ -87,13 +94,15 @@ public class AllergenDAO implements IAllergenDAO
                 em.getTransaction().commit();
                 return merged;
             }
-            catch (RuntimeException e)
+            catch (EntityNotFoundException e)
             {
-                if (em.getTransaction().isActive())
-                {
-                    em.getTransaction().rollback();
-                }
+                rollback(em);
                 throw e;
+            }
+            catch (PersistenceException e)
+            {
+                rollback(em);
+                throw new DatabaseException("Failed to update Allergen: " + allergen.getId(), e);
             }
         }
     }
@@ -114,14 +123,22 @@ public class AllergenDAO implements IAllergenDAO
                 em.getTransaction().commit();
                 return true;
 
-            } catch (RuntimeException e)
+            } catch (EntityNotFoundException e)
             {
-                if (em.getTransaction().isActive())
-                {
-                    em.getTransaction().rollback();
-                }
+                rollback(em);
                 throw e;
             }
+            catch (PersistenceException e)
+            {
+                rollback(em);
+                throw new DatabaseException("Failed to delete Allergen: " + id, e);
+            }
         }
+    }
+
+    private void rollback(EntityManager em)
+    {
+        if (em.getTransaction().isActive())
+            em.getTransaction().rollback();
     }
 }
