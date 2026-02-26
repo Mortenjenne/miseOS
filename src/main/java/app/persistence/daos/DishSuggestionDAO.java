@@ -1,13 +1,11 @@
 package app.persistence.daos;
 
 import app.enums.Status;
+import app.exceptions.DatabaseException;
 import app.persistence.entities.DishSuggestion;
 import app.persistence.entities.User;
 import app.utils.DBValidator;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.NoResultException;
-import jakarta.persistence.TypedQuery;
+import jakarta.persistence.*;
 
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -109,10 +107,18 @@ public class DishSuggestionDAO implements IDishSuggestionDAO
 
         try(EntityManager em = emf.createEntityManager())
         {
+            try
+            {
             em.getTransaction().begin();
             em.persist(dishSuggestion);
             em.getTransaction().commit();
             return dishSuggestion;
+            }
+            catch (PersistenceException e)
+            {
+                rollback(em);
+                throw new DatabaseException("Failed to create dish suggestion", e);
+            }
         }
     }
 
@@ -155,13 +161,15 @@ public class DishSuggestionDAO implements IDishSuggestionDAO
                 em.getTransaction().commit();
                 return merged;
             }
-            catch (RuntimeException e)
+            catch (EntityNotFoundException e)
             {
-                if (em.getTransaction().isActive())
-                {
-                    em.getTransaction().rollback();
-                }
+                rollback(em);
                 throw e;
+            }
+            catch (PersistenceException e)
+            {
+                rollback(em);
+                throw new DatabaseException("Failed to update dish: " + dishSuggestion.getId(), e);
             }
         }
     }
@@ -182,14 +190,22 @@ public class DishSuggestionDAO implements IDishSuggestionDAO
                 em.getTransaction().commit();
                 return true;
 
-            } catch (RuntimeException e)
+            } catch (EntityNotFoundException e)
             {
-                if (em.getTransaction().isActive())
-                {
-                    em.getTransaction().rollback();
-                }
+                rollback(em);
                 throw e;
             }
+            catch (PersistenceException e)
+            {
+                rollback(em);
+                throw new DatabaseException("Failed to delete dish: " + id, e);
+            }
         }
+    }
+
+    private void rollback(EntityManager em)
+    {
+        if (em.getTransaction().isActive())
+            em.getTransaction().rollback();
     }
 }
