@@ -37,4 +37,10 @@ public class DBValidator
             throw new IllegalArgumentException(errorMsg);
         }
     }
+
+    public static void validatePositive(double value, String fieldName)
+    {
+        if (value <= 0) {
+            throw new IllegalArgumentException(fieldName + " must be greater than 0");
+        }
 }
