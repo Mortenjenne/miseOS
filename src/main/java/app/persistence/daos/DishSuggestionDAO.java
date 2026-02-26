@@ -5,6 +5,7 @@ import app.exceptions.DatabaseException;
 import app.persistence.entities.DishSuggestion;
 import app.persistence.entities.User;
 import app.utils.DBValidator;
+import app.utils.TransactionUtil;
 import jakarta.persistence.*;
 
 import java.util.HashSet;
@@ -116,7 +117,7 @@ public class DishSuggestionDAO implements IDishSuggestionDAO
             }
             catch (PersistenceException e)
             {
-                rollback(em);
+                TransactionUtil.rollback(em);
                 throw new DatabaseException("Failed to create dish suggestion", e);
             }
         }
@@ -163,12 +164,12 @@ public class DishSuggestionDAO implements IDishSuggestionDAO
             }
             catch (EntityNotFoundException e)
             {
-                rollback(em);
+                TransactionUtil.rollback(em);
                 throw e;
             }
             catch (PersistenceException e)
             {
-                rollback(em);
+                TransactionUtil.rollback(em);
                 throw new DatabaseException("Failed to update dish: " + dishSuggestion.getId(), e);
             }
         }
@@ -192,20 +193,14 @@ public class DishSuggestionDAO implements IDishSuggestionDAO
 
             } catch (EntityNotFoundException e)
             {
-                rollback(em);
+                TransactionUtil.rollback(em);
                 throw e;
             }
             catch (PersistenceException e)
             {
-                rollback(em);
+                TransactionUtil.rollback(em);
                 throw new DatabaseException("Failed to delete dish: " + id, e);
             }
         }
-    }
-
-    private void rollback(EntityManager em)
-    {
-        if (em.getTransaction().isActive())
-            em.getTransaction().rollback();
     }
 }

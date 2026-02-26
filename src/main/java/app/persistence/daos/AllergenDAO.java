@@ -3,6 +3,7 @@ package app.persistence.daos;
 import app.exceptions.DatabaseException;
 import app.persistence.entities.Allergen;
 import app.utils.DBValidator;
+import app.utils.TransactionUtil;
 import jakarta.persistence.*;
 
 import java.util.HashSet;
@@ -49,7 +50,7 @@ public class AllergenDAO implements IAllergenDAO
             }
             catch (PersistenceException e)
             {
-                rollback(em);
+                TransactionUtil.rollback(em);
                 throw new DatabaseException("Failed to create Allergen", e);
             }
         }
@@ -96,12 +97,12 @@ public class AllergenDAO implements IAllergenDAO
             }
             catch (EntityNotFoundException e)
             {
-                rollback(em);
+                TransactionUtil.rollback(em);
                 throw e;
             }
             catch (PersistenceException e)
             {
-                rollback(em);
+                TransactionUtil.rollback(em);
                 throw new DatabaseException("Failed to update Allergen: " + allergen.getId(), e);
             }
         }
@@ -125,20 +126,14 @@ public class AllergenDAO implements IAllergenDAO
 
             } catch (EntityNotFoundException e)
             {
-                rollback(em);
+                TransactionUtil.rollback(em);
                 throw e;
             }
             catch (PersistenceException e)
             {
-                rollback(em);
+                TransactionUtil.rollback(em);
                 throw new DatabaseException("Failed to delete Allergen: " + id, e);
             }
         }
-    }
-
-    private void rollback(EntityManager em)
-    {
-        if (em.getTransaction().isActive())
-            em.getTransaction().rollback();
     }
 }

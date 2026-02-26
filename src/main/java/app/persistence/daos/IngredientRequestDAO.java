@@ -4,6 +4,7 @@ import app.enums.Status;
 import app.exceptions.DatabaseException;
 import app.persistence.entities.IngredientRequest;
 import app.utils.DBValidator;
+import app.utils.TransactionUtil;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
@@ -35,6 +36,9 @@ public class IngredientRequestDAO implements IIngredientRequestDAO
     @Override
     public Set<IngredientRequest> findByStatusAndDeliveryDate(Status status, LocalDate deliveryDate)
     {
+        DBValidator.validateNotNull(status, "Status");
+        DBValidator.validateNotNull(deliveryDate, "Delivery date");
+
         try(EntityManager em = emf.createEntityManager())
         {
             TypedQuery<IngredientRequest> query = em.createQuery("SELECT ir FROM IngredientRequest ir WHERE ir.requestStatus = :status AND ir.deliveryDate = :deliveryDate", IngredientRequest.class)
@@ -60,7 +64,7 @@ public class IngredientRequestDAO implements IIngredientRequestDAO
             }
             catch (PersistenceException e)
             {
-                rollback(em);
+                TransactionUtil.rollback(em);
                 throw new DatabaseException("Failed to create IngredientRequest", e);
             }
         }
@@ -107,12 +111,12 @@ public class IngredientRequestDAO implements IIngredientRequestDAO
             }
             catch (EntityNotFoundException e)
             {
-                rollback(em);
+                TransactionUtil.rollback(em);
                 throw e;
             }
             catch (PersistenceException e)
             {
-                rollback(em);
+                TransactionUtil.rollback(em);
                 throw new DatabaseException("Failed to update IngredientRequest: " + ingredientRequest.getId(), e);
             }
         }
@@ -137,20 +141,14 @@ public class IngredientRequestDAO implements IIngredientRequestDAO
             }
             catch (EntityNotFoundException e)
             {
-                rollback(em);
+                TransactionUtil.rollback(em);
                 throw e;
             }
             catch (PersistenceException e)
             {
-                rollback(em);
+                TransactionUtil.rollback(em);
                 throw new DatabaseException("Failed to delete IngredientRequest: " + id, e);
             }
         }
     }
-
-    private void rollback(EntityManager em)
-    {
-        if (em.getTransaction().isActive())
-            em.getTransaction().rollback();
-        }
 }

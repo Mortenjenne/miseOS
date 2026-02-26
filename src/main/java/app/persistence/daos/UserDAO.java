@@ -1,11 +1,11 @@
 package app.persistence.daos;
 
 import app.enums.UserRole;
+import app.exceptions.DatabaseException;
 import app.persistence.entities.User;
 import app.utils.DBValidator;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.TypedQuery;
+import app.utils.TransactionUtil;
+import jakarta.persistence.*;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -27,10 +27,18 @@ public class UserDAO implements IUserDAO
 
         try(EntityManager em = emf.createEntityManager())
         {
+            try
+            {
             em.getTransaction().begin();
             em.persist(user);
             em.getTransaction().commit();
             return user;
+            }
+            catch (PersistenceException e)
+            {
+                TransactionUtil.rollback(em);
+                throw new DatabaseException("Failed to create user", e);
+            }
         }
     }
 
@@ -73,13 +81,15 @@ public class UserDAO implements IUserDAO
                 em.getTransaction().commit();
                 return merged;
             }
-            catch (RuntimeException e)
+            catch (EntityNotFoundException e)
             {
-                if (em.getTransaction().isActive())
-                {
-                    em.getTransaction().rollback();
-                }
+                TransactionUtil.rollback(em);
                 throw e;
+            }
+            catch (PersistenceException e)
+            {
+                TransactionUtil.rollback(em);
+                throw new DatabaseException("Failed to update user: " + user.getId(), e);
             }
         }
     }
@@ -99,14 +109,16 @@ public class UserDAO implements IUserDAO
                 em.remove(managed);
                 em.getTransaction().commit();
                 return true;
-
-            } catch (RuntimeException e)
+            }
+            catch (EntityNotFoundException e)
             {
-                if (em.getTransaction().isActive())
-                {
-                    em.getTransaction().rollback();
-                }
+                TransactionUtil.rollback(em);
                 throw e;
+            }
+            catch (PersistenceException e)
+            {
+                TransactionUtil.rollback(em);
+                throw new DatabaseException("Failed to delete user: " + id, e);
             }
         }
     }
