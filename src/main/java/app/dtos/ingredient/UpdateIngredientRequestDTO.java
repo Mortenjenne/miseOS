@@ -7,9 +7,6 @@ import app.enums.Unit;
 import java.time.LocalDate;
 
 public record UpdateIngredientRequestDTO(
-    Long ingredientId,
-    Long userEditor,
-    Long dishSuggestionId,
     String name,
     double quantity,
     Unit unit,

@@ -135,19 +135,19 @@ public class IngredientRequestService implements IIngredientRequestService
     }
 
     @Override
-    public IngredientRequestDTO updateRequest(UpdateIngredientRequestDTO dto)
+    public IngredientRequestDTO updateRequest(Long userEditorId, Long requestId, Long dishId, UpdateIngredientRequestDTO dto)
     {
-        ValidationUtil.validateId(dto.ingredientId());
-        ValidationUtil.validateId(dto.userEditor());
-        ValidationUtil.validateId(dto.dishSuggestionId());
+        ValidationUtil.validateId(userEditorId);
+        ValidationUtil.validateId(requestId);
+        ValidationUtil.validateId(dishId);
 
-        User editor = userReader.getByID(dto.userEditor());
+        User editor = userReader.getByID(userEditorId);
         requireKitchenStaff(editor);
 
         validateDeliveryDateRange(dto.deliveryDate());
 
-        DishSuggestion dish = validateAndGetDishSuggestionForRequest(dto.requestType(), dto.dishSuggestionId());
-        IngredientRequest existing = ingredientRequestDAO.getByID(dto.ingredientId());
+        DishSuggestion dish = validateAndGetDishSuggestionForRequest(dto.requestType(), dishId);
+        IngredientRequest existing = ingredientRequestDAO.getByID(requestId);
 
         existing.update(
             dto.name(),
