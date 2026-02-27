@@ -31,6 +31,14 @@ public class ValidationUtil
         }
     }
 
+    public static void validateNotEmpty(java.util.Collection<?> collection, String fieldName)
+    {
+        if (collection == null || collection.isEmpty())
+        {
+            throw new IllegalArgumentException(fieldName + " cannot be empty");
+        }
+    }
+
     public static void validateFutureDate(LocalDate date, String fieldName)
     {
         if (date == null)

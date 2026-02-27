@@ -137,10 +137,7 @@ public class ShoppingListService
 
         ShoppingList list = shoppingListDAO.getByID(shoppingListId);
 
-        ShoppingListItem item = list.getShoppingListItems().stream()
-            .filter(i -> i.getId().equals(itemId))
-            .findFirst()
-            .orElseThrow(() -> new EntityNotFoundException("Item not found: " + itemId));
+        ShoppingListItem item = findItemOrThrow(list, itemId);
 
         item.markAsOrdered();
 
@@ -199,16 +196,7 @@ public class ShoppingListService
         requireChef(user);
 
         ShoppingList list = shoppingListDAO.getByID(shoppingListId);
-
-        if (list.getShoppingListStatus() != ShoppingListStatus.DRAFT)
-        {
-            throw new IllegalStateException("Cannot remove items from finalized list");
-        }
-
-        ShoppingListItem item = list.getShoppingListItems().stream()
-            .filter(i -> i.getId().equals(itemId))
-            .findFirst()
-            .orElseThrow(() -> new EntityNotFoundException("Item not found: " + itemId));
+        ShoppingListItem item = findItemOrThrow(list, itemId);
 
         list.removeItem(item);
 
@@ -226,16 +214,7 @@ public class ShoppingListService
         requireChef(user);
 
         ShoppingList list = shoppingListDAO.getByID(dto.shoppingListId());
-
-        if (list.getShoppingListStatus() != ShoppingListStatus.DRAFT)
-        {
-            throw new IllegalStateException("Cannot update items in finalized list");
-        }
-
-        ShoppingListItem item = list.getShoppingListItems().stream()
-            .filter(i -> i.getId().equals(dto.itemId()))
-            .findFirst()
-            .orElseThrow(() -> new EntityNotFoundException("Item not found: " + dto.itemId()));
+        ShoppingListItem item = findItemOrThrow(list, dto.itemId());
 
         item.update(dto.quantity(), dto.unit(), dto.supplier());
 
@@ -318,6 +297,14 @@ public class ShoppingListService
         {
             throw new IllegalStateException("Shopping list already exists for date: " + dto.deliveryDate());
         }
+    }
+
+    private ShoppingListItem findItemOrThrow(ShoppingList list, Long itemId)
+    {
+        return list.getShoppingListItems().stream()
+            .filter(i -> i.getId().equals(itemId))
+            .findFirst()
+            .orElseThrow(() -> new EntityNotFoundException("Item not found: " + itemId));
     }
 
     private ShoppingListDTO mapToShoppingListDTO(ShoppingList shoppingList)

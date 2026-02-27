@@ -22,11 +22,9 @@ public class ShoppingList implements IEntity
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Setter
     @Column(name = "delivery_date")
     private LocalDate deliveryDate;
 
-    @Setter
     @Column(name = "shopping_list_status", nullable = false)
     private ShoppingListStatus shoppingListStatus;
 
@@ -57,7 +55,7 @@ public class ShoppingList implements IEntity
     public void addItem(ShoppingListItem shoppingListItem)
     {
         requireNotNull(shoppingListItem, "Shopping list item");
-        requireDraft("add items");
+        ensureDraft("add items");
 
         shoppingListItems.add(shoppingListItem);
         shoppingListItem.setShoppingList(this);
@@ -67,7 +65,7 @@ public class ShoppingList implements IEntity
     public void removeItem(ShoppingListItem shoppingListItem)
     {
         requireNotNull(shoppingListItem, "Shopping list item");
-        requireDraft("remove items");
+        ensureDraft("remove items");
 
         shoppingListItems.remove(shoppingListItem);
         shoppingListItem.setShoppingList(null);
@@ -76,7 +74,7 @@ public class ShoppingList implements IEntity
 
     public void finalizeShoppingList()
     {
-        requireDraft("finalize");
+        ensureDraft("finalize");
 
         this.shoppingListStatus = ShoppingListStatus.FINALIZED;
         this.finalizedAt = LocalDateTime.now();
@@ -85,7 +83,7 @@ public class ShoppingList implements IEntity
     public void updateDeliveryDate(LocalDate newDate)
     {
         requireNotNull(newDate, "Delivery date");
-        requireDraft("update delivery date");
+        ensureDraft("update delivery date");
 
         this.deliveryDate = newDate;
     }
@@ -120,19 +118,19 @@ public class ShoppingList implements IEntity
         return shoppingListItems.stream().allMatch(ShoppingListItem::isOrdered);
     }
 
+    private void ensureDraft(String action)
+    {
+        if (this.shoppingListStatus != ShoppingListStatus.DRAFT)
+        {
+            throw new IllegalStateException("Cannot " + action + " - list is " + shoppingListStatus);
+        }
+    }
+
     private void requireNotNull(Object value, String fieldName)
     {
         if (value == null)
         {
             throw new ValidationException(fieldName + " is required");
-        }
-    }
-
-    private void requireDraft(String action)
-    {
-        if (this.shoppingListStatus != ShoppingListStatus.DRAFT)
-        {
-            throw new ValidationException("Cannot " + action + " - list is " + shoppingListStatus);
         }
     }
 

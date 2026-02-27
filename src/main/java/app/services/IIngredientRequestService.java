@@ -2,6 +2,7 @@ package app.services;
 
 import app.dtos.ingredient.CreateIngredientRequestDTO;
 import app.dtos.ingredient.IngredientRequestDTO;
+import app.dtos.ingredient.UpdateIngredientRequestDTO;
 import app.enums.Status;
 import app.persistence.entities.User;
 
@@ -10,11 +11,11 @@ import java.util.Set;
 
 public interface IIngredientRequestService
 {
-    IngredientRequestDTO createRequest(User creator, CreateIngredientRequestDTO requestDTO);
+    IngredientRequestDTO createRequest(Long creatorId, CreateIngredientRequestDTO requestDTO);
 
-    IngredientRequestDTO approveIngredientRequest(User headChef, Long ingredientRequestId);
+    IngredientRequestDTO approveIngredientRequest(Long headChefId, Long ingredientRequestId);
 
-    IngredientRequestDTO rejectIngredientRequest(User headChef, Long requestId);
+    IngredientRequestDTO rejectIngredientRequest(Long headChefId, Long requestId);
 
     Set<IngredientRequestDTO> getAllPendingRequests();
 
@@ -24,7 +25,7 @@ public interface IIngredientRequestService
 
     IngredientRequestDTO getById(Long id);
 
-    IngredientRequestDTO updateRequest(User creator, IngredientRequestDTO requestDTO);
+    IngredientRequestDTO updateRequest(UpdateIngredientRequestDTO updateIngredientRequestDTO);
 
     boolean deleteRequest(Long id, User headChef);
 }
