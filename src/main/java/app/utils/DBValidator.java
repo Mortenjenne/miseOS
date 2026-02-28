@@ -30,6 +30,13 @@ public class DBValidator
         }
     }
 
+    public static void validateNotBlank(String value, String fieldName)
+    {
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException(fieldName + " cannot be null or empty.");
+        }
+    }
+
     public static void validateRange(int number, int min, int max, String fieldName) {
         if (number < min || number > max)
         {
