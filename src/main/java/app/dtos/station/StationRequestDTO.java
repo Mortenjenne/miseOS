@@ -1,7 +1,6 @@
 package app.dtos.station;
 
-public record StationUpdateRequestDTO(
-    Long stationId,
+public record StationRequestDTO(
     String name,
     String description
 )

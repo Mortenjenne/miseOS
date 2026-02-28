@@ -1,8 +1,7 @@
 package app.services;
 
-import app.dtos.station.StationCreateRequestDTO;
+import app.dtos.station.StationRequestDTO;
 import app.dtos.station.StationDTO;
-import app.dtos.station.StationUpdateRequestDTO;
 import app.exceptions.UnauthorizedActionException;
 import app.exceptions.ValidationException;
 import app.persistence.daos.interfaces.IStationDAO;
@@ -27,15 +26,12 @@ public class StationService
         this.userReader = userReader;
     }
 
-    public StationDTO registerStation(Long createdById, StationCreateRequestDTO dto)
+    public StationDTO registerStation(Long createdById, StationRequestDTO dto)
     {
-        ValidationUtil.validateNotNull(dto, "Station request");
         ValidationUtil.validateId(createdById);
-        ValidationUtil.validateNotBlank(dto.name(), "Station name");
-        ValidationUtil.validateNotBlank(dto.description(), "Station description");
+        validateInput(dto);
 
         User creator = userReader.getByID(createdById);
-
         requireChef(creator);
         validateStationNameUnique(dto.name());
 
@@ -45,19 +41,27 @@ public class StationService
         return mapToDTO(saved);
     }
 
-    public StationDTO updateStation(Long editorId, StationUpdateRequestDTO dto)
+    public StationDTO updateStation(Long editorId, Long stationId, StationRequestDTO dto)
     {
-        ValidationUtil.validateId(dto.stationId());
+        ValidationUtil.validateId(editorId);
+        ValidationUtil.validateId(stationId);
         ValidationUtil.validateId(editorId);
 
         User editor = userReader.getByID(editorId);
-        Station station = stationDAO.getByID(dto.stationId());
+        Station station = stationDAO.getByID(stationId);
         requireChef(editor);
 
-        station.update(dto.name(), dto.description());
+        if (!station.getStationName().equals(dto.name()))
+        {
+            validateStationNameUnique(dto.name());
+        }
+
+        station.update(
+            dto.name(),
+            dto.description()
+        );
 
         Station updated = stationDAO.update(station);
-
         return mapToDTO(updated);
     }
 
@@ -68,10 +72,7 @@ public class StationService
 
         Station station = stationDAO.getByID(stationId);
         User user = userReader.getByID(userId);
-
         requireChef(user);
-
-        //TODO Chef if stations is in use with users or dishes?
 
         return stationDAO.delete(station.getId());
     }
@@ -116,10 +117,17 @@ public class StationService
         }
     }
 
+    private void validateInput(StationRequestDTO dto)
+    {
+        ValidationUtil.validateNotNull(dto, "Station request");
+        ValidationUtil.validateNotBlank(dto.name(), "Station name");
+        ValidationUtil.validateNotBlank(dto.description(), "Description");
+    }
+
     private void validateStationNameUnique(String name)
     {
         Optional<Station> existing = stationDAO.findByName(name);
-        
+
         if (existing.isPresent())
         {
             throw new ValidationException("Station with name '" + name + "' already exists");
