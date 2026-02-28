@@ -119,13 +119,6 @@ public class DishSuggestion implements IEntity
         }
     }
 
-    public String getName(String language)
-    {
-        return "da".equalsIgnoreCase(language) ? nameDA : nameEN;
-    }
-
-    public String getDescription(String language) {return "da".equalsIgnoreCase(language) ? descriptionDA : descriptionEN;}
-
     public void approve(User approver)
     {
         validateApprover(approver);
@@ -153,25 +146,24 @@ public class DishSuggestion implements IEntity
         }
     }
 
-    public void removeAllergen(Allergen allergen)
+    public boolean isPending()
     {
-        if(allergen != null)
-        {
-            this.allergens.remove(allergen);
-        }
-
+        return this.dishStatus == Status.PENDING;
     }
 
-    public LocalDate getDeadlineDate()
+    public boolean isApproved()
     {
-        ValidationUtil.validateNotNull(targetWeek, "Target week");
-        ValidationUtil.validateNotNull(targetYear, "Target year");
+        return this.dishStatus == Status.APPROVED;
+    }
 
-        LocalDate targetMonday = LocalDate.of(targetYear, 1, 1)
-            .with(WeekFields.ISO.weekOfYear(), targetWeek)
-            .with(WeekFields.ISO.dayOfWeek(), 1);
+    public boolean isAvailableForMenu()
+    {
+        return this.dishStatus == Status.APPROVED;
+    }
 
-        return targetMonday.minusDays(4);
+    public boolean isForWeek(int week, int year)
+    {
+        return this.targetWeek == week && this.targetYear == year;
     }
 
     public void checkCreationAllowed(LocalDate today)
@@ -188,6 +180,39 @@ public class DishSuggestion implements IEntity
 
         return !today.isBefore(deadline);
     }
+
+    public void setTranslations(String nameEN, String descriptionEN)
+    {
+        this.nameEN = nameEN;
+        this.descriptionEN = descriptionEN;
+    }
+
+    public void removeAllergen(Allergen allergen)
+    {
+        if(allergen != null)
+        {
+            this.allergens.remove(allergen);
+        }
+    }
+
+    public LocalDate getDeadlineDate()
+    {
+        ValidationUtil.validateNotNull(targetWeek, "Target week");
+        ValidationUtil.validateNotNull(targetYear, "Target year");
+
+        LocalDate targetMonday = LocalDate.of(targetYear, 1, 1)
+            .with(WeekFields.ISO.weekOfYear(), targetWeek)
+            .with(WeekFields.ISO.dayOfWeek(), 1);
+
+        return targetMonday.minusDays(4);
+    }
+
+    public String getName(String language)
+    {
+        return "da".equalsIgnoreCase(language) ? nameDA : nameEN;
+    }
+
+    public String getDescription(String language) {return "da".equalsIgnoreCase(language) ? descriptionDA : descriptionEN;}
 
     @PrePersist
     private void onCreate()

@@ -97,16 +97,9 @@ public class StationService
     {
         ValidationUtil.validateNotBlank(name, "Station name");
 
-        return findStationByName(name)
-            .orElseThrow(() -> new EntityNotFoundException("Station not found: " + name));
-    }
-
-    private Optional<StationDTO> findStationByName(String name)
-    {
-        ValidationUtil.validateNotBlank(name, "Name");
-
         return stationDAO.findByName(name)
-            .map(this::mapToDTO);
+            .map(this::mapToDTO)
+            .orElseThrow(() -> new EntityNotFoundException("Station not found: " + name));
     }
 
     private void requireChef(User user)
