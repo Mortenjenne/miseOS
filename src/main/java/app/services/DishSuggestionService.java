@@ -1,8 +1,8 @@
 package app.services;
 
-import app.dtos.dish.DishCreateRequestDTO;
+import app.dtos.dish.DishSuggestionCreateDTO;
 import app.dtos.dish.DishSuggestionDTO;
-import app.dtos.dish.DishUpdateRequestDTO;
+import app.dtos.dish.DishSuggestionUpdateDTO;
 import app.enums.Status;
 import app.exceptions.UnauthorizedActionException;
 import app.persistence.daos.interfaces.*;
@@ -11,7 +11,6 @@ import app.utils.ValidationUtil;
 import jakarta.persistence.EntityNotFoundException;
 
 import java.time.LocalDate;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -32,10 +31,11 @@ public class DishSuggestionService
         this.allergenDAO = allergenDAO;
     }
 
-    public DishSuggestionDTO submitSuggestion(Long creatorId, DishCreateRequestDTO dto)
+    public DishSuggestionDTO submitSuggestion(Long creatorId, DishSuggestionCreateDTO dto)
     {
         ValidationUtil.validateId(dto.stationId());
         ValidationUtil.validateId(creatorId);
+        validateCreateInput(dto);
 
         Station station = stationReader.getByID(dto.stationId());
         User user = userReader.getByID(creatorId);
@@ -99,11 +99,11 @@ public class DishSuggestionService
         return mapToDTO(updated);
     }
 
-    public DishSuggestionDTO updateDish(Long editorId, Long suggestionId, DishUpdateRequestDTO dto)
+    public DishSuggestionDTO updateDish(Long editorId, Long suggestionId, DishSuggestionUpdateDTO dto)
     {
         ValidationUtil.validateId(editorId);
         ValidationUtil.validateId(suggestionId);
-        ValidationUtil.validateNotNull(dto, "Update request");
+        validateUpdateInput(dto);
 
         User editor = userReader.getByID(editorId);
         editor.ensureIsKitchenStaff();
@@ -220,6 +220,23 @@ public class DishSuggestionService
         return ids.stream()
             .map(allergenDAO::getByID)
             .collect(Collectors.toSet());
+    }
+
+    private void validateCreateInput(DishSuggestionCreateDTO dto)
+    {
+        ValidationUtil.validateNotNull(dto, "Suggestion");
+        ValidationUtil.validateNotBlank(dto.nameDA(), "Name");
+        ValidationUtil.validateNotBlank(dto.descriptionDA(), "Description");
+        ValidationUtil.validateId(dto.stationId());
+        ValidationUtil.validateRange(dto.targetWeek(), 1, 53, "Target week");
+        ValidationUtil.validateRange(dto.targetYear(), 2020, 2100, "Target year");
+    }
+
+    private void validateUpdateInput(DishSuggestionUpdateDTO dto)
+    {
+        ValidationUtil.validateNotNull(dto, "Suggestion");
+        ValidationUtil.validateNotBlank(dto.nameDA(), "Name");
+        ValidationUtil.validateNotBlank(dto.descriptionDA(), "Description");
     }
 
     private DishSuggestionDTO mapToDTO(DishSuggestion dish)

@@ -31,6 +31,15 @@ public class ValidationUtil
         }
     }
 
+    public static void validateRange(int number, int min, int max, String fieldName)
+    {
+        if (number < min || number > max)
+        {
+            String errorMsg = String.format("%s must be between %d and %d, got: %d", fieldName, min, max, number);
+            throw new IllegalArgumentException(errorMsg);
+        }
+    }
+
     public static void validateNotEmpty(java.util.Collection<?> collection, String fieldName)
     {
         if (collection == null || collection.isEmpty())
