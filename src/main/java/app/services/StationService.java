@@ -27,9 +27,14 @@ public class StationService
         this.userReader = userReader;
     }
 
-    public StationDTO registerStation(StationCreateRequestDTO dto)
+    public StationDTO registerStation(Long createdById, StationCreateRequestDTO dto)
     {
-        User creator = userReader.getByID(dto.createdById());
+        ValidationUtil.validateNotNull(dto, "Station request");
+        ValidationUtil.validateId(createdById);
+        ValidationUtil.validateNotBlank(dto.name(), "Station name");
+        ValidationUtil.validateNotBlank(dto.description(), "Station description");
+
+        User creator = userReader.getByID(createdById);
 
         requireChef(creator);
         validateStationNameUnique(dto.name());
@@ -40,12 +45,12 @@ public class StationService
         return mapToDTO(saved);
     }
 
-    public StationDTO updateStation(StationUpdateRequestDTO dto)
+    public StationDTO updateStation(Long editorId, StationUpdateRequestDTO dto)
     {
         ValidationUtil.validateId(dto.stationId());
-        ValidationUtil.validateId(dto.editorId());
+        ValidationUtil.validateId(editorId);
 
-        User editor = userReader.getByID(dto.editorId());
+        User editor = userReader.getByID(editorId);
         Station station = stationDAO.getByID(dto.stationId());
         requireChef(editor);
 
@@ -87,7 +92,10 @@ public class StationService
             .collect(Collectors.toSet());
     }
 
-    public StationDTO getStationByName(String name) {
+    public StationDTO getStationByName(String name)
+    {
+        ValidationUtil.validateNotBlank(name, "Station name");
+
         return findStationByName(name)
             .orElseThrow(() -> new EntityNotFoundException("Station not found: " + name));
     }
@@ -111,6 +119,7 @@ public class StationService
     private void validateStationNameUnique(String name)
     {
         Optional<Station> existing = stationDAO.findByName(name);
+        
         if (existing.isPresent())
         {
             throw new ValidationException("Station with name '" + name + "' already exists");
