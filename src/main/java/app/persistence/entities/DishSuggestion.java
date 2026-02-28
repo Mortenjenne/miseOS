@@ -90,7 +90,7 @@ public class DishSuggestion implements IEntity
         this.dishStatus = Status.PENDING;
     }
 
-    public void updateContent(String newNameDA, String newDescriptionDA, Set<Allergen> newAllergens, User editor)
+    public void updateContent(String newNameDA, String newDescriptionDA, Set<Allergen> newAllergens)
     {
         ensurePending();
         ValidationUtil.validateNotBlank(newNameDA, "Name");
