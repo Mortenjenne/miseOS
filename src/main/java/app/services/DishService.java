@@ -17,6 +17,4 @@ public class DishService
         this.allergenDAO = allergenDAO;
         this.userReader = userReader;
     }
-
-
 }
