@@ -386,8 +386,6 @@ public class TestPopulator
         }
     }
 
-
-
     private void populateWeeklyMenus()
     {
         Station hotStation = (Station) seeded.get("station_hot");

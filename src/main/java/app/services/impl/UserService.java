@@ -4,6 +4,7 @@ import app.dtos.user.CreateUserRequestDTO;
 import app.dtos.user.LoginRequestDTO;
 import app.dtos.user.UserDTO;
 import app.enums.UserRole;
+import app.mappers.UserMapper;
 import app.persistence.daos.interfaces.IUserDAO;
 import app.persistence.entities.User;
 import app.services.IUserService;
@@ -35,10 +36,8 @@ public UserService(IUserDAO userDAO)
             UserRole.LINE_COOK
         );
 
-        User userFromDB = userDAO.create(userToSave);
-
-
-        return new UserDTO(userFromDB);
+        User created = userDAO.create(userToSave);
+        return UserMapper.toDTO(created);
     }
 
     @Override
@@ -49,14 +48,14 @@ public UserService(IUserDAO userDAO)
         {
           throw new EntityNotFoundException("User not found");
         }
-        return new UserDTO(user);
+        return UserMapper.toDTO(user);
     }
 
     @Override
     public Set<UserDTO> findAll()
     {
         return userDAO.getAll().stream()
-            .map(UserDTO::new)
+            .map(UserMapper::toDTO)
             .collect(Collectors.toSet());
     }
 
@@ -69,7 +68,7 @@ public UserService(IUserDAO userDAO)
 
         return userDAO.findByEmail(loginRequest.email())
             .filter(user -> user.verifyPassword(loginRequest.password()))
-            .map(UserDTO::new)
+            .map(UserMapper::toDTO)
             .orElseThrow(() -> new IllegalArgumentException("Ugyldig mail eller password"));
     }
 
@@ -93,8 +92,7 @@ public UserService(IUserDAO userDAO)
         existingUser.setUserRole(updateDTO.userRole());
 
         User updatedUser = userDAO.update(existingUser);
-
-        return new UserDTO(userDAO.update(updatedUser));
+        return UserMapper.toDTO(updatedUser);
     }
 
     @Override

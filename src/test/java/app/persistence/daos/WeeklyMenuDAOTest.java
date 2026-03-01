@@ -42,7 +42,7 @@ class WeeklyMenuDAOTest
     void create() {
         WeeklyMenu menu = new WeeklyMenu(12, 2025);
         Station hot = (Station) seeded.get("station_hot");
-        DishSuggestion dishSuggestion = (DishSuggestion) seeded.get("dish_salmon");
+        Dish dishSuggestion = (Dish) seeded.get("dish_salmon");
 
         WeeklyMenuSlot slot = new WeeklyMenuSlot(app.enums.DayOfWeek.MONDAY, dishSuggestion, hot);
         menu.addMenuSlot(slot);
