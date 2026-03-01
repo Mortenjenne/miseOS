@@ -1,5 +1,7 @@
 package app.dtos.dish;
 
+import app.dtos.allergen.AllergenDTO;
+
 import java.time.LocalDateTime;
 import java.util.Set;
 
@@ -11,7 +13,7 @@ public record DishDTO(
     String descriptionEN,
     Long stationId,
     String stationName,
-    Set<String> allergens,
+    Set<AllergenDTO> allergens,
     boolean isActive,
     int originWeek,
     int originYear,
