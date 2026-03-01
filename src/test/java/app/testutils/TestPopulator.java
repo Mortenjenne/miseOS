@@ -17,7 +17,8 @@ public class TestPopulator
     private final IStationDAO stationDAO;
     private final IUserDAO userDAO;
     private final IAllergenDAO allergenDAO;
-    private final IDishSuggestionDAO dishDAO;
+    private final IDishSuggestionDAO dishSuggestionDAO;
+    private final IDishDAO dishDAO;
     private final IWeeklyMenuDAO menuDAO;
     private final IIngredientRequestDAO ingredientRequestDAO;
     private final IShoppingListDAO shoppingListDAO;
@@ -28,7 +29,8 @@ public class TestPopulator
         this.stationDAO = new StationDAO(emf);
         this.userDAO = new UserDAO(emf);
         this.allergenDAO = new AllergenDAO(emf);
-        this.dishDAO = new DishSuggestionDAO(emf);
+        this.dishSuggestionDAO = new DishSuggestionDAO(emf);
+        this.dishDAO = new DishDAO(emf);
         this.menuDAO = new WeeklyMenuDAO(emf);
         this.ingredientRequestDAO = new IngredientRequestDAO(emf);
         this.shoppingListDAO = new ShoppingListDAO(emf);
@@ -41,6 +43,7 @@ public class TestPopulator
         populateUsers();
         populateAllergens();
         populateDishSuggestions();
+        populateDishes();
         populateIngredientRequest();
         populateWeeklyMenus();
         populateShoppingLists();
@@ -173,7 +176,7 @@ public class TestPopulator
 
         DishSuggestion d5 = new DishSuggestion(
             "Sushi",
-            "sashimi og syltet ingefær",
+            "Sashimi og syltet ingefær",
             8,
             2026,
             coldStation,
@@ -181,17 +184,114 @@ public class TestPopulator
             new HashSet<>(allergens)
         );
 
-        dishDAO.create(d1);
-        dishDAO.create(d2);
-        dishDAO.create(d3);
-        dishDAO.create(d4);
-        dishDAO.create(d5);
+        dishSuggestionDAO.create(d1);
+        dishSuggestionDAO.create(d2);
+        dishSuggestionDAO.create(d3);
+        dishSuggestionDAO.create(d4);
+        dishSuggestionDAO.create(d5);
 
-        seeded.put("dish_salmon", d1);
-        seeded.put("dish_steak", d2);
-        seeded.put("dish_tartelet", d3);
-        seeded.put("dish_roastbeef", d4);
-        seeded.put("dish_sushi",d5);
+        seeded.put("suggestion_salmon", d1);
+        seeded.put("suggestion_steak", d2);
+        seeded.put("suggestion_tartelet", d3);
+        seeded.put("suggestion_roastbeef", d4);
+        seeded.put("suggestion_sushi",d5);
+    }
+
+    private void populateDishes()
+    {
+        Station hotStation = (Station) seeded.get("station_hot");
+        Station coldStation = (Station) seeded.get("station_cold");
+
+        User gordon = (User) seeded.get("user_gordon");
+
+        Allergen gluten = (Allergen) seeded.get("allergen_gluten");
+        Allergen dairy = (Allergen) seeded.get("allergen_dairy");
+        Allergen eggs = (Allergen) seeded.get("allergen_eggs");
+        Allergen fish = (Allergen) seeded.get("allergen_fish");
+
+        Set<Allergen> allergens = new HashSet<>(Set.of(gluten, dairy, eggs, fish));
+
+        Dish dish1 = new Dish(
+            "Røget Laks",
+            "Laks med dildcreme og rugbrødschips",
+            coldStation,
+            new HashSet<>(allergens),
+            gordon,
+            7,
+            2026
+        );
+
+        Dish dish2 = new Dish(
+            "Bøf Bearnaise",
+            "Oksemørbrad med hjemmelavet bearnaise",
+            hotStation,
+            new HashSet<>(allergens),
+            gordon,
+            7,
+            2026
+        );
+
+        Dish dish3 = new Dish(
+            "Tarteletter",
+            "Høns i asparges",
+            hotStation,
+            new HashSet<>(allergens),
+            gordon,
+            7,
+            2026
+        );
+
+        Dish dish4 = new Dish(
+            "Roastbeef",
+            "Roastbeef med remoulade og sprøde løg",
+            coldStation,
+            new HashSet<>(allergens),
+            gordon,
+            5,
+            2026
+        );
+
+        Dish dish5 = new Dish(
+            "Stegt Flæsk",
+            "Med persillesovs og kartofler",
+            hotStation,
+            new HashSet<>(allergens),
+            gordon,
+            5,
+            2026
+        );
+
+        dish5.update(
+            "Stegt Flæsk",
+            "Med persillesovs og kartofler",
+            "Fried Pork Belly",
+            "With parsley sauce and potatoes",
+            new HashSet<>(allergens)
+        );
+
+        Dish dish6 = new Dish(
+            "Jeppe's kål",
+            "Faseret kål med brun sovs",
+            hotStation,
+            new HashSet<>(),
+            gordon,
+            1,
+            2026
+        );
+
+        dishDAO.create(dish1);
+        dishDAO.create(dish2);
+        dishDAO.create(dish3);
+        dishDAO.create(dish4);
+        dishDAO.create(dish5);
+        dishDAO.create(dish6);
+
+        seeded.put("dish_sa", dish1);
+        seeded.put("dish_boeuf", dish2);
+        seeded.put("dish_tartelet", dish3);
+        seeded.put("dish_roastbeef", dish4);
+        seeded.put("dish_roasted_pork", dish5);
+        seeded.put("dish_old", dish6);
     }
 
     private void populateIngredientRequest()
@@ -288,14 +388,15 @@ public class TestPopulator
 
 
 
-    private void populateWeeklyMenus() {
+    private void populateWeeklyMenus()
+    {
         Station hotStation = (Station) seeded.get("station_hot");
         Station coldStation = (Station) seeded.get("station_cold");
 
-        DishSuggestion salmon = (DishSuggestion) seeded.get("dish_salmon");
-        DishSuggestion steak = (DishSuggestion) seeded.get("dish_steak");
-        DishSuggestion tartelet = (DishSuggestion) seeded.get("dish_tartelet");
-        DishSuggestion roastbeef = (DishSuggestion) seeded.get("dish_roastbeef");
+        Dish salmon = (Dish) seeded.get("dish_salmon");
+        Dish steak = (Dish) seeded.get("dish_steak");
+        Dish tartelet = (Dish) seeded.get("dish_tartelet");
+        Dish roastbeef = (Dish) seeded.get("dish_roastbeef");
 
         WeeklyMenu menu1 = new WeeklyMenu(7, 2025);
 
@@ -331,11 +432,5 @@ public class TestPopulator
         shoppingListDAO.create(list1);
 
         seeded.put("shopping_list_1", list1);
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T extends IEntity> T get(String key, Class<T> type)
-    {
-        return (T) seeded.get(key);
     }
 }
