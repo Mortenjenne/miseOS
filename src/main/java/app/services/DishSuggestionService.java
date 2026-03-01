@@ -212,12 +212,13 @@ public class DishSuggestionService
         }
     }
 
-    private Set<Allergen> fetchAllergens(Set<Long> ids)
+    private Set<Allergen> fetchAllergens(Set<Long> allergenIds)
     {
-        if (ids == null || ids.isEmpty()) {
+        if (allergenIds == null || allergenIds.isEmpty()) {
             return Set.of();
         }
-        return ids.stream()
+
+        return allergenIds.stream()
             .map(allergenDAO::getByID)
             .collect(Collectors.toSet());
     }

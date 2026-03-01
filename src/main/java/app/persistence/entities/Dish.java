@@ -72,28 +72,21 @@ public class Dish implements IEntity
         this.isActive = true;
     }
 
-    public void update(String nameDA, String descriptionDA, Set<Allergen> allergens)
+    public void update(String nameDA, String descriptionDA, String nameEN, String descriptionEN, Set<Allergen> allergens)
     {
-        ValidationUtil.validateNotBlank(nameDA, "Name");
-        ValidationUtil.validateNotBlank(descriptionDA, "Description");
+        ValidationUtil.validateNotBlank(nameDA, "Name Danish");
+        ValidationUtil.validateNotBlank(descriptionDA, "Description Danish");
 
         this.nameDA = nameDA.trim();
         this.descriptionDA = descriptionDA.trim();
-
-        this.nameEN = null;
-        this.descriptionEN = null;
+        this.nameEN = nameEN != null ? nameEN.trim() : null;
+        this.descriptionEN = descriptionEN != null ? descriptionEN.trim() : null;
 
         if (allergens != null)
         {
             this.allergens.clear();
             this.allergens.addAll(allergens);
         }
-    }
-
-    public void setTranslations(String nameEN, String descriptionEN)
-    {
-        this.nameEN = nameEN;
-        this.descriptionEN = descriptionEN;
     }
 
     public boolean hasTranslation()

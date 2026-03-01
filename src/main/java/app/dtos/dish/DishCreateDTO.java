@@ -6,8 +6,7 @@ public record DishCreateDTO(
     String nameDA,
     String descriptionDA,
     Long stationId,
-    String stationName,
-    Set<String> allergens
+    Set<Long> allergenIds
 )
 {
 }
