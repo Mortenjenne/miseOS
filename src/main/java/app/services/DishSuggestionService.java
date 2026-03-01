@@ -77,7 +77,7 @@ public class DishSuggestionService
             suggestion.getAllergens(),
             suggestion.getCreatedBy(),
             suggestion.getTargetWeek(),
-            suggestion.getTargetWeek()
+            suggestion.getTargetYear()
         );
 
         dishDAO.create(dish);
@@ -195,21 +195,6 @@ public class DishSuggestionService
         return dishes.stream()
             .map(this::mapToDTO)
             .collect(Collectors.toSet());
-    }
-
-    private void validateDeadlineNotPassed(int targetWeek, int targetYear)
-    {
-        LocalDate targetMonday = LocalDate.of(targetYear, 1, 1)
-            .with(java.time.temporal.WeekFields.ISO.weekOfYear(), targetWeek)
-            .with(java.time.temporal.WeekFields.ISO.dayOfWeek(), 1);
-
-        LocalDate deadline = targetMonday.minusDays(4);
-        LocalDate today = LocalDate.now();
-
-        if (!today.isBefore(deadline))
-        {
-            throw new IllegalArgumentException("Cannot create suggestion: deadline for week " + targetWeek + " was " + deadline);
-        }
     }
 
     private Set<Allergen> fetchAllergens(Set<Long> allergenIds)

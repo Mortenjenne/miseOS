@@ -1,9 +1,6 @@
 package app.services;
 
-import app.dtos.allergen.AllergenDTO;
-import app.dtos.dish.DishCreateDTO;
-import app.dtos.dish.DishDTO;
-import app.dtos.dish.DishUpdateDTO;
+import app.dtos.dish.*;
 import app.exceptions.UnauthorizedActionException;
 import app.persistence.daos.interfaces.IAllergenDAO;
 import app.persistence.daos.interfaces.IDishDAO;
@@ -16,6 +13,10 @@ import app.persistence.entities.User;
 import app.utils.ValidationUtil;
 import jakarta.persistence.EntityNotFoundException;
 
+import java.time.LocalDate;
+import java.time.temporal.IsoFields;
+import java.time.temporal.WeekFields;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -46,14 +47,18 @@ public class DishService
         Station station = stationReader.getByID(dto.stationId());
         Set<Allergen> allergens = fetchAllergens(dto.allergenIds());
 
+        LocalDate today = LocalDate.now();
+        int currentWeek = today.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR);
+        int currentYear = today.get(IsoFields.WEEK_BASED_YEAR);
+
         Dish dish = new Dish(
             dto.nameDA(),
             dto.descriptionDA(),
             station,
             allergens,
             creator,
-            1, //TODO what to do if its a direct entry from head chef sous chef?
-            2 //TODO what to do if its a direct entry from head chef sous chef?
+            currentWeek,
+            currentYear
         );
 
         Dish created = dishDAO.create(dish);
@@ -119,7 +124,7 @@ public class DishService
 
     //TODO Soft delete or Hard delete? do i need delete in dao then
 
-    public void deactivate(Long dishId, Long userId)
+    public DishDTO deactivate(Long dishId, Long userId)
     {
         ValidationUtil.validateId(dishId);
         ValidationUtil.validateId(userId);
@@ -129,10 +134,11 @@ public class DishService
 
         Dish dish = dishDAO.getByID(dishId);
         dish.deactivate();
-        dishDAO.update(dish);
+        Dish updated = dishDAO.update(dish);
+        return mapToDishDTO(updated);
     }
 
-    public void activate(Long dishId, Long userId)
+    public DishDTO activate(Long dishId, Long userId)
     {
         ValidationUtil.validateId(dishId);
         ValidationUtil.validateId(userId);
@@ -142,7 +148,39 @@ public class DishService
 
         Dish dish = dishDAO.getByID(dishId);
         dish.activate();
-        dishDAO.update(dish);
+        Dish updated = dishDAO.update(dish);
+        return mapToDishDTO(updated);
+    }
+
+    public AvailableDishesDTO getAvailableDishesForMenu(int week, int year)
+    {
+        ValidationUtil.validateRange(week, 1, 53, "Week");
+        ValidationUtil.validateRange(year, 2020, 2100, "Year");
+
+        Set<Dish> newDishesFromThisWeek = dishDAO.findByOriginWeekAndYear(week, year);
+        Set<Dish> fromDishHistory = dishDAO.findFromPreviousWeeks(week, year);
+
+        return new AvailableDishesDTO(
+            week,
+            year,
+            groupDishOptionsByStation(newDishesFromThisWeek),
+            groupDishOptionsByStation(fromDishHistory)
+        );
+    }
+
+    public Map<String, Set<DishOptionDTO>> getAllActiveDishesGrouped()
+    {
+        Set<Dish> dishes = dishDAO.findAllActive();
+        return groupDishOptionsByStation(dishes);
+    }
+
+    private Map<String, Set<DishOptionDTO>> groupDishOptionsByStation(Set<Dish> dishes)
+    {
+        return dishes.stream()
+            .collect(Collectors.groupingBy(
+                d -> d.getStation().getStationName(),
+                Collectors.mapping(this::mapToOption, Collectors.toSet())
+            ));
     }
 
     private Set<Allergen> fetchAllergens(Set<Long> allergenIds)
@@ -169,6 +207,16 @@ public class DishService
         {
             throw new UnauthorizedActionException("Only head chef or sous chef can create dishes directly");
         }
+    }
+
+    private DishOptionDTO mapToOption(Dish dish)
+    {
+        return new DishOptionDTO(
+            dish.getId(),
+            dish.getNameDA(),
+            dish.getDescriptionDA(),
+            dish.getStation().getStationName()
+        );
     }
 
     private DishDTO mapToDishDTO(Dish dish)

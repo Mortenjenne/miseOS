@@ -1,8 +1,9 @@
 package app.dtos.dish;
 
 public record DishOptionDTO(
-    Long id,
-    String name,
+    Long dishId,
+    String dishName,
+    String dishDescription,
     String stationName
 )
 {
