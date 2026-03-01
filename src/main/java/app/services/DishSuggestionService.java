@@ -1,8 +1,8 @@
 package app.services;
 
-import app.dtos.dish.DishSuggestionCreateDTO;
-import app.dtos.dish.DishSuggestionDTO;
-import app.dtos.dish.DishSuggestionUpdateDTO;
+import app.dtos.dishsuggestion.DishSuggestionCreateDTO;
+import app.dtos.dishsuggestion.DishSuggestionDTO;
+import app.dtos.dishsuggestion.DishSuggestionUpdateDTO;
 import app.enums.Status;
 import app.exceptions.UnauthorizedActionException;
 import app.persistence.daos.interfaces.*;

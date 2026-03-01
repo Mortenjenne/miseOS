@@ -1,4 +1,4 @@
-package app.dtos.dish;
+package app.dtos.dishsuggestion;
 
 import java.util.Set;
 
