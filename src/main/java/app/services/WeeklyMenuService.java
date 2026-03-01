@@ -1,5 +1,6 @@
 package app.services;
 
+import app.dtos.menu.WeeklyMenuDTO;
 import app.persistence.daos.interfaces.*;
 
 public class WeeklyMenuService

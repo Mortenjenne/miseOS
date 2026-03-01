@@ -4,6 +4,7 @@ import app.dtos.station.StationRequestDTO;
 import app.dtos.station.StationDTO;
 import app.exceptions.UnauthorizedActionException;
 import app.exceptions.ValidationException;
+import app.mappers.StationMapper;
 import app.persistence.daos.interfaces.IStationDAO;
 import app.persistence.daos.interfaces.IUserReader;
 import app.persistence.entities.Station;
@@ -38,7 +39,7 @@ public class StationService
         Station station = new Station(dto.name(), dto.description());
         Station saved = stationDAO.create(station);
 
-        return mapToDTO(saved);
+        return StationMapper.toDTO(saved);
     }
 
     public StationDTO updateStation(Long editorId, Long stationId, StationRequestDTO dto)
@@ -62,7 +63,7 @@ public class StationService
         );
 
         Station updated = stationDAO.update(station);
-        return mapToDTO(updated);
+        return StationMapper.toDTO(updated);
     }
 
     public boolean deleteStation(Long stationId, Long userId)
@@ -82,14 +83,14 @@ public class StationService
         ValidationUtil.validateId(id);
         Station station = stationDAO.getByID(id);
 
-        return mapToDTO(station);
+        return StationMapper.toDTO(station);
     }
 
     public Set<StationDTO> getAllStations()
     {
         return stationDAO.getAll()
             .stream()
-            .map(this::mapToDTO)
+            .map(StationMapper::toDTO)
             .collect(Collectors.toSet());
     }
 
@@ -98,7 +99,7 @@ public class StationService
         ValidationUtil.validateNotBlank(name, "Station name");
 
         return stationDAO.findByName(name)
-            .map(this::mapToDTO)
+            .map(StationMapper::toDTO)
             .orElseThrow(() -> new EntityNotFoundException("Station not found: " + name));
     }
 
@@ -125,14 +126,5 @@ public class StationService
         {
             throw new ValidationException("Station with name '" + name + "' already exists");
         }
-    }
-
-    private StationDTO mapToDTO(Station station)
-    {
-        return new StationDTO(
-            station.getId(),
-            station.getStationName(),
-            station.getDescription()
-        );
     }
 }

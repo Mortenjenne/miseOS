@@ -7,7 +7,7 @@ public class AllergenMapper
 {
     private AllergenMapper() {}
 
-    public AllergenDTO toDTO(Allergen allergen)
+    public static AllergenDTO toDTO(Allergen allergen)
     {
         return new AllergenDTO(
             allergen.getId(),

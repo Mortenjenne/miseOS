@@ -7,6 +7,7 @@ import app.enums.RequestType;
 import app.enums.Status;
 import app.exceptions.UnauthorizedActionException;
 import app.exceptions.ValidationException;
+import app.mappers.IngredientRequestMapper;
 import app.persistence.daos.interfaces.IDishSuggestionReader;
 import app.persistence.daos.interfaces.IIngredientRequestDAO;
 import app.persistence.daos.interfaces.IUserReader;
@@ -60,7 +61,7 @@ public class IngredientRequestService implements IIngredientRequestService
 
         IngredientRequest saved = ingredientRequestDAO.create(ingredientRequest);
 
-        return mapToDTO(saved);
+        return IngredientRequestMapper.toDTO(saved);
     }
 
     @Override
@@ -75,7 +76,7 @@ public class IngredientRequestService implements IIngredientRequestService
         request.approve(headChef);
 
         IngredientRequest updated = ingredientRequestDAO.update(request);
-        return mapToDTO(updated);
+        return IngredientRequestMapper.toDTO(updated);
     }
 
     @Override
@@ -90,7 +91,7 @@ public class IngredientRequestService implements IIngredientRequestService
         request.reject(headChef);
 
         IngredientRequest updated = ingredientRequestDAO.update(request);
-        return mapToDTO(updated);
+        return IngredientRequestMapper.toDTO(updated);
     }
 
     @Override
@@ -98,7 +99,7 @@ public class IngredientRequestService implements IIngredientRequestService
     {
         return ingredientRequestDAO.getAll()
             .stream()
-            .map(this::mapToDTO)
+            .map(IngredientRequestMapper::toDTO)
             .collect(Collectors.toSet());
     }
 
@@ -109,7 +110,7 @@ public class IngredientRequestService implements IIngredientRequestService
 
         return ingredientRequestDAO.findByStatus(status)
             .stream()
-            .map(this::mapToDTO)
+            .map(IngredientRequestMapper::toDTO)
             .collect(Collectors.toSet());
     }
 
@@ -121,7 +122,7 @@ public class IngredientRequestService implements IIngredientRequestService
 
         return ingredientRequestDAO.findByStatusAndDeliveryDate(status, deliveryDate)
             .stream()
-            .map(this::mapToDTO)
+            .map(IngredientRequestMapper::toDTO)
             .collect(Collectors.toSet());
     }
 
@@ -131,7 +132,7 @@ public class IngredientRequestService implements IIngredientRequestService
         ValidationUtil.validateId(id);
 
         IngredientRequest request = ingredientRequestDAO.getByID(id);
-        return mapToDTO(request);
+        return IngredientRequestMapper.toDTO(request);
     }
 
     @Override
@@ -161,7 +162,7 @@ public class IngredientRequestService implements IIngredientRequestService
 
         IngredientRequest updated = ingredientRequestDAO.update(existing);
 
-        return mapToDTO(updated);
+        return IngredientRequestMapper.toDTO(updated);
     }
 
     @Override
@@ -233,23 +234,5 @@ public class IngredientRequestService implements IIngredientRequestService
         ValidationUtil.validateNotNull(dto.unit(), "Unit");
         ValidationUtil.validateNotNull(dto.deliveryDate(), "Delivery date");
         ValidationUtil.validateFutureDate(dto.deliveryDate(), "Delivery date");
-    }
-
-    private IngredientRequestDTO mapToDTO(IngredientRequest request) {
-        return new IngredientRequestDTO(
-            request.getId(),
-            request.getName(),
-            request.getQuantity(),
-            request.getUnit(),
-            request.getPreferredSupplier(),
-            request.getNote(),
-            request.getRequestStatus(),
-            request.getRequestType(),
-            request.getDeliveryDate(),
-            request.getCreatedAt(),
-            request.getReviewedAt(),
-            request.getCreatedBy().getId(),
-            request.getDishSuggestion() != null ? request.getDishSuggestion().getId() : null
-        );
     }
 }

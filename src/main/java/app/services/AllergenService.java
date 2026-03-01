@@ -5,6 +5,7 @@ import app.dtos.allergen.AllergenDTO;
 import app.dtos.allergen.AllergenUpdateRequestDTO;
 import app.exceptions.UnauthorizedActionException;
 import app.exceptions.ValidationException;
+import app.mappers.AllergenMapper;
 import app.persistence.daos.interfaces.IAllergenDAO;
 import app.persistence.daos.interfaces.IUserReader;
 import app.persistence.entities.Allergen;
@@ -44,7 +45,7 @@ public class AllergenService
 
         Allergen saved = allergenDAO.create(allergen);
 
-        return mapToDTO(saved);
+        return AllergenMapper.toDTO(saved);
     }
 
     public AllergenDTO updateAllergen(Long allergenId, AllergenUpdateRequestDTO dto)
@@ -67,7 +68,7 @@ public class AllergenService
 
         Allergen updated = allergenDAO.update(allergen);
 
-        return mapToDTO(updated);
+        return AllergenMapper.toDTO(updated);
     }
 
     public boolean deleteAllergen(Long allergenId, Long userId)
@@ -85,13 +86,13 @@ public class AllergenService
     public AllergenDTO getAllergenById(Long id)
     {
         Allergen allergen = allergenDAO.getByID(id);
-        return mapToDTO(allergen);
+        return AllergenMapper.toDTO(allergen);
     }
 
     public Set<AllergenDTO> getAllAllergens()
     {
         return allergenDAO.getAll().stream()
-            .map(this::mapToDTO)
+            .map(AllergenMapper::toDTO)
             .collect(Collectors.toSet());
     }
 
@@ -106,7 +107,7 @@ public class AllergenService
         ValidationUtil.validateNotBlank(name, "Name");
 
         return allergenDAO.findByName(name)
-            .map(this::mapToDTO);
+            .map(AllergenMapper::toDTO);
     }
 
     //TODO implement!
@@ -158,15 +159,5 @@ public class AllergenService
         {
             throw new ValidationException("Allergen with name '" + name + "' already exists");
         }
-    }
-
-    private AllergenDTO mapToDTO(Allergen allergen)
-    {
-        return new AllergenDTO(
-            allergen.getId(),
-            allergen.getName(),
-            allergen.getDescription(),
-            allergen.getDisplayNumber()
-        );
     }
 }

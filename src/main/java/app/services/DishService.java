@@ -2,6 +2,7 @@ package app.services;
 
 import app.dtos.dish.*;
 import app.exceptions.UnauthorizedActionException;
+import app.mappers.DishMapper;
 import app.persistence.daos.interfaces.IAllergenDAO;
 import app.persistence.daos.interfaces.IDishDAO;
 import app.persistence.daos.interfaces.IStationReader;
@@ -61,7 +62,7 @@ public class DishService
         );
 
         Dish created = dishDAO.create(dish);
-        return mapToDishDTO(created);
+        return DishMapper.toDTO(created);
     }
 
     public DishDTO updateDish(Long editorId, Long dishId, DishUpdateDTO dto)
@@ -85,14 +86,14 @@ public class DishService
         );
 
         Dish updated = dishDAO.update(dish);
-        return mapToDishDTO(updated);
+        return DishMapper.toDTO(updated);
     }
 
     public DishDTO getById(Long dishId)
     {
         ValidationUtil.validateId(dishId);
         Dish dish = dishDAO.getByID(dishId);
-        return mapToDishDTO(dish);
+        return DishMapper.toDTO(dish);
     }
 
     public DishDTO getByIdWithAllergens(Long dishId)
@@ -100,7 +101,7 @@ public class DishService
         ValidationUtil.validateId(dishId);
 
         return dishDAO.getByIdWithAllergens(dishId)
-            .map(this::mapToDishDTO)
+            .map(DishMapper::toDTO)
             .orElseThrow(() -> new EntityNotFoundException("Dish with ID " + dishId + " not found"));
     }
 
@@ -108,7 +109,7 @@ public class DishService
     {
         return dishDAO.findAllActive()
             .stream()
-            .map(this::mapToDishDTO)
+            .map(DishMapper::toDTO)
             .collect(Collectors.toSet());
     }
 
@@ -118,7 +119,7 @@ public class DishService
 
         return dishDAO.searchByName(query)
             .stream()
-            .map(this::mapToDishDTO)
+            .map(DishMapper::toDTO)
             .collect(Collectors.toSet());
     }
 
@@ -149,7 +150,7 @@ public class DishService
         Dish dish = dishDAO.getByID(dishId);
         dish.deactivate();
         Dish updated = dishDAO.update(dish);
-        return mapToDishDTO(updated);
+        return DishMapper.toDTO(updated);
     }
 
     public DishDTO activate(Long dishId, Long userId)
@@ -163,7 +164,7 @@ public class DishService
         Dish dish = dishDAO.getByID(dishId);
         dish.activate();
         Dish updated = dishDAO.update(dish);
-        return mapToDishDTO(updated);
+        return DishMapper.toDTO(dish);
     }
 
     public AvailableDishesDTO getAvailableDishesForMenu(int week, int year)
@@ -193,7 +194,7 @@ public class DishService
         return dishes.stream()
             .collect(Collectors.groupingBy(
                 d -> d.getStation().getStationName(),
-                Collectors.mapping(this::mapToOption, Collectors.toSet())
+                Collectors.mapping(DishMapper::toOptionDTO, Collectors.toSet())
             ));
     }
 
@@ -227,33 +228,5 @@ public class DishService
         {
             throw new UnauthorizedActionException("Only head chef or sous chef can create dishes directly");
         }
-    }
-
-    private DishOptionDTO mapToOption(Dish dish)
-    {
-        return new DishOptionDTO(
-            dish.getId(),
-            dish.getNameDA(),
-            dish.getDescriptionDA(),
-            dish.getStation().getStationName()
-        );
-    }
-
-    private DishDTO mapToDishDTO(Dish dish)
-    {
-        return new DishDTO(
-            dish.getId(),
-            dish.getNameDA(),
-            dish.getNameEN(),
-            dish.getDescriptionDA(),
-            dish.getDescriptionEN(),
-            dish.getStation().getId(),
-            dish.getStation().getStationName(),
-            dish.getAllergens().stream().map(Allergen::getName).collect(Collectors.toSet()),
-            dish.isActive(),
-            dish.getOriginWeek(),
-            dish.getOriginYear(),
-            dish.getCreatedAt()
-        );
     }
 }

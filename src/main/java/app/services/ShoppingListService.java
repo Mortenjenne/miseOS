@@ -4,6 +4,7 @@ import app.dtos.shopping.*;
 import app.enums.ShoppingListStatus;
 import app.enums.Status;
 import app.exceptions.UnauthorizedActionException;
+import app.mappers.ShoppingListMapper;
 import app.persistence.daos.interfaces.IIngredientRequestDAO;
 import app.persistence.daos.interfaces.IShoppingListDAO;
 import app.persistence.daos.interfaces.IUserReader;
@@ -72,7 +73,7 @@ public class ShoppingListService
         });
 
         ShoppingList saved = shoppingListDAO.create(shoppingList);
-        return mapToShoppingListDTO(saved);
+        return ShoppingListMapper.toDTO(saved);
     }
 
     public ShoppingListDTO finalizeShoppingList(Long shoppingListId, Long userId)
@@ -89,7 +90,7 @@ public class ShoppingListService
 
         ShoppingList finalized = shoppingListDAO.update(list);
 
-        return mapToShoppingListDTO(finalized);
+        return ShoppingListMapper.toDTO(finalized);
     }
 
     public boolean deleteShoppingList(Long shoppingListId, Long userId)
@@ -105,6 +106,7 @@ public class ShoppingListService
         return shoppingListDAO.delete(list.getId());
     }
 
+    //TODO missing implementation
     public ShoppingListDTO updateShoppingList()
     {
         return null;
@@ -113,7 +115,7 @@ public class ShoppingListService
     public Set<ShoppingListDTO> getAll()
     {
         return shoppingListDAO.getAll().stream()
-            .map(this::mapToShoppingListDTO)
+            .map(ShoppingListMapper::toDTO)
             .collect(Collectors.toSet());
     }
 
@@ -122,7 +124,7 @@ public class ShoppingListService
         ValidationUtil.validateNotNull(status, "Status");
 
         return shoppingListDAO.findByStatus(status).stream()
-            .map(this::mapToShoppingListDTO)
+            .map(ShoppingListMapper::toDTO)
             .collect(Collectors.toSet());
     }
 
@@ -142,7 +144,7 @@ public class ShoppingListService
         item.markAsOrdered();
 
         ShoppingList updated = shoppingListDAO.update(list);
-        return mapToShoppingListDTO(updated);
+        return ShoppingListMapper.toDTO(updated);
     }
 
     public ShoppingListDTO markAllItemsOrdered(Long shoppingListId, Long userId)
@@ -158,7 +160,7 @@ public class ShoppingListService
         list.getShoppingListItems().forEach(ShoppingListItem::markAsOrdered);
 
         ShoppingList updated = shoppingListDAO.update(list);
-        return mapToShoppingListDTO(updated);
+        return ShoppingListMapper.toDTO(updated);
     }
 
     public ShoppingListDTO addItemToShoppingList(CreateShoppingListItemDTO dto)
@@ -183,7 +185,7 @@ public class ShoppingListService
         list.addItem(item);
 
         ShoppingList updated = shoppingListDAO.update(list);
-        return mapToShoppingListDTO(updated);
+        return ShoppingListMapper.toDTO(updated);
     }
 
     public ShoppingListDTO removeItem(Long shoppingListId, Long itemId, Long userId)
@@ -201,7 +203,7 @@ public class ShoppingListService
         list.removeItem(item);
 
         ShoppingList updated = shoppingListDAO.update(list);
-        return mapToShoppingListDTO(updated);
+        return ShoppingListMapper.toDTO(updated);
     }
 
     public ShoppingListDTO updateItem(UpdateShoppingListItemDTO dto)
@@ -219,7 +221,7 @@ public class ShoppingListService
         item.update(dto.quantity(), dto.unit(), dto.supplier());
 
         ShoppingList updated = shoppingListDAO.update(list);
-        return mapToShoppingListDTO(updated);
+        return ShoppingListMapper.toDTO(updated);
     }
 
     public ShoppingListDTO getById(Long shoppingListId)
@@ -227,7 +229,7 @@ public class ShoppingListService
         ValidationUtil.validateId(shoppingListId);
 
         ShoppingList list = shoppingListDAO.getByID(shoppingListId);
-        return mapToShoppingListDTO(list);
+        return ShoppingListMapper.toDTO(list);
     }
 
     public ShoppingListDTO findByDeliveryDate(LocalDate deliveryDate)
@@ -241,7 +243,7 @@ public class ShoppingListService
             throw new EntityNotFoundException("ShoppingList not found");
         }
 
-        return mapToShoppingListDTO(list.get());
+        return ShoppingListMapper.toDTO(list.get());
     }
 
     private String getMostCommonSupplier(List<IngredientRequest> requests)
@@ -305,35 +307,5 @@ public class ShoppingListService
             .filter(i -> i.getId().equals(itemId))
             .findFirst()
             .orElseThrow(() -> new EntityNotFoundException("Item not found: " + itemId));
-    }
-
-    private ShoppingListDTO mapToShoppingListDTO(ShoppingList shoppingList)
-    {
-        List<ShoppingListItemDTO> shoppingListItemDTOS = shoppingList.getShoppingListItems().stream()
-            .map(this::mapToShoppingItemDTO)
-            .toList();
-
-        return new ShoppingListDTO(
-            shoppingList.getId(),
-            shoppingList.getDeliveryDate(),
-            shoppingList.getShoppingListStatus().name(),
-            shoppingList.getCreatedBy().getFirstName(),
-            shoppingList.getItemCount(),
-            shoppingListItemDTOS,
-            shoppingList.allItemsOrdered()
-        );
-    }
-
-    private ShoppingListItemDTO mapToShoppingItemDTO(ShoppingListItem shoppingListItem)
-    {
-        return new ShoppingListItemDTO(
-            shoppingListItem.getId(),
-            shoppingListItem.getIngredientName(),
-            shoppingListItem.getQuantity(),
-            shoppingListItem.getUnit(),
-            shoppingListItem.getSupplier(),
-            shoppingListItem.getNotes(),
-            shoppingListItem.isOrdered()
-        );
     }
 }

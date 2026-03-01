@@ -5,6 +5,7 @@ import app.dtos.dishsuggestion.DishSuggestionDTO;
 import app.dtos.dishsuggestion.DishSuggestionUpdateDTO;
 import app.enums.Status;
 import app.exceptions.UnauthorizedActionException;
+import app.mappers.DishSuggestionMapper;
 import app.persistence.daos.interfaces.*;
 import app.persistence.entities.*;
 import app.utils.ValidationUtil;
@@ -56,7 +57,7 @@ public class DishSuggestionService
         dishRequest.checkCreationAllowed(LocalDate.now());
 
         DishSuggestion saved = dishSuggestionDAO.create(dishRequest);
-        return mapToDTO(saved);
+        return DishSuggestionMapper.toDTO(saved);
     }
 
     public DishSuggestionDTO approveDish(Long dishId, Long approverId)
@@ -82,7 +83,7 @@ public class DishSuggestionService
 
         dishDAO.create(dish);
 
-        return mapToDTO(updated);
+        return DishSuggestionMapper.toDTO(updated);
     }
 
     public DishSuggestionDTO rejectDish(Long dishId, Long approverId, String feedback)
@@ -96,7 +97,7 @@ public class DishSuggestionService
         dish.reject(approver, feedback);
         DishSuggestion updated = dishSuggestionDAO.update(dish);
 
-        return mapToDTO(updated);
+        return DishSuggestionMapper.toDTO(updated);
     }
 
     public DishSuggestionDTO updateDish(Long editorId, Long suggestionId, DishSuggestionUpdateDTO dto)
@@ -118,7 +119,7 @@ public class DishSuggestionService
 
         DishSuggestion updated = dishSuggestionDAO.update(suggestion);
 
-        return mapToDTO(updated);
+        return DishSuggestionMapper.toDTO(updated);
     }
 
     public boolean deleteDish(Long dishId, Long userId)
@@ -142,14 +143,15 @@ public class DishSuggestionService
     public DishSuggestionDTO getById(Long id)
     {
         ValidationUtil.validateId(id);
-        return mapToDTO(dishSuggestionDAO.getByID(id));
+        DishSuggestion dish = dishSuggestionDAO.getByID(id);
+        return DishSuggestionMapper.toDTO(dish);
     }
 
     public DishSuggestionDTO getByIdWithAllergens(Long id) {
         ValidationUtil.validateId(id);
 
         return dishSuggestionDAO.getByIdWithAllergens(id)
-            .map(this::mapToDTO)
+            .map(DishSuggestionMapper::toDTO)
             .orElseThrow(() -> new EntityNotFoundException("DishSuggestion with ID " + id + " not found"));
     }
 
@@ -157,7 +159,7 @@ public class DishSuggestionService
     {
         return dishSuggestionDAO.getAll()
             .stream()
-            .map(this::mapToDTO)
+            .map(DishSuggestionMapper::toDTO)
             .collect(Collectors.toSet());
     }
 
@@ -166,7 +168,7 @@ public class DishSuggestionService
         Set<DishSuggestion> dishes = dishSuggestionDAO.findByStatus(Status.PENDING);
 
         return dishes.stream()
-            .map(this::mapToDTO)
+            .map(DishSuggestionMapper::toDTO)
             .collect(Collectors.toSet());
     }
 
@@ -175,7 +177,7 @@ public class DishSuggestionService
         Set<DishSuggestion> dishes = dishSuggestionDAO.findByWeekYearAndStatus(week, year, Status.PENDING);
 
         return dishes.stream()
-            .map(this::mapToDTO)
+            .map(DishSuggestionMapper::toDTO)
             .collect(Collectors.toSet());
     }
 
@@ -184,7 +186,7 @@ public class DishSuggestionService
         Set<DishSuggestion> dishes = dishSuggestionDAO.findByWeekYearAndStatus(week, year, Status.APPROVED);
 
         return dishes.stream()
-            .map(this::mapToDTO)
+            .map(DishSuggestionMapper::toDTO)
             .collect(Collectors.toSet());
     }
 
@@ -193,7 +195,7 @@ public class DishSuggestionService
         Set<DishSuggestion> dishes = dishSuggestionDAO.findByStatus(status);
 
         return dishes.stream()
-            .map(this::mapToDTO)
+            .map(DishSuggestionMapper::toDTO)
             .collect(Collectors.toSet());
     }
 
@@ -223,21 +225,5 @@ public class DishSuggestionService
         ValidationUtil.validateNotNull(dto, "Suggestion");
         ValidationUtil.validateNotBlank(dto.nameDA(), "Name");
         ValidationUtil.validateNotBlank(dto.descriptionDA(), "Description");
-    }
-
-    private DishSuggestionDTO mapToDTO(DishSuggestion dish)
-    {
-        return new DishSuggestionDTO(
-            dish.getId(),
-            dish.getNameDA(),
-            dish.getDescriptionDA(),
-            dish.getDishStatus(),
-            dish.getFeedback(),
-            dish.getStation().getStationName(),
-            dish.getCreatedBy().getFirstName() + " " + dish.getCreatedBy().getLastName(),
-            dish.getAllergens().stream().map(Allergen::getName).collect(Collectors.toSet()),
-            dish.getTargetWeek(),
-            dish.getTargetYear()
-        );
     }
 }
