@@ -46,11 +46,17 @@ class IngredientRequestDAOTest
     void create()
     {
         User user = (User) seeded.get("user_claire");
-        DishSuggestion dish = (DishSuggestion) seeded.get("dish_salmon");
+        DishSuggestion dish = (DishSuggestion) seeded.get("suggestion_salmon");
 
         IngredientRequest request = new IngredientRequest(
-            "Citroner", 5.0, Unit.KG, "Torvehallernes grønt", "Til fisken",
-            RequestType.DISH_SPECIFIC, LocalDate.now().plusDays(2), dish, user
+            "Citroner",
+            5.0, Unit.KG,
+            "Torvehallernes grønt",
+            "Til fisken",
+            RequestType.DISH_SPECIFIC,
+            LocalDate.now().plusDays(2),
+            dish,
+            user
         );
 
         IngredientRequest result = ingredientRequestDAO.create(request);

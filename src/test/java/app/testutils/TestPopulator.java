@@ -279,6 +279,8 @@ public class TestPopulator
             2026
         );
 
+        dish6.deactivate(); //For inactive test
+
         dishDAO.create(dish1);
         dishDAO.create(dish2);
         dishDAO.create(dish3);
@@ -286,7 +288,7 @@ public class TestPopulator
         dishDAO.create(dish5);
         dishDAO.create(dish6);
 
-        seeded.put("dish_sa", dish1);
+        seeded.put("dish_salmon", dish1);
         seeded.put("dish_boeuf", dish2);
         seeded.put("dish_tartelet", dish3);
         seeded.put("dish_roastbeef", dish4);
@@ -298,7 +300,7 @@ public class TestPopulator
     {
         User headChef = (User) seeded.get("user_gordon");
         User lineCook = (User) seeded.get("user_claire");
-        DishSuggestion dish = (DishSuggestion) seeded.get("dish_salmon");
+        DishSuggestion dish = (DishSuggestion) seeded.get("suggestion_salmon");
 
         IngredientRequest req1 = new IngredientRequest(
             "Frisk Dild",
