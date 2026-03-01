@@ -6,7 +6,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-public class Utils {
+public class Utils
+{
+    private Utils(){}
 
     public static String getPropertyValue(String propName, String resourceName)
     {

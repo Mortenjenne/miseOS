@@ -7,6 +7,8 @@ import java.util.List;
 
 public class WeatherForecastBuilder
 {
+    private WeatherForecastBuilder(){}
+    
     public static String getWeatherForecast(WeatherForecastDTO weatherForecastDTO)
     {
         StringBuilder sb = new StringBuilder();

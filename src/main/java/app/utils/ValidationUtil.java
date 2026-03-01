@@ -6,6 +6,8 @@ import java.time.LocalDate;
 
 public class ValidationUtil
 {
+    private ValidationUtil(){}
+
     public static void validateNotNull(Object obj, String entityName)
     {
         if (obj == null)

@@ -2,6 +2,8 @@ package app.utils;
 
 public class NormalizeTextPromptBuilder
 {
+    private NormalizeTextPromptBuilder(){}
+
     public static String buildNormalizeTextPrompt(String ingredientsJson, String languageName) throws Exception
     {
         return String.format(

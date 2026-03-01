@@ -6,6 +6,8 @@ import jakarta.persistence.EntityNotFoundException;
 public class DBValidator
 {
 
+    private DBValidator(){}
+
     public static void validateId(Long id)
     {
         if (id == null || id <= 0)
