@@ -91,7 +91,7 @@ public class Dish implements IEntity
 
     public boolean hasTranslation()
     {
-        return nameEN != null && !nameEN.isBlank();
+        return (this.nameEN != null && !this.nameEN.isBlank()) && (this.descriptionEN != null && !this.descriptionEN.isBlank());
     }
 
     public boolean isForWeek(int week, int year)
