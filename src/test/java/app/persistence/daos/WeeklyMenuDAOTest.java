@@ -2,6 +2,7 @@ package app.persistence.daos;
 
 import app.config.HibernateTestConfig;
 import app.enums.MenuStatus;
+import app.persistence.daos.impl.WeeklyMenuDAO;
 import app.persistence.entities.*;
 import app.testutils.TestCleanDB;
 import app.testutils.TestPopulator;

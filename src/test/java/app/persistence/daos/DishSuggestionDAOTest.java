@@ -3,6 +3,7 @@ package app.persistence.daos;
 import app.config.HibernateTestConfig;
 import app.enums.Status;
 import app.exceptions.UnauthorizedActionException;
+import app.persistence.daos.impl.DishSuggestionDAO;
 import app.persistence.entities.*;
 import app.testutils.TestCleanDB;
 import app.testutils.TestPopulator;
@@ -64,7 +65,7 @@ class DishSuggestionDAOTest {
         assertThat(result.getNameDA(), is("Pasta Carbonara"));
         assertThat(result.getTargetWeek(), is(7));
         assertThat(result.getTargetYear(), is(2026));
-        assertThat(result.getAllergens(), hasSize(3));
+        assertThat(result.getAllergens(), hasSize(4));
     }
 
     @Test

@@ -1,6 +1,6 @@
 package app.services;
 
-import app.dtos.dish.DishTranslationDTO;
+import app.dtos.dishsuggestion.DishTranslationDTO;
 import app.integrations.translation.ITranslationClient;
 import app.persistence.entities.DishSuggestion;
 

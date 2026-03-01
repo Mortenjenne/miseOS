@@ -4,15 +4,13 @@ import app.enums.DayOfWeek;
 import app.enums.RequestType;
 import app.enums.Unit;
 import app.enums.UserRole;
-import app.persistence.daos.*;
+import app.persistence.daos.impl.*;
+import app.persistence.daos.interfaces.*;
 import app.persistence.entities.*;
 import jakarta.persistence.EntityManagerFactory;
 
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class TestPopulator
 {
@@ -25,7 +23,8 @@ public class TestPopulator
     private final IShoppingListDAO shoppingListDAO;
     private final Map<String, IEntity> seeded;
 
-    public TestPopulator(EntityManagerFactory emf) {
+    public TestPopulator(EntityManagerFactory emf)
+    {
         this.stationDAO = new StationDAO(emf);
         this.userDAO = new UserDAO(emf);
         this.allergenDAO = new AllergenDAO(emf);
@@ -50,7 +49,7 @@ public class TestPopulator
 
     public Map<String, IEntity> getSeededData()
     {
-        return seeded;
+        return Collections.unmodifiableMap(seeded);
     }
 
     private void populateStations()
@@ -99,6 +98,7 @@ public class TestPopulator
         Allergen soy = allergenDAO.create(new Allergen("Soy", "Cereals containing gluten", 7));
         Allergen celery = allergenDAO.create(new Allergen("Celery", "Celery and products thereof", 8));
         Allergen mustard = allergenDAO.create(new Allergen("Mustard", "Mustard and products thereof", 9));
+        Allergen lactose = allergenDAO.create(new Allergen("Lactose", "Lactose and dairy derivatives", 10));
 
         seeded.put("allergen_gluten", gluten);
         seeded.put("allergen_dairy", dairy);
@@ -109,6 +109,7 @@ public class TestPopulator
         seeded.put("allergen_soy", soy);
         seeded.put("allergen_celery", celery);
         seeded.put("allergen_mustard", mustard);
+        seeded.put("allergen_lactose", lactose);
     }
 
     private void populateDishSuggestions()
@@ -137,7 +138,7 @@ public class TestPopulator
             2026,
             coldStation,
             cookClaire,
-            allergens
+            new HashSet<>(allergens)
         );
 
         DishSuggestion d2 = new DishSuggestion(
@@ -147,7 +148,7 @@ public class TestPopulator
             2026,
             hotStation,
             cookMarco,
-            allergens
+            new HashSet<>(allergens)
         );
 
         DishSuggestion d3 = new DishSuggestion(
@@ -157,7 +158,7 @@ public class TestPopulator
             2026,
             hotStation,
             cookClaire,
-            allergens
+            new HashSet<>(allergens)
         );
 
         DishSuggestion d4 = new DishSuggestion(
@@ -167,7 +168,7 @@ public class TestPopulator
             2026,
             coldStation,
             cookMarco,
-            allergens
+            new HashSet<>(allergens)
         );
 
         DishSuggestion d5 = new DishSuggestion(
@@ -177,7 +178,7 @@ public class TestPopulator
             2026,
             coldStation,
             cookClaire,
-            allergens
+            new HashSet<>(allergens)
         );
 
         dishDAO.create(d1);
@@ -330,5 +331,11 @@ public class TestPopulator
         shoppingListDAO.create(list1);
 
         seeded.put("shopping_list_1", list1);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T extends IEntity> T get(String key, Class<T> type)
+    {
+        return (T) seeded.get(key);
     }
 }

@@ -1,12 +1,11 @@
 package app.services;
 
-import app.dtos.station.StationCreateRequestDTO;
+import app.dtos.station.StationRequestDTO;
 import app.dtos.station.StationDTO;
-import app.dtos.station.StationUpdateRequestDTO;
 import app.exceptions.UnauthorizedActionException;
 import app.exceptions.ValidationException;
-import app.persistence.daos.IStationDAO;
-import app.persistence.daos.IUserReader;
+import app.persistence.daos.interfaces.IStationDAO;
+import app.persistence.daos.interfaces.IUserReader;
 import app.persistence.entities.Station;
 import app.persistence.entities.User;
 import app.utils.ValidationUtil;
@@ -27,10 +26,12 @@ public class StationService
         this.userReader = userReader;
     }
 
-    public StationDTO registerStation(StationCreateRequestDTO dto)
+    public StationDTO registerStation(Long createdById, StationRequestDTO dto)
     {
-        User creator = userReader.getByID(dto.createdById());
+        ValidationUtil.validateId(createdById);
+        validateInput(dto);
 
+        User creator = userReader.getByID(createdById);
         requireChef(creator);
         validateStationNameUnique(dto.name());
 
@@ -40,19 +41,27 @@ public class StationService
         return mapToDTO(saved);
     }
 
-    public StationDTO updateStation(StationUpdateRequestDTO dto)
+    public StationDTO updateStation(Long editorId, Long stationId, StationRequestDTO dto)
     {
-        ValidationUtil.validateId(dto.stationId());
-        ValidationUtil.validateId(dto.editorId());
+        ValidationUtil.validateId(editorId);
+        ValidationUtil.validateId(stationId);
+        ValidationUtil.validateId(editorId);
 
-        User editor = userReader.getByID(dto.editorId());
-        Station station = stationDAO.getByID(dto.stationId());
+        User editor = userReader.getByID(editorId);
+        Station station = stationDAO.getByID(stationId);
         requireChef(editor);
 
-        station.update(dto.name(), dto.description());
+        if (!station.getStationName().equals(dto.name()))
+        {
+            validateStationNameUnique(dto.name());
+        }
+
+        station.update(
+            dto.name(),
+            dto.description()
+        );
 
         Station updated = stationDAO.update(station);
-
         return mapToDTO(updated);
     }
 
@@ -63,10 +72,7 @@ public class StationService
 
         Station station = stationDAO.getByID(stationId);
         User user = userReader.getByID(userId);
-
         requireChef(user);
-
-        //TODO Chef if stations is in use with users or dishes?
 
         return stationDAO.delete(station.getId());
     }
@@ -87,17 +93,13 @@ public class StationService
             .collect(Collectors.toSet());
     }
 
-    public StationDTO getStationByName(String name) {
-        return findStationByName(name)
-            .orElseThrow(() -> new EntityNotFoundException("Station not found: " + name));
-    }
-
-    private Optional<StationDTO> findStationByName(String name)
+    public StationDTO getStationByName(String name)
     {
-        ValidationUtil.validateNotBlank(name, "Name");
+        ValidationUtil.validateNotBlank(name, "Station name");
 
         return stationDAO.findByName(name)
-            .map(this::mapToDTO);
+            .map(this::mapToDTO)
+            .orElseThrow(() -> new EntityNotFoundException("Station not found: " + name));
     }
 
     private void requireChef(User user)
@@ -108,9 +110,17 @@ public class StationService
         }
     }
 
+    private void validateInput(StationRequestDTO dto)
+    {
+        ValidationUtil.validateNotNull(dto, "Station request");
+        ValidationUtil.validateNotBlank(dto.name(), "Station name");
+        ValidationUtil.validateNotBlank(dto.description(), "Description");
+    }
+
     private void validateStationNameUnique(String name)
     {
         Optional<Station> existing = stationDAO.findByName(name);
+
         if (existing.isPresent())
         {
             throw new ValidationException("Station with name '" + name + "' already exists");

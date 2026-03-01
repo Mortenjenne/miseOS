@@ -4,6 +4,7 @@ import app.config.HibernateTestConfig;
 import app.enums.RequestType;
 import app.enums.Status;
 import app.enums.Unit;
+import app.persistence.daos.impl.IngredientRequestDAO;
 import app.persistence.entities.DishSuggestion;
 import app.persistence.entities.IEntity;
 import app.persistence.entities.IngredientRequest;

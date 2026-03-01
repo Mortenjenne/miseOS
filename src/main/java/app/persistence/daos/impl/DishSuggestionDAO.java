@@ -1,16 +1,14 @@
-package app.persistence.daos;
+package app.persistence.daos.impl;
 
 import app.enums.Status;
+import app.exceptions.DatabaseException;
+import app.persistence.daos.interfaces.IDishSuggestionDAO;
 import app.persistence.entities.DishSuggestion;
-import app.persistence.entities.User;
 import app.utils.DBValidator;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.NoResultException;
-import jakarta.persistence.TypedQuery;
+import app.utils.TransactionUtil;
+import jakarta.persistence.*;
 
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
 
@@ -43,7 +41,7 @@ public class DishSuggestionDAO implements IDishSuggestionDAO
     {
         DBValidator.validateRange(weekNumber, 1, 53, "Week number");
         DBValidator.validateRange(year, 2000, 2100, "Year");
-        DBValidator.validateNotNull(Status.class, "Status");
+        DBValidator.validateNotNull(status, "Status");
 
         try (EntityManager em = emf.createEntityManager())
         {
@@ -109,10 +107,18 @@ public class DishSuggestionDAO implements IDishSuggestionDAO
 
         try(EntityManager em = emf.createEntityManager())
         {
+            try
+            {
             em.getTransaction().begin();
             em.persist(dishSuggestion);
             em.getTransaction().commit();
             return dishSuggestion;
+            }
+            catch (PersistenceException e)
+            {
+                TransactionUtil.rollback(em);
+                throw new DatabaseException("Failed to create dish suggestion", e);
+            }
         }
     }
 
@@ -155,13 +161,15 @@ public class DishSuggestionDAO implements IDishSuggestionDAO
                 em.getTransaction().commit();
                 return merged;
             }
-            catch (RuntimeException e)
+            catch (EntityNotFoundException e)
             {
-                if (em.getTransaction().isActive())
-                {
-                    em.getTransaction().rollback();
-                }
+                TransactionUtil.rollback(em);
                 throw e;
+            }
+            catch (PersistenceException e)
+            {
+                TransactionUtil.rollback(em);
+                throw new DatabaseException("Failed to update dish: " + dishSuggestion.getId(), e);
             }
         }
     }
@@ -182,13 +190,15 @@ public class DishSuggestionDAO implements IDishSuggestionDAO
                 em.getTransaction().commit();
                 return true;
 
-            } catch (RuntimeException e)
+            } catch (EntityNotFoundException e)
             {
-                if (em.getTransaction().isActive())
-                {
-                    em.getTransaction().rollback();
-                }
+                TransactionUtil.rollback(em);
                 throw e;
+            }
+            catch (PersistenceException e)
+            {
+                TransactionUtil.rollback(em);
+                throw new DatabaseException("Failed to delete dish: " + id, e);
             }
         }
     }

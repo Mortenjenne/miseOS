@@ -30,11 +30,26 @@ public class DBValidator
         }
     }
 
+    public static void validateNotBlank(String value, String fieldName)
+    {
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException(fieldName + " cannot be null or empty.");
+        }
+    }
+
     public static void validateRange(int number, int min, int max, String fieldName) {
         if (number < min || number > max)
         {
             String errorMsg = String.format("%s must be between %d and %d, got: %d", fieldName, min, max, number);
             throw new IllegalArgumentException(errorMsg);
+        }
+    }
+
+    public static void validatePositive(double value, String fieldName)
+    {
+        if (value <= 0)
+        {
+            throw new IllegalArgumentException(fieldName + " must be greater than 0");
         }
     }
 }

@@ -1,6 +1,7 @@
 package app.persistence.daos;
 
 import app.config.HibernateTestConfig;
+import app.persistence.daos.impl.AllergenDAO;
 import app.persistence.entities.Allergen;
 import app.persistence.entities.IEntity;
 import app.testutils.TestCleanDB;

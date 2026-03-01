@@ -1,12 +1,12 @@
-package app.persistence.daos;
+package app.persistence.daos.impl;
 
 import app.enums.Status;
+import app.exceptions.DatabaseException;
+import app.persistence.daos.interfaces.IIngredientRequestDAO;
 import app.persistence.entities.IngredientRequest;
-import app.persistence.entities.User;
 import app.utils.DBValidator;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.TypedQuery;
+import app.utils.TransactionUtil;
+import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -37,6 +37,9 @@ public class IngredientRequestDAO implements IIngredientRequestDAO
     @Override
     public Set<IngredientRequest> findByStatusAndDeliveryDate(Status status, LocalDate deliveryDate)
     {
+        DBValidator.validateNotNull(status, "Status");
+        DBValidator.validateNotNull(deliveryDate, "Delivery date");
+
         try(EntityManager em = emf.createEntityManager())
         {
             TypedQuery<IngredientRequest> query = em.createQuery("SELECT ir FROM IngredientRequest ir WHERE ir.requestStatus = :status AND ir.deliveryDate = :deliveryDate", IngredientRequest.class)
@@ -53,10 +56,18 @@ public class IngredientRequestDAO implements IIngredientRequestDAO
 
         try(EntityManager em = emf.createEntityManager())
         {
-            em.getTransaction().begin();
-            em.persist(ingredientRequest);
-            em.getTransaction().commit();
-            return ingredientRequest;
+            try
+            {
+                em.getTransaction().begin();
+                em.persist(ingredientRequest);
+                em.getTransaction().commit();
+                return ingredientRequest;
+            }
+            catch (PersistenceException e)
+            {
+                TransactionUtil.rollback(em);
+                throw new DatabaseException("Failed to create IngredientRequest", e);
+            }
         }
     }
 
@@ -99,13 +110,15 @@ public class IngredientRequestDAO implements IIngredientRequestDAO
                 em.getTransaction().commit();
                 return merged;
             }
-            catch (RuntimeException e)
+            catch (EntityNotFoundException e)
             {
-                if (em.getTransaction().isActive())
-                {
-                    em.getTransaction().rollback();
-                }
+                TransactionUtil.rollback(em);
                 throw e;
+            }
+            catch (PersistenceException e)
+            {
+                TransactionUtil.rollback(em);
+                throw new DatabaseException("Failed to update IngredientRequest: " + ingredientRequest.getId(), e);
             }
         }
     }
@@ -126,13 +139,16 @@ public class IngredientRequestDAO implements IIngredientRequestDAO
                 em.getTransaction().commit();
                 return true;
 
-            } catch (RuntimeException e)
+            }
+            catch (EntityNotFoundException e)
             {
-                if (em.getTransaction().isActive())
-                {
-                    em.getTransaction().rollback();
-                }
+                TransactionUtil.rollback(em);
                 throw e;
+            }
+            catch (PersistenceException e)
+            {
+                TransactionUtil.rollback(em);
+                throw new DatabaseException("Failed to delete IngredientRequest: " + id, e);
             }
         }
     }

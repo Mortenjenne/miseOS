@@ -1,8 +1,11 @@
-package app.persistence.daos;
+package app.persistence.daos.impl;
 
 import app.enums.ShoppingListStatus;
+import app.exceptions.DatabaseException;
+import app.persistence.daos.interfaces.IShoppingListDAO;
 import app.persistence.entities.ShoppingList;
 import app.utils.DBValidator;
+import app.utils.TransactionUtil;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
@@ -61,10 +64,18 @@ public class ShoppingListDAO implements IShoppingListDAO
 
         try (EntityManager em = emf.createEntityManager())
         {
+            try
+            {
             em.getTransaction().begin();
             em.persist(shoppingList);
             em.getTransaction().commit();
             return shoppingList;
+            }
+            catch (PersistenceException e)
+            {
+                TransactionUtil.rollback(em);
+                throw new DatabaseException("Failed to create shopping list", e);
+            }
         }
     }
 
@@ -122,13 +133,15 @@ public class ShoppingListDAO implements IShoppingListDAO
                 return merged;
 
             }
-            catch (RuntimeException e)
+            catch (EntityNotFoundException e)
             {
-                if (em.getTransaction().isActive())
-                {
-                    em.getTransaction().rollback();
-                }
+                TransactionUtil.rollback(em);
                 throw e;
+            }
+            catch (PersistenceException e)
+            {
+                TransactionUtil.rollback(em);
+                throw new DatabaseException("Failed to update shopping list: " + shoppingList.getId(), e);
             }
         }
     }
@@ -152,13 +165,15 @@ public class ShoppingListDAO implements IShoppingListDAO
                 return true;
 
             }
-            catch (RuntimeException e)
+            catch (EntityNotFoundException e)
             {
-                if (em.getTransaction().isActive())
-                {
-                    em.getTransaction().rollback();
-                }
+                TransactionUtil.rollback(em);
                 throw e;
+            }
+            catch (PersistenceException e)
+            {
+                TransactionUtil.rollback(em);
+                throw new DatabaseException("Failed to delete shopping list: " + id, e);
             }
         }
     }

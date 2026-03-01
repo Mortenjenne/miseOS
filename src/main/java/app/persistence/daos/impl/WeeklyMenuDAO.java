@@ -1,8 +1,11 @@
-package app.persistence.daos;
+package app.persistence.daos.impl;
 
 import app.enums.MenuStatus;
+import app.exceptions.DatabaseException;
+import app.persistence.daos.interfaces.IWeeklyMenuDAO;
 import app.persistence.entities.WeeklyMenu;
 import app.utils.DBValidator;
+import app.utils.TransactionUtil;
 import jakarta.persistence.*;
 
 import java.util.HashSet;
@@ -88,10 +91,19 @@ public class WeeklyMenuDAO implements IWeeklyMenuDAO
 
         try(EntityManager em = emf.createEntityManager())
         {
+            try
+            {
             em.getTransaction().begin();
             em.persist(weeklyMenu);
             em.getTransaction().commit();
             return weeklyMenu;
+            }
+            catch
+            (PersistenceException e)
+            {
+                TransactionUtil.rollback(em);
+                throw new DatabaseException("Failed to create week menu", e);
+            }
         }
     }
 
@@ -134,13 +146,15 @@ public class WeeklyMenuDAO implements IWeeklyMenuDAO
                 em.getTransaction().commit();
                 return merged;
             }
-            catch (RuntimeException e)
+            catch (EntityNotFoundException e)
             {
-                if (em.getTransaction().isActive())
-                {
-                    em.getTransaction().rollback();
-                }
+                TransactionUtil.rollback(em);
                 throw e;
+            }
+            catch (PersistenceException e)
+            {
+                TransactionUtil.rollback(em);
+                throw new DatabaseException("Failed to update week menu: " + weeklyMenu.getId(), e);
             }
         }
     }
@@ -161,13 +175,16 @@ public class WeeklyMenuDAO implements IWeeklyMenuDAO
                 em.getTransaction().commit();
                 return true;
 
-            } catch (RuntimeException e)
+            }
+            catch (EntityNotFoundException e)
             {
-                if (em.getTransaction().isActive())
-                {
-                    em.getTransaction().rollback();
-                }
+                TransactionUtil.rollback(em);
                 throw e;
+            }
+            catch (PersistenceException e)
+            {
+                TransactionUtil.rollback(em);
+                throw new DatabaseException("Failed to delete week menu: " + id, e);
             }
         }
     }

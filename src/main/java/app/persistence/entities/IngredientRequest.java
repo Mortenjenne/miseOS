@@ -5,6 +5,7 @@ import app.enums.Status;
 import app.enums.Unit;
 import app.enums.UserRole;
 import app.exceptions.UnauthorizedActionException;
+import app.utils.ValidationUtil;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,7 +13,6 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Objects;
 
 @NoArgsConstructor
 @Getter
@@ -104,6 +104,26 @@ public class IngredientRequest implements IEntity
         this.reviewedAt = LocalDateTime.now();
     }
 
+    public void update(String name, double quantity, Unit unit, String preferredSupplier, String note, LocalDate deliveryDate, DishSuggestion dish) {
+        requirePendingStatus();
+        ValidationUtil.validateNotBlank(name, "Name");
+        ValidationUtil.validatePositive(quantity, "Quantity");
+        ValidationUtil.validateNotNull(unit, "Unit");
+        ValidationUtil.validateNotNull(deliveryDate, "Delivery date");
+
+        this.name = name.trim();
+        this.quantity = quantity;
+        this.unit = unit;
+        this.preferredSupplier = preferredSupplier;
+        this.note = note;
+        this.deliveryDate = deliveryDate;
+        this.dishSuggestion = dish;
+    }
+
+    public boolean isPending() {
+        return this.requestStatus == Status.PENDING;
+    }
+
     @PrePersist
     public void createdAt()
     {
@@ -125,12 +145,19 @@ public class IngredientRequest implements IEntity
         return getClass().hashCode();
     }
 
-
     private void valideIngredientRequest()
     {
         if (this.requestStatus != Status.PENDING)
         {
             throw new IllegalStateException("Only pending suggestions allowed here");
+        }
+    }
+
+    private void requirePendingStatus()
+    {
+        if (this.requestStatus != Status.PENDING)
+        {
+            throw new IllegalStateException("Can only modify pending requests. Current: " + requestStatus);
         }
     }
 

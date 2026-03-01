@@ -1,51 +1,47 @@
 package app.services;
 
-import app.dtos.dish.DishCreateRequestDTO;
-import app.dtos.dish.DishSuggestionDTO;
-import app.dtos.dish.DishUpdateRequestDTO;
+import app.dtos.dishsuggestion.DishSuggestionCreateDTO;
+import app.dtos.dishsuggestion.DishSuggestionDTO;
+import app.dtos.dishsuggestion.DishSuggestionUpdateDTO;
 import app.enums.Status;
 import app.exceptions.UnauthorizedActionException;
-import app.persistence.daos.*;
-import app.persistence.entities.Allergen;
-import app.persistence.entities.DishSuggestion;
-import app.persistence.entities.Station;
-import app.persistence.entities.User;
+import app.persistence.daos.interfaces.*;
+import app.persistence.entities.*;
 import app.utils.ValidationUtil;
 import jakarta.persistence.EntityNotFoundException;
 
 import java.time.LocalDate;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 public class DishSuggestionService
 {
     private final IDishSuggestionDAO dishSuggestionDAO;
+    private final IDishDAO dishDAO;
     private final IUserReader userReader;
     private final IStationReader stationReader;
     private final IAllergenDAO allergenDAO;
 
-    public DishSuggestionService(IDishSuggestionDAO dishSuggestionDAO, IUserReader userReader, IStationReader stationReader, IAllergenDAO allergenDAO)
+    public DishSuggestionService(IDishSuggestionDAO dishSuggestionDAO, IDishDAO dishDAO, IUserReader userReader, IStationReader stationReader, IAllergenDAO allergenDAO)
     {
         this.dishSuggestionDAO = dishSuggestionDAO;
+        this.dishDAO = dishDAO;
         this.userReader = userReader;
         this.stationReader = stationReader;
         this.allergenDAO = allergenDAO;
     }
 
-    public DishSuggestionDTO submitSuggestion(DishCreateRequestDTO dto)
+    public DishSuggestionDTO submitSuggestion(Long creatorId, DishSuggestionCreateDTO dto)
     {
         ValidationUtil.validateId(dto.stationId());
-        ValidationUtil.validateId(dto.userCreatedById());
+        ValidationUtil.validateId(creatorId);
+        validateCreateInput(dto);
 
         Station station = stationReader.getByID(dto.stationId());
-        User user = userReader.getByID(dto.userCreatedById());
-
+        User user = userReader.getByID(creatorId);
         user.ensureIsKitchenStaff();
 
-        Set<Allergen> allergens = dto.allergenIds().stream()
-            .map(allergenDAO::getByID)
-            .collect(Collectors.toSet());
+        Set<Allergen> allergens = fetchAllergens(dto.allergenIds());
 
         DishSuggestion dishRequest = new DishSuggestion(
             dto.nameDA(),
@@ -68,11 +64,23 @@ public class DishSuggestionService
         ValidationUtil.validateId(dishId);
         ValidationUtil.validateId(approverId);
 
-        DishSuggestion dish = dishSuggestionDAO.getByID(dishId);
+        DishSuggestion suggestion = dishSuggestionDAO.getByID(dishId);
         User approver = userReader.getByID(approverId);
 
-        dish.approve(approver);
-        DishSuggestion updated = dishSuggestionDAO.update(dish);
+        suggestion.approve(approver);
+        DishSuggestion updated = dishSuggestionDAO.update(suggestion);
+
+        Dish dish = new Dish(
+            suggestion.getNameDA(),
+            suggestion.getDescriptionDA(),
+            suggestion.getStation(),
+            suggestion.getAllergens(),
+            suggestion.getCreatedBy(),
+            suggestion.getTargetWeek(),
+            suggestion.getTargetYear()
+        );
+
+        dishDAO.create(dish);
 
         return mapToDTO(updated);
     }
@@ -91,33 +99,24 @@ public class DishSuggestionService
         return mapToDTO(updated);
     }
 
-    public DishSuggestionDTO updateDish(DishUpdateRequestDTO dto)
+    public DishSuggestionDTO updateDish(Long editorId, Long suggestionId, DishSuggestionUpdateDTO dto)
     {
-        ValidationUtil.validateId(dto.id());
+        ValidationUtil.validateId(editorId);
+        ValidationUtil.validateId(suggestionId);
+        validateUpdateInput(dto);
 
-        Optional<DishSuggestion> dish = dishSuggestionDAO.getByIdWithAllergens(dto.id());
-        if(dish.isEmpty())
-        {
-            throw new EntityNotFoundException("Dish was not found");
-        }
-        User editor = userReader.getByID(dto.editorId());
-
+        User editor = userReader.getByID(editorId);
         editor.ensureIsKitchenStaff();
 
-        Set<Allergen> allergens = dto.allergenIds().stream()
-            .map(allergenDAO::getByID)
-            .collect(Collectors.toSet());
+        DishSuggestion suggestion = dishSuggestionDAO.getByID(suggestionId);
+        Set<Allergen> allergens = fetchAllergens(dto.allergenIds());
 
-        dish.get().updateContent(
+        suggestion.updateContent(
             dto.nameDA(),
-            dto.nameEN(),
             dto.descriptionDA(),
-            dto.descriptionEN(),
-            allergens,
-            editor
-        );
+            allergens);
 
-        DishSuggestion updated = dishSuggestionDAO.update(dish.get());
+        DishSuggestion updated = dishSuggestionDAO.update(suggestion);
 
         return mapToDTO(updated);
     }
@@ -128,9 +127,9 @@ public class DishSuggestionService
         ValidationUtil.validateId(userId);
 
         User user = userReader.getByID(userId);
-        DishSuggestion dish = dishSuggestionDAO.getByID(dishId);
+        DishSuggestion suggestion = dishSuggestionDAO.getByID(dishId);
 
-        boolean isCreator = dish.getCreatedBy().getId().equals(userId);
+        boolean isCreator = suggestion.getCreatedBy().getId().equals(userId);
 
         if(!user.isHeadChef() && !user.isSousChef() && !isCreator)
         {
@@ -146,17 +145,12 @@ public class DishSuggestionService
         return mapToDTO(dishSuggestionDAO.getByID(id));
     }
 
-    public DishSuggestionDTO getByIdWithAllergens(Long id)
-    {
+    public DishSuggestionDTO getByIdWithAllergens(Long id) {
         ValidationUtil.validateId(id);
 
-        Optional<DishSuggestion> dish = dishSuggestionDAO.getByIdWithAllergens(id);
-        if(dish.isEmpty())
-        {
-            throw new EntityNotFoundException("Dish was not found");
-        }
-
-        return mapToDTO(dish.get());
+        return dishSuggestionDAO.getByIdWithAllergens(id)
+            .map(this::mapToDTO)
+            .orElseThrow(() -> new EntityNotFoundException("DishSuggestion with ID " + id + " not found"));
     }
 
     public Set<DishSuggestionDTO> getAllDishSuggestions()
@@ -203,19 +197,32 @@ public class DishSuggestionService
             .collect(Collectors.toSet());
     }
 
-    private void validateDeadlineNotPassed(int targetWeek, int targetYear)
+    private Set<Allergen> fetchAllergens(Set<Long> allergenIds)
     {
-        LocalDate targetMonday = LocalDate.of(targetYear, 1, 1)
-            .with(java.time.temporal.WeekFields.ISO.weekOfYear(), targetWeek)
-            .with(java.time.temporal.WeekFields.ISO.dayOfWeek(), 1);
-
-        LocalDate deadline = targetMonday.minusDays(4);
-        LocalDate today = LocalDate.now();
-
-        if (!today.isBefore(deadline))
-        {
-            throw new IllegalArgumentException("Cannot create suggestion: deadline for week " + targetWeek + " was " + deadline);
+        if (allergenIds == null || allergenIds.isEmpty()) {
+            return Set.of();
         }
+
+        return allergenIds.stream()
+            .map(allergenDAO::getByID)
+            .collect(Collectors.toSet());
+    }
+
+    private void validateCreateInput(DishSuggestionCreateDTO dto)
+    {
+        ValidationUtil.validateNotNull(dto, "Suggestion");
+        ValidationUtil.validateNotBlank(dto.nameDA(), "Name");
+        ValidationUtil.validateNotBlank(dto.descriptionDA(), "Description");
+        ValidationUtil.validateId(dto.stationId());
+        ValidationUtil.validateRange(dto.targetWeek(), 1, 53, "Target week");
+        ValidationUtil.validateRange(dto.targetYear(), 2020, 2100, "Target year");
+    }
+
+    private void validateUpdateInput(DishSuggestionUpdateDTO dto)
+    {
+        ValidationUtil.validateNotNull(dto, "Suggestion");
+        ValidationUtil.validateNotBlank(dto.nameDA(), "Name");
+        ValidationUtil.validateNotBlank(dto.descriptionDA(), "Description");
     }
 
     private DishSuggestionDTO mapToDTO(DishSuggestion dish)
@@ -223,9 +230,7 @@ public class DishSuggestionService
         return new DishSuggestionDTO(
             dish.getId(),
             dish.getNameDA(),
-            dish.getNameEN(),
             dish.getDescriptionDA(),
-            dish.getDescriptionEN(),
             dish.getDishStatus(),
             dish.getFeedback(),
             dish.getStation().getStationName(),

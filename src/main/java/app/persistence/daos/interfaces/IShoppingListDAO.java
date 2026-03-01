@@ -1,4 +1,4 @@
-package app.persistence.daos;
+package app.persistence.daos.interfaces;
 
 import app.enums.ShoppingListStatus;
 import app.persistence.entities.ShoppingList;

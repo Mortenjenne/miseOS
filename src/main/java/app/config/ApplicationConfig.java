@@ -1,6 +1,6 @@
 package app.config;
 
-import app.dtos.dish.DishTranslationDTO;
+import app.dtos.dishsuggestion.DishTranslationDTO;
 import app.dtos.gemini.AiDishSuggestionDTO;
 import app.dtos.weather.WeatherForecastDTO;
 import app.enums.UserRole;

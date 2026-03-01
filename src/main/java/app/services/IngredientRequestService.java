@@ -2,12 +2,14 @@ package app.services;
 
 import app.dtos.ingredient.CreateIngredientRequestDTO;
 import app.dtos.ingredient.IngredientRequestDTO;
+import app.dtos.ingredient.UpdateIngredientRequestDTO;
 import app.enums.RequestType;
 import app.enums.Status;
 import app.exceptions.UnauthorizedActionException;
 import app.exceptions.ValidationException;
-import app.persistence.daos.IDishSuggestionReader;
-import app.persistence.daos.IIngredientRequestDAO;
+import app.persistence.daos.interfaces.IDishSuggestionReader;
+import app.persistence.daos.interfaces.IIngredientRequestDAO;
+import app.persistence.daos.interfaces.IUserReader;
 import app.persistence.entities.DishSuggestion;
 import app.persistence.entities.IngredientRequest;
 import app.persistence.entities.User;
@@ -21,25 +23,25 @@ public class IngredientRequestService implements IIngredientRequestService
 {
     private final IIngredientRequestDAO ingredientRequestDAO;
     private final IDishSuggestionReader dishReader;
+    private final IUserReader userReader;
 
 
-    public IngredientRequestService(IIngredientRequestDAO ingredientRequestDAO, IDishSuggestionReader dishReader)
+    public IngredientRequestService(IIngredientRequestDAO ingredientRequestDAO, IDishSuggestionReader dishReader, IUserReader userReader)
     {
         this.ingredientRequestDAO = ingredientRequestDAO;
         this.dishReader = dishReader;
+        this.userReader = userReader;
     }
 
     @Override
-    public IngredientRequestDTO createRequest(User creator, CreateIngredientRequestDTO requestDTO)
+    public IngredientRequestDTO createRequest(Long creatorId, CreateIngredientRequestDTO requestDTO)
     {
-        ValidationUtil.validateNotNull(creator, "User");
-        ValidationUtil.validateNotNull(requestDTO, "Ingredient request");
-        ValidationUtil.validateNotBlank(requestDTO.name(), "Ingredient name");
-        ValidationUtil.validatePositive(requestDTO.quantity(), "Quantity");
-        ValidationUtil.validateNotNull(requestDTO.unit(), "Unit");
-        ValidationUtil.validateFutureDate(requestDTO.deliveryDate(), "Delivery date");
+        ValidationUtil.validateId(creatorId);
+        validateCreateInput(requestDTO);
 
-        validateCanCreateRequest(creator);
+        User creator = userReader.getByID(creatorId);
+
+        requireKitchenStaff(creator);
         validateDeliveryDateRange(requestDTO.deliveryDate());
 
         DishSuggestion dish = validateAndGetDishSuggestionForRequest(requestDTO.requestType(), requestDTO.dishSuggestionId());
@@ -62,36 +64,32 @@ public class IngredientRequestService implements IIngredientRequestService
     }
 
     @Override
-    public IngredientRequestDTO approveIngredientRequest(User headChef, Long ingredientRequestId)
+    public IngredientRequestDTO approveIngredientRequest(Long headChefId, Long ingredientRequestId)
     {
-        ValidationUtil.validateNotNull(headChef, "User");
+        ValidationUtil.validateId(headChefId);
         ValidationUtil.validateId(ingredientRequestId);
 
-        validateIsHeadChef(headChef);
+        User headChef = userReader.getByID(headChefId);
+        IngredientRequest request = ingredientRequestDAO.getByID(ingredientRequestId);
 
-        IngredientRequest ingredientRequest = ingredientRequestDAO.getByID(ingredientRequestId);
+        request.approve(headChef);
 
-        validateRequestIsPending(ingredientRequest);
-        ingredientRequest.approve(headChef);
-
-        IngredientRequest updated = ingredientRequestDAO.update(ingredientRequest);
+        IngredientRequest updated = ingredientRequestDAO.update(request);
         return mapToDTO(updated);
     }
 
     @Override
-    public IngredientRequestDTO rejectIngredientRequest(User headChef, Long requestId)
+    public IngredientRequestDTO rejectIngredientRequest(Long headChefId, Long requestId)
     {
-        ValidationUtil.validateNotNull(headChef, "User");
+        ValidationUtil.validateId(headChefId);
         ValidationUtil.validateId(requestId);
 
-        validateIsHeadChef(headChef);
+        User headChef = userReader.getByID(headChefId);
+        IngredientRequest request = ingredientRequestDAO.getByID(requestId);
 
-        IngredientRequest ingredientRequest = ingredientRequestDAO.getByID(requestId);
+        request.reject(headChef);
 
-        validateRequestIsPending(ingredientRequest);
-        ingredientRequest.reject(headChef);
-
-        IngredientRequest updated = ingredientRequestDAO.update(ingredientRequest);
+        IngredientRequest updated = ingredientRequestDAO.update(request);
         return mapToDTO(updated);
     }
 
@@ -137,30 +135,29 @@ public class IngredientRequestService implements IIngredientRequestService
     }
 
     @Override
-    public IngredientRequestDTO updateRequest(User creator, IngredientRequestDTO requestDTO)
+    public IngredientRequestDTO updateRequest(Long userEditorId, Long requestId, Long dishId, UpdateIngredientRequestDTO dto)
     {
-        ValidationUtil.validateNotNull(creator, "User");
-        ValidationUtil.validateNotNull(requestDTO, "Ingredient request");
-        ValidationUtil.validateNotBlank(requestDTO.name(), "Ingredient name");
-        ValidationUtil.validatePositive(requestDTO.quantity(), "Quantity");
-        ValidationUtil.validateNotNull(requestDTO.unit(), "Unit");
-        ValidationUtil.validateFutureDate(requestDTO.deliveryDate(), "Delivery date");
+        ValidationUtil.validateId(userEditorId);
+        ValidationUtil.validateId(requestId);
+        ValidationUtil.validateId(dishId);
 
-        validateCanCreateRequest(creator);
-        validateDeliveryDateRange(requestDTO.deliveryDate());
+        User editor = userReader.getByID(userEditorId);
+        requireKitchenStaff(editor);
 
-        DishSuggestion dish = validateAndGetDishSuggestionForRequest(requestDTO.requestType(), requestDTO.id());
+        validateDeliveryDateRange(dto.deliveryDate());
 
-        IngredientRequest existing = ingredientRequestDAO.getByID(requestDTO.id());
-        ValidationUtil.validateNotNull(existing, "Ingredient request");
+        DishSuggestion dish = validateAndGetDishSuggestionForRequest(dto.requestType(), dishId);
+        IngredientRequest existing = ingredientRequestDAO.getByID(requestId);
 
-        existing.setName(requestDTO.name());
-        existing.setQuantity(requestDTO.quantity());
-        existing.setUnit(requestDTO.unit());
-        existing.setNote(requestDTO.note());
-        existing.setDeliveryDate(requestDTO.deliveryDate());
-        existing.setPreferredSupplier(requestDTO.preferredSupplier());
-        existing.setDishSuggestion(dish);
+        existing.update(
+            dto.name(),
+            dto.quantity(),
+            dto.unit(),
+            dto.preferredSupplier(),
+            dto.note(),
+            dto.deliveryDate(),
+            dish
+        );
 
         IngredientRequest updated = ingredientRequestDAO.update(existing);
 
@@ -188,10 +185,11 @@ public class IngredientRequestService implements IIngredientRequestService
         return dish;
     }
 
-    private void validateCanCreateRequest(User user)
+    private void requireKitchenStaff(User user)
     {
-        if (!user.isLineCook() && !user.isHeadChef()) {
-            throw new UnauthorizedActionException("Only kitchen staff can create ingredient requests");
+        if (!user.isLineCook() && !user.isHeadChef())
+        {
+            throw new UnauthorizedActionException("Only kitchen staff can manage requests");
         }
     }
 
@@ -227,12 +225,14 @@ public class IngredientRequestService implements IIngredientRequestService
         return dish;
     }
 
-    private void validateRequestIsPending(IngredientRequest request)
+    private void validateCreateInput(CreateIngredientRequestDTO dto)
     {
-        if (request.getRequestStatus() != Status.PENDING)
-        {
-            throw new IllegalStateException("Can only approve pending requests. Current status: " + request.getRequestStatus());
-        }
+        ValidationUtil.validateNotNull(dto, "Request");
+        ValidationUtil.validateNotBlank(dto.name(), "Ingredient name");
+        ValidationUtil.validatePositive(dto.quantity(), "Quantity");
+        ValidationUtil.validateNotNull(dto.unit(), "Unit");
+        ValidationUtil.validateNotNull(dto.deliveryDate(), "Delivery date");
+        ValidationUtil.validateFutureDate(dto.deliveryDate(), "Delivery date");
     }
 
     private IngredientRequestDTO mapToDTO(IngredientRequest request) {

@@ -2,12 +2,11 @@ package app.dtos.dish;
 
 import java.util.Set;
 
-public record DishUpdateRequestDTO(
-    Long id,
-    Long editorId,
+public record DishCreateDTO(
     String nameDA,
-    String nameEN,
     String descriptionDA,
-    String descriptionEN,
+    Long stationId,
     Set<Long> allergenIds
-) {}
+)
+{
+}

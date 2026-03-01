@@ -1,10 +1,11 @@
-package app.persistence.daos;
+package app.persistence.daos.impl;
 
+import app.exceptions.DatabaseException;
+import app.persistence.daos.interfaces.IStationDAO;
 import app.persistence.entities.Station;
 import app.utils.DBValidator;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.TypedQuery;
+import app.utils.TransactionUtil;
+import jakarta.persistence.*;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -26,10 +27,18 @@ public class StationDAO implements IStationDAO
 
         try(EntityManager em = emf.createEntityManager())
         {
+            try
+            {
             em.getTransaction().begin();
             em.persist(station);
             em.getTransaction().commit();
             return station;
+            }
+            catch (PersistenceException e)
+            {
+                TransactionUtil.rollback(em);
+                throw new DatabaseException("Failed to create station", e);
+            }
         }
     }
 
@@ -72,13 +81,15 @@ public class StationDAO implements IStationDAO
                 em.getTransaction().commit();
                 return merged;
             }
-            catch (RuntimeException e)
+            catch (EntityNotFoundException e)
             {
-                if (em.getTransaction().isActive())
-                {
-                    em.getTransaction().rollback();
-                }
+                TransactionUtil.rollback(em);
                 throw e;
+            }
+            catch (PersistenceException e)
+            {
+                TransactionUtil.rollback(em);
+                throw new DatabaseException("Failed to update station: " + station.getId(), e);
             }
         }
     }
@@ -98,14 +109,16 @@ public class StationDAO implements IStationDAO
                 em.remove(managed);
                 em.getTransaction().commit();
                 return true;
-
-            } catch (RuntimeException e)
+            }
+            catch (EntityNotFoundException e)
             {
-                if (em.getTransaction().isActive())
-                {
-                    em.getTransaction().rollback();
-                }
+                TransactionUtil.rollback(em);
                 throw e;
+            }
+            catch (PersistenceException e)
+            {
+                TransactionUtil.rollback(em);
+                throw new DatabaseException("Failed to delete station: " + id, e);
             }
         }
     }
