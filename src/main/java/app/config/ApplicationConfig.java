@@ -17,6 +17,7 @@ import app.services.*;
 import app.utils.WeatherForecastBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import jakarta.persistence.EntityManagerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,6 +40,7 @@ public class ApplicationConfig
             throw new RuntimeException(e);
         }
 
+        EntityManagerFactory emf = HibernateConfig.getEntityManagerFactory();
         HttpClient client = HttpClient.newHttpClient();
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
