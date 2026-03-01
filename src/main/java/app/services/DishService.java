@@ -15,7 +15,6 @@ import jakarta.persistence.EntityNotFoundException;
 
 import java.time.LocalDate;
 import java.time.temporal.IsoFields;
-import java.time.temporal.WeekFields;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -69,6 +68,7 @@ public class DishService
     {
         ValidationUtil.validateId(editorId);
         ValidationUtil.validateId(dishId);
+        validateUpdateInput(dto);
 
         User editor = userReader.getByID(editorId);
         requireHeadChefOrSousChef(editor);
@@ -122,7 +122,21 @@ public class DishService
             .collect(Collectors.toSet());
     }
 
-    //TODO Soft delete or Hard delete? do i need delete in dao then
+    public boolean deleteDish(Long dishId, Long userId)
+    {
+        ValidationUtil.validateId(dishId);
+        ValidationUtil.validateId(userId);
+
+        User user = userReader.getByID(userId);
+        requireHeadChefOrSousChef(user);
+
+        if (dishDAO.isUsedInAnyMenu(dishId))
+        {
+            throw new IllegalStateException("Dish is used in menus - use deactivate instead");
+        }
+
+        return dishDAO.delete(dishId);
+    }
 
     public DishDTO deactivate(Long dishId, Long userId)
     {
@@ -201,9 +215,15 @@ public class DishService
         ValidationUtil.validateNotBlank(dto.descriptionDA(), "Dish description");
     }
 
+    private void validateUpdateInput(DishUpdateDTO dto) {
+        ValidationUtil.validateNotNull(dto, "Dish update");
+        ValidationUtil.validateNotBlank(dto.nameDA(), "Name");
+        ValidationUtil.validateNotBlank(dto.descriptionDA(), "Description");
+    }
+
     private void requireHeadChefOrSousChef(User user)
     {
-        if(!user.isHeadChef() || !user.isSousChef())
+        if(!user.isHeadChef() && !user.isSousChef())
         {
             throw new UnauthorizedActionException("Only head chef or sous chef can create dishes directly");
         }

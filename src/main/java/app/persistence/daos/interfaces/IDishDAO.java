@@ -13,4 +13,5 @@ public interface IDishDAO extends IEntityDAO<Dish, Long>
     Set<Dish> findFromPreviousWeeks(int currentWeek, int currentYear);
     Set<Dish> searchByName(String query);
     Optional<Dish> getByIdWithAllergens(Long id);
+    boolean isUsedInAnyMenu(Long dishId);
 }

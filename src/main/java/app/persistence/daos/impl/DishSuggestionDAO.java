@@ -41,7 +41,7 @@ public class DishSuggestionDAO implements IDishSuggestionDAO
     {
         DBValidator.validateRange(weekNumber, 1, 53, "Week number");
         DBValidator.validateRange(year, 2000, 2100, "Year");
-        DBValidator.validateNotNull(Status.class, "Status");
+        DBValidator.validateNotNull(status, "Status");
 
         try (EntityManager em = emf.createEntityManager())
         {

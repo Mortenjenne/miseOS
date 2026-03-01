@@ -23,8 +23,8 @@ public class WeeklyMenuSlot implements IEntity
 
     @Setter
     @ManyToOne
-    @JoinColumn(name = "dish_suggestion_id")
-    private DishSuggestion dishSuggestion;
+    @JoinColumn(name = "dish_id")
+    private Dish dish;
 
     @Setter
     @ManyToOne
@@ -40,12 +40,12 @@ public class WeeklyMenuSlot implements IEntity
     @Column(name = "is_empty", nullable = false)
     private boolean isEmpty;
 
-    public WeeklyMenuSlot(DayOfWeek dayOfWeek, DishSuggestion dishSuggestion, Station station)
+    public WeeklyMenuSlot(DayOfWeek dayOfWeek, Dish dish, Station station)
     {
         this.dayOfWeek = dayOfWeek;
-        this.dishSuggestion = dishSuggestion;
+        this.dish = dish;
         this.station = station;
-        this.isEmpty = (dishSuggestion == null);
+        this.isEmpty = (dish == null);
     }
 
     @Override

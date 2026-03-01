@@ -227,4 +227,22 @@ public class DishDAO implements IDishDAO
             }
         }
     }
+
+    @Override
+    public boolean isUsedInAnyMenu(Long dishId)
+    {
+        try (EntityManager em = emf.createEntityManager())
+        {
+            Long count = em.createQuery(
+                    "SELECT COUNT(s) FROM WeeklyMenuSlot s WHERE s.dish.id = :dishId",
+                    Long.class
+                )
+                .setParameter("dishId", dishId)
+                .getSingleResult();
+
+            return count > 0;
+        }
+    }
+
+
 }
