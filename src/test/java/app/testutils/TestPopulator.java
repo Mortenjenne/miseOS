@@ -300,7 +300,7 @@ public class TestPopulator
     {
         User headChef = (User) seeded.get("user_gordon");
         User lineCook = (User) seeded.get("user_claire");
-        DishSuggestion dish = (DishSuggestion) seeded.get("suggestion_salmon");
+        Dish dish = (Dish) seeded.get("dish_salmon");
 
         IngredientRequest req1 = new IngredientRequest(
             "Frisk Dild",

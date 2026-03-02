@@ -22,7 +22,7 @@ public class IngredientRequestMapper
             request.getCreatedAt(),
             request.getReviewedAt(),
             request.getCreatedBy().getId(),
-            request.getDishSuggestion() != null ? request.getDishSuggestion().getId() : null
+            request.getDish() != null ? request.getDish().getId() : null
         );
     }
 }

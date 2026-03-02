@@ -5,10 +5,7 @@ import app.enums.RequestType;
 import app.enums.Status;
 import app.enums.Unit;
 import app.persistence.daos.impl.IngredientRequestDAO;
-import app.persistence.entities.DishSuggestion;
-import app.persistence.entities.IEntity;
-import app.persistence.entities.IngredientRequest;
-import app.persistence.entities.User;
+import app.persistence.entities.*;
 import app.testutils.TestCleanDB;
 import app.testutils.TestPopulator;
 import jakarta.persistence.EntityManagerFactory;
@@ -46,7 +43,7 @@ class IngredientRequestDAOTest
     void create()
     {
         User user = (User) seeded.get("user_claire");
-        DishSuggestion dish = (DishSuggestion) seeded.get("suggestion_salmon");
+        Dish dish = (Dish) seeded.get("dish_salmon");
 
         IngredientRequest request = new IngredientRequest(
             "Citroner",
