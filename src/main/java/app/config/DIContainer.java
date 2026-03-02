@@ -15,7 +15,7 @@ public class DIContainer
     private static IDishDAO dishDAO;
     private static IDishSuggestionDAO dishSuggestionDAO;
 
-    public static synchronized EntityManagerFactory getEmf()
+    private static synchronized EntityManagerFactory getEmf()
     {
         if (emf == null)
         {
@@ -24,7 +24,7 @@ public class DIContainer
         return emf;
     }
 
-    public static synchronized IAllergenDAO getAllergenDAO()
+    private static synchronized IAllergenDAO getAllergenDAO()
     {
         if(allergenDAO == null)
         {
@@ -33,7 +33,7 @@ public class DIContainer
         return allergenDAO;
     }
 
-    public static synchronized IDishDAO getDishDAO()
+    private static synchronized IDishDAO getDishDAO()
     {
         if(dishDAO == null)
         {

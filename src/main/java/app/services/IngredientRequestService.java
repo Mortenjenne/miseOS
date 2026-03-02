@@ -8,10 +8,10 @@ import app.enums.Status;
 import app.exceptions.UnauthorizedActionException;
 import app.exceptions.ValidationException;
 import app.mappers.IngredientRequestMapper;
-import app.persistence.daos.interfaces.IDishSuggestionReader;
+import app.persistence.daos.interfaces.IDishReader;
 import app.persistence.daos.interfaces.IIngredientRequestDAO;
 import app.persistence.daos.interfaces.IUserReader;
-import app.persistence.entities.DishSuggestion;
+import app.persistence.entities.Dish;
 import app.persistence.entities.IngredientRequest;
 import app.persistence.entities.User;
 import app.utils.ValidationUtil;
@@ -23,11 +23,11 @@ import java.util.stream.Collectors;
 public class IngredientRequestService implements IIngredientRequestService
 {
     private final IIngredientRequestDAO ingredientRequestDAO;
-    private final IDishSuggestionReader dishReader;
+    private final IDishReader dishReader;
     private final IUserReader userReader;
 
 
-    public IngredientRequestService(IIngredientRequestDAO ingredientRequestDAO, IDishSuggestionReader dishReader, IUserReader userReader)
+    public IngredientRequestService(IIngredientRequestDAO ingredientRequestDAO, IDishReader dishReader, IUserReader userReader)
     {
         this.ingredientRequestDAO = ingredientRequestDAO;
         this.dishReader = dishReader;
@@ -35,26 +35,26 @@ public class IngredientRequestService implements IIngredientRequestService
     }
 
     @Override
-    public IngredientRequestDTO createRequest(Long creatorId, CreateIngredientRequestDTO requestDTO)
+    public IngredientRequestDTO createRequest(Long creatorId, CreateIngredientRequestDTO dto)
     {
         ValidationUtil.validateId(creatorId);
-        validateCreateInput(requestDTO);
+        validateCreateInput(dto);
 
         User creator = userReader.getByID(creatorId);
 
         requireKitchenStaff(creator);
-        validateDeliveryDateRange(requestDTO.deliveryDate());
+        validateDeliveryDateRange(dto.deliveryDate());
 
-        DishSuggestion dish = validateAndGetDishSuggestionForRequest(requestDTO.requestType(), requestDTO.dishSuggestionId());
+        Dish dish = validateAndGetDishSuggestionForRequest(dto.requestType(), dto.dishId());
 
         IngredientRequest ingredientRequest = new IngredientRequest(
-            requestDTO.name(),
-            requestDTO.quantity(),
-            requestDTO.unit(),
-            requestDTO.preferredSupplier(),
-            requestDTO.note(),
-            requestDTO.requestType(),
-            requestDTO.deliveryDate(),
+            dto.name(),
+            dto.quantity(),
+            dto.unit(),
+            dto.preferredSupplier(),
+            dto.note(),
+            dto.requestType(),
+            dto.deliveryDate(),
             dish,
             creator
         );
@@ -147,7 +147,7 @@ public class IngredientRequestService implements IIngredientRequestService
 
         validateDeliveryDateRange(dto.deliveryDate());
 
-        DishSuggestion dish = validateAndGetDishSuggestionForRequest(dto.requestType(), dishId);
+        Dish dish = validateAndGetDishSuggestionForRequest(dto.requestType(), dishId);
         IngredientRequest existing = ingredientRequestDAO.getByID(requestId);
 
         existing.update(
@@ -176,9 +176,10 @@ public class IngredientRequestService implements IIngredientRequestService
         return ingredientRequestDAO.delete(id);
     }
 
-    private DishSuggestion validateAndGetDishSuggestionForRequest(RequestType requestType, Long dishId)
+    private Dish validateAndGetDishSuggestionForRequest(RequestType requestType, Long dishId)
     {
-        DishSuggestion dish = null;
+        Dish dish = null;
+
         if(requestType == RequestType.DISH_SPECIFIC)
         {
             dish = validateDishForIngredientRequest(dishId);
@@ -210,20 +211,13 @@ public class IngredientRequestService implements IIngredientRequestService
         }
     }
 
-    private DishSuggestion validateDishForIngredientRequest(Long dishId) {
+    private Dish validateDishForIngredientRequest(Long dishId) {
         if (dishId == null)
         {
             throw new ValidationException("Dish ID is required for dish-specific requests");
         }
 
-        DishSuggestion dish = dishReader.getByID(dishId);
-
-        if (dish.getDishStatus() != Status.APPROVED)
-        {
-            throw new ValidationException("Can only request ingredients for approved dishes. Current status: " + dish.getDishStatus());
-        }
-
-        return dish;
+        return dishReader.getByID(dishId);
     }
 
     private void validateCreateInput(CreateIngredientRequestDTO dto)
