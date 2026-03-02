@@ -8,6 +8,5 @@ public record CreateUserRequestDTO(
     String lastName,
     String email,
     String password,
-    UserRole userRole,
-    Station station
+    UserRole userRole
 ) {}

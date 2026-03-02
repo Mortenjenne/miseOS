@@ -8,7 +8,7 @@ import java.util.Set;
 
 public interface IUserService
 {
-    UserDTO register(CreateUserRequestDTO request);
+    UserDTO registerUser(Long stationId, CreateUserRequestDTO dto);
 
     UserDTO findById(Long id);
 

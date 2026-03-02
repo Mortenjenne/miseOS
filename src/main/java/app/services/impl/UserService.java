@@ -4,6 +4,7 @@ import app.dtos.user.CreateUserRequestDTO;
 import app.dtos.user.LoginRequestDTO;
 import app.dtos.user.UserDTO;
 import app.enums.UserRole;
+import app.exceptions.ValidationException;
 import app.mappers.UserMapper;
 import app.persistence.daos.interfaces.IUserDAO;
 import app.persistence.entities.User;
@@ -11,6 +12,7 @@ import app.services.IUserService;
 import app.utils.ValidationUtil;
 import jakarta.persistence.EntityNotFoundException;
 
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -24,15 +26,18 @@ public UserService(IUserDAO userDAO)
     }
 
     @Override
-    public UserDTO register(CreateUserRequestDTO request)
+    public UserDTO registerUser(Long stationId, CreateUserRequestDTO dto)
     {
-        validateUserRegistration(request);
+        ValidationUtil.validateId(stationId);
+        validatePasswordAndEmail(dto.password(), dto.email());
+        String firstName = validateName(dto.firstName(), "First name");
+        String lastName = validateName(dto.lastName(), "Last name");
 
         User userToSave = new User(
-            request.firstName(),
-            request.lastName(),
-            request.email(),
-            request.password(),
+            firstName,
+            lastName,
+            dto.email(),
+            dto.password(),
             UserRole.LINE_COOK
         );
 
@@ -43,11 +48,9 @@ public UserService(IUserDAO userDAO)
     @Override
     public UserDTO findById(Long id)
     {
+        ValidationUtil.validateId(id);
+
         User user = userDAO.getByID(id);
-        if(user == null)
-        {
-          throw new EntityNotFoundException("User not found");
-        }
         return UserMapper.toDTO(user);
     }
 
@@ -63,8 +66,8 @@ public UserService(IUserDAO userDAO)
     @Override
     public UserDTO login(LoginRequestDTO loginRequest)
     {
-        ValidationUtil.validatePassword(loginRequest.password());
-        ValidationUtil.validateEmail(loginRequest.email());
+        validatePassword(loginRequest.password());
+        validateEmail(loginRequest.email());
 
         return userDAO.findByEmail(loginRequest.email())
             .filter(user -> user.verifyPassword(loginRequest.password()))
@@ -75,9 +78,9 @@ public UserService(IUserDAO userDAO)
     @Override
     public UserDTO update(UserDTO updateDTO)
     {
-        ValidationUtil.validateName(updateDTO.firstName(), "Fornavn");
-        ValidationUtil.validateName(updateDTO.lastName(), "Efternavn");
-        ValidationUtil.validateEmail(updateDTO.email());
+        String firstName = validateName(updateDTO.firstName(), "First name");
+        String lastName = validateName(updateDTO.lastName(), "Last name");
+        String email = ValidationUtil.validateEmail(updateDTO.email());
 
         User existingUser = userDAO.getByID(updateDTO.id());
 
@@ -107,17 +110,53 @@ public UserService(IUserDAO userDAO)
         return userDAO.delete(id);
     }
 
-    private void validateUserRegistration(CreateUserRequestDTO request)
+    private void validatePasswordAndEmail(String password, String email)
     {
-        ValidationUtil.validateName(request.firstName(), "Fornavn");
-        ValidationUtil.validateName(request.lastName(), "Efternavn");
-        ValidationUtil.validateEmail(request.email());
-        ValidationUtil.validatePassword(request.password());
+        validatePassword(password);
+        validateEmail(email);
+    }
 
-        if (userDAO.findByEmail(request.email()).isPresent())
+    private void validateEmail(String email)
+    {
+        ValidationUtil.validateEmail(email);
+        Optional<User> user = userDAO.findByEmail(email);
+
+        if (user.isPresent())
         {
-            throw new IllegalArgumentException("En bruger med denne email findes allerede");
+            throw new ValidationException("En bruger med denne email findes allerede");
         }
+    }
+
+    private void validatePassword(String password)
+    {
+        if (password == null || password.length() < 8)
+        {
+            throw new ValidationException("Password skal være mindst 8 tegn");
+        }
+
+        if (!password.matches(".*[A-Z].*"))
+        {
+            throw new ValidationException("Password skal indeholde et stort bogstav");
+        }
+
+        if (!password.matches(".*[0-9].*"))
+        {
+            throw new ValidationException("Password skal indeholde et tal");
+        }
+    }
+
+    private String validateName(String name, String fieldName)
+    {
+        if (name == null || name.trim().isEmpty())
+        {
+            throw new IllegalArgumentException(fieldName + " kan ikke være tomt");
+        }
+
+        if (name.length() < 2)
+        {
+            throw new ValidationException(fieldName + " skal være mindst 2 tegn");
+        }
+        return name.trim();
     }
 }
 

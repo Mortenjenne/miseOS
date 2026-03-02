@@ -82,37 +82,4 @@ public class ValidationUtil
 
         return email.trim().toLowerCase();
     }
-
-    public static void validatePassword(String password)
-    {
-        if (password == null || password.length() < 8)
-        {
-            throw new ValidationException("Password skal være mindst 8 tegn");
-        }
-
-        if (!password.matches(".*[A-Z].*"))
-        {
-            throw new ValidationException("Password skal indeholde et stort bogstav");
-        }
-
-        if (!password.matches(".*[0-9].*"))
-        {
-            throw new ValidationException("Password skal indeholde et tal");
-        }
-    }
-
-    public static String validateName(String name, String fieldName)
-    {
-        if (name == null || name.trim().isEmpty())
-        {
-            throw new IllegalArgumentException(fieldName + " kan ikke være tomt");
-        }
-
-        if (name.length() < 2)
-        {
-            throw new ValidationException(fieldName + " skal være mindst 2 tegn");
-        }
-
-        return name.trim();
-    }
 }

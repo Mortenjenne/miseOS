@@ -6,6 +6,8 @@ import app.utils.PasswordUtil;
 import app.utils.ValidationUtil;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @NoArgsConstructor
@@ -19,17 +21,14 @@ public class User implements IEntity
     private Long id;
 
     @Getter
-    @Setter
     @Column(name = "first_name", nullable = false)
     private String firstName;
 
     @Getter
-    @Setter
     @Column(name = "last_name", nullable = false)
     private String lastName;
 
     @Getter
-    @Setter
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
@@ -37,13 +36,11 @@ public class User implements IEntity
     private String hashedPassword;
 
     @Getter
-    @Setter
     @Enumerated(EnumType.STRING)
     @Column(name = "user_role", nullable = false)
     private UserRole userRole;
 
     @Getter
-    @Setter
     @ManyToOne
     @JoinColumn(name = "station_id")
     private Station station;
@@ -58,11 +55,23 @@ public class User implements IEntity
 
     public User(String firstName, String lastName, String email, String hashedPassword, UserRole userRole)
     {
+        ValidationUtil.validateNotBlank(firstName, "First name");
+        ValidationUtil.validateNotBlank(lastName, "Last name");
+        ValidationUtil.validateNotNull(userRole, "User role");
+
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = ValidationUtil.validateEmail(email);
         this.hashedPassword = hashedPassword;
         this.userRole = userRole;
+    }
+
+    public void update(String firstName, String lastName, String email, String password)
+    {
+        ValidationUtil.validateNotBlank(firstName, "First name");
+        ValidationUtil.validateNotBlank(lastName, "Last name");
+        this.updatedAt = LocalDateTime.now();
+
     }
 
     public boolean isHeadChef()
