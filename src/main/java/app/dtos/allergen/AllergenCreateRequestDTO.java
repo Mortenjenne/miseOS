@@ -5,8 +5,7 @@ public record AllergenCreateRequestDTO(
     String nameEN,
     String descriptionDA,
     String descriptionEN,
-    Integer displayNumber,
-    Long createdById
+    Integer displayNumber
     )
 {
 }
