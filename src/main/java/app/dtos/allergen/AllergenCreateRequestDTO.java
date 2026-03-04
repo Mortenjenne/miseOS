@@ -1,8 +1,10 @@
 package app.dtos.allergen;
 
 public record AllergenCreateRequestDTO(
-    String name,
-    String description,
+    String nameDA,
+    String nameEN,
+    String descriptionDA,
+    String descriptionEN,
     Integer displayNumber,
     Long createdById
     )
