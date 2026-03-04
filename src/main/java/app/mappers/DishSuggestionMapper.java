@@ -15,7 +15,7 @@ public class DishSuggestionMapper
     public static DishSuggestionDTO toDTO(DishSuggestion suggestion)
     {
         Set<String> allergenNames = suggestion.getAllergens().stream()
-            .map(Allergen::getName)
+            .map(Allergen::getNameDA)
             .collect(Collectors.toSet());
 
         String chefName = suggestion.getCreatedBy().getFirstName() + " " + suggestion.getCreatedBy().getLastName();

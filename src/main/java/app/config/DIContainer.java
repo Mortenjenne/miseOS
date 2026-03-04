@@ -9,26 +9,19 @@ import jakarta.persistence.EntityManagerFactory;
 
 public class DIContainer
 {
-    private static EntityManagerFactory emf;
+    private static final EntityManagerFactory emf = HibernateConfig.getEntityManagerFactory();
 
     private static IAllergenDAO allergenDAO;
     private static IDishDAO dishDAO;
     private static IDishSuggestionDAO dishSuggestionDAO;
 
-    private static synchronized EntityManagerFactory getEmf()
-    {
-        if (emf == null)
-        {
-            emf = HibernateConfig.getEntityManagerFactory();
-        }
-        return emf;
-    }
+
 
     private static synchronized IAllergenDAO getAllergenDAO()
     {
         if(allergenDAO == null)
         {
-            allergenDAO = new AllergenDAO(getEmf());
+            allergenDAO = new AllergenDAO(emf);
         }
         return allergenDAO;
     }
@@ -37,7 +30,7 @@ public class DIContainer
     {
         if(dishDAO == null)
         {
-            dishDAO = new DishDAO(getEmf());
+            dishDAO = new DishDAO(emf);
         }
         return dishDAO;
     }

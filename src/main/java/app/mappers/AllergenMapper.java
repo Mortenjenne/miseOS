@@ -11,8 +11,8 @@ public class AllergenMapper
     {
         return new AllergenDTO(
             allergen.getId(),
-            allergen.getName(),
-            allergen.getDescription(),
+            allergen.getNameDA(),
+            allergen.getDescriptionDA(),
             allergen.getDisplayNumber()
         );
     }

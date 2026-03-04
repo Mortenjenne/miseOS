@@ -55,7 +55,7 @@ public class AllergenService
 
         requireHeadChef(editor);
 
-        if (!allergen.getName().equals(dto.name()))
+        if (!allergen.getNameDA().equals(dto.name()))
         {
             validateAllergenNameUnique(dto.name());
         }

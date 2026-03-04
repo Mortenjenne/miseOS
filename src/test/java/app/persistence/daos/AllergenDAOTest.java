@@ -45,7 +45,7 @@ class AllergenDAOTest
         Allergen result = allergenDAO.create(newAllergen);
 
         assertThat(result.getId(), notNullValue());
-        assertThat(result.getName(), is("Peanuts"));
+        assertThat(result.getNameDA(), is("Peanuts"));
     }
 
     @Test
@@ -71,7 +71,7 @@ class AllergenDAOTest
         Allergen fetched = allergenDAO.getByID(seed.getId());
 
         assertThat(fetched.getId(), is(seed.getId()));
-        assertThat(fetched.getName(), is(seed.getName()));
+        assertThat(fetched.getNameDA(), is(seed.getNameDA()));
     }
 
     @Test
@@ -97,10 +97,10 @@ class AllergenDAOTest
 
         Allergen updated = allergenDAO.update(seed);
 
-        assertThat(updated.getName(), is("Laktose (Mælk)"));
+        assertThat(updated.getNameDA(), is("Laktose (Mælk)"));
 
         Allergen fetched = allergenDAO.getByID(seed.getId());
-        assertThat(fetched.getName(), is("Laktose (Mælk)"));
+        assertThat(fetched.getNameDA(), is("Laktose (Mælk)"));
     }
 
     @Test
@@ -140,7 +140,7 @@ class AllergenDAOTest
         Optional<Allergen> result = allergenDAO.findByName("Gluten");
 
         assertTrue(result.isPresent());
-        assertThat(result.get().getName(), is("Gluten"));
+        assertThat(result.get().getNameDA(), is("Gluten"));
     }
 
     @Test
