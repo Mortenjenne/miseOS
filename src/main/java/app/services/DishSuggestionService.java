@@ -40,7 +40,7 @@ public class DishSuggestionService
 
         Station station = stationReader.getByID(dto.stationId());
         User user = userReader.getByID(creatorId);
-        user.ensureIsKitchenStaff();
+        ensureIsKitchenStaff(user);
 
         Set<Allergen> allergens = fetchAllergens(dto.allergenIds());
 
@@ -107,7 +107,7 @@ public class DishSuggestionService
         validateUpdateInput(dto);
 
         User editor = userReader.getByID(editorId);
-        editor.ensureIsKitchenStaff();
+        ensureIsKitchenStaff(editor);
 
         DishSuggestion suggestion = dishSuggestionDAO.getByID(suggestionId);
         Set<Allergen> allergens = fetchAllergens(dto.allergenIds());
@@ -197,6 +197,16 @@ public class DishSuggestionService
         return dishes.stream()
             .map(DishSuggestionMapper::toDTO)
             .collect(Collectors.toSet());
+    }
+
+    private void ensureIsKitchenStaff(User user)
+    {
+        if(!user.isKitchenStaff())
+        {
+            throw new UnauthorizedActionException(
+                "Only kitchen staff can create dish suggestions"
+            );
+        }
     }
 
     private Set<Allergen> fetchAllergens(Set<Long> allergenIds)

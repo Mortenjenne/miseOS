@@ -1,14 +1,13 @@
 package app.services;
 
-import app.dtos.user.CreateUserRequestDTO;
-import app.dtos.user.LoginRequestDTO;
-import app.dtos.user.UserDTO;
+import app.dtos.user.*;
+import app.enums.UserRole;
 
 import java.util.Set;
 
 public interface IUserService
 {
-    UserDTO registerUser(Long stationId, CreateUserRequestDTO dto);
+    UserDTO registerUser(CreateUserRequestDTO dto);
 
     UserDTO findById(Long id);
 
@@ -16,7 +15,13 @@ public interface IUserService
 
     UserDTO login(LoginRequestDTO loginRequest);
 
-    UserDTO update(UserDTO updateDTO);
+    UserDTO update(Long id, UpdateUserDTO dto);
 
-    boolean delete(Long id);
+    boolean delete(Long requesterId, Long targetUserId);
+
+    UserDTO changeRole(Long requesterId, Long targetUserId, UserRole newRole);
+
+    UserDTO changeEmail(Long userId, String newEmail);
+
+    UserDTO changePassword(Long userId, ChangeUserPasswordDTO dto);
 }
