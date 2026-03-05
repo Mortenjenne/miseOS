@@ -164,7 +164,7 @@ public class DishService
         Dish dish = dishDAO.getByID(dishId);
         dish.activate();
         Dish updated = dishDAO.update(dish);
-        return DishMapper.toDTO(dish);
+        return DishMapper.toDTO(updated);
     }
 
     public AvailableDishesDTO getAvailableDishesForMenu(int week, int year)
