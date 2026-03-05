@@ -205,7 +205,7 @@ class DishDAOTest
 
         assertThat(fetched.get().getAllergens(), containsInAnyOrder(
                 seeded.get("allergen_gluten"),
-                seeded.get("allergen_dairy"),
+                seeded.get("allergen_milk"),
                 seeded.get("allergen_eggs"),
                 seeded.get("allergen_fish"))
         );

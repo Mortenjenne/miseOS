@@ -105,31 +105,7 @@ public class ApplicationConfig
             "extra virgin olive oil"
         );
 
-        User u1 = new User("Gordon", "Ramsay", "gordon@kitchen.com", "hash1", UserRole.HEAD_CHEF);
-        User u2 = new User("Claire", "Smyth", "claire@pastry.com", "hash2", UserRole.LINE_COOK);
 
-        Station s1 = new Station("Cold Kitchen", "Salads & Starters");
-        Set<Allergen> allergens = new HashSet<>();
-        Allergen gluten = new Allergen("Gluten", "Cereals containing gluten", 1);
-        Allergen dairy = new Allergen("Dairy", "Milk and products thereof (including lactose)",2);
-        Allergen eggs = new Allergen("Eggs", "Eggs and products thereof",3);
-        allergens.add(gluten);
-        allergens.add(dairy);
-        allergens.add(eggs);
-
-        DishSuggestion d1 = new DishSuggestion(
-            "Røget Laks",
-            "Laks med dildcreme og rugbrødschips",
-            7,
-            2026,
-            s1,
-            u1,
-            allergens
-        );
-
-        DishTranslationDTO dishTranslationDTO = dishTranslationService.translateTo(d1, "EN");
-
-        System.out.println(dishTranslationDTO);
 
         Map<String, String> result = aiService.normalizeIngredientList(ingredientsToNormalize, "da");
 

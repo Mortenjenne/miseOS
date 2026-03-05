@@ -56,7 +56,7 @@ class DishSuggestionDAOTest {
 
         DishSuggestion dish = new DishSuggestion("Pasta Carbonara", "Classic pasta", 7, 2026, station, gordon, allergens);
 
-        Allergen lactose = (Allergen) seeded.get("allergen_lactose");
+        Allergen lactose = (Allergen) seeded.get("allergen_milk");
         dish.addAllergen(lactose);
 
         DishSuggestion result = dishSuggestionDAO.create(dish);
