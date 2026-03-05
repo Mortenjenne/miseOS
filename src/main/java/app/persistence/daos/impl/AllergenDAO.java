@@ -23,6 +23,8 @@ public class AllergenDAO implements IAllergenDAO
     @Override
     public Optional<Allergen> findByNameDA(String nameDA)
     {
+        DBValidator.validateNotBlank(nameDA, "Name DA");
+
         try(EntityManager em = emf.createEntityManager())
         {
             Allergen allergen = em.createQuery("SELECT a FROM Allergen a WHERE a.nameDA = :nameDA", Allergen.class)
@@ -38,6 +40,8 @@ public class AllergenDAO implements IAllergenDAO
     @Override
     public Optional<Allergen> findByNameEN(String nameEN)
     {
+        DBValidator.validateNotBlank(nameEN, "Name EN");
+
         try(EntityManager em = emf.createEntityManager())
         {
             Allergen allergen = em.createQuery("SELECT a FROM Allergen a WHERE a.nameEN = :nameEN", Allergen.class)
@@ -63,6 +67,8 @@ public class AllergenDAO implements IAllergenDAO
     @Override
     public boolean isUsedByAnyDish(Long allergenId)
     {
+        DBValidator.validateId(allergenId);
+
         try (EntityManager em = emf.createEntityManager())
         {
             Long dishCount = em.createQuery(
@@ -80,6 +86,21 @@ public class AllergenDAO implements IAllergenDAO
                 .getSingleResult();
 
             return (dishCount + suggestionCount) > 0;
+        }
+    }
+
+    @Override
+    public boolean existsByDisplayNumber(Integer displayNumber)
+    {
+        DBValidator.validatePositive(displayNumber, "Display number");
+
+        try(EntityManager em = emf.createEntityManager())
+        {
+            Long count = em.createQuery("SELECT COUNT(a) FROM Allergen a WHERE a.displayNumber = :displayNumber", Long.class)
+                .setParameter("displayNumber", displayNumber)
+                .getSingleResult();
+
+            return count > 0;
         }
     }
 

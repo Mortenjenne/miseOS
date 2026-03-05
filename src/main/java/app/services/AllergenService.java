@@ -45,6 +45,7 @@ public class AllergenService
 
         requireUniqueNameDA(dto.nameDA());
         requireUniqueNameEN(dto.nameEN());
+        requireUniqueDisplayNumber(dto.displayNumber());
 
         Allergen allergen = new Allergen(
             dto.nameDA(),
@@ -62,6 +63,7 @@ public class AllergenService
     {
         ValidationUtil.validateId(allergenId);
         ValidationUtil.validateId(editorId);
+        validateUpdateInput(dto);
 
         User editor = userReader.getByID(editorId);
         requireHeadChef(editor);
@@ -76,6 +78,11 @@ public class AllergenService
         if (!allergen.getNameEN().equalsIgnoreCase(dto.nameEN()))
         {
             requireUniqueNameEN(dto.nameEN());
+        }
+
+        if(!allergen.getDisplayNumber().equals(dto.displayNumber()))
+        {
+            requireUniqueDisplayNumber(dto.displayNumber());
         }
 
         allergen.update(
@@ -188,6 +195,14 @@ public class AllergenService
         if (allergenDAO.findByNameEN(nameEN).isPresent())
         {
             throw new ValidationException("Allergen with English name '" + nameEN + "' already exists");
+        }
+    }
+
+    private void requireUniqueDisplayNumber(Integer displayNumber)
+    {
+        if (allergenDAO.existsByDisplayNumber(displayNumber))
+        {
+            throw new ValidationException("Display number already in use");
         }
     }
 
