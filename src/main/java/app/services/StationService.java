@@ -16,7 +16,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class StationService
+public class StationService implements IStationService
 {
     private final IStationDAO stationDAO;
     private final IUserReader userReader;
@@ -27,6 +27,7 @@ public class StationService
         this.userReader = userReader;
     }
 
+    @Override
     public StationDTO registerStation(Long creatorID, StationRequestDTO dto)
     {
         ValidationUtil.validateId(creatorID);
@@ -42,6 +43,7 @@ public class StationService
         return StationMapper.toDTO(saved);
     }
 
+    @Override
     public StationDTO updateStation(Long editorId, Long stationId, StationRequestDTO dto)
     {
         ValidationUtil.validateId(editorId);
@@ -66,6 +68,7 @@ public class StationService
         return StationMapper.toDTO(updated);
     }
 
+    @Override
     public boolean deleteStation(Long userId, Long stationId)
     {
         ValidationUtil.validateId(stationId);
@@ -78,6 +81,7 @@ public class StationService
         return stationDAO.delete(station.getId());
     }
 
+    @Override
     public StationDTO getStationById(Long id)
     {
         ValidationUtil.validateId(id);
@@ -86,6 +90,7 @@ public class StationService
         return StationMapper.toDTO(station);
     }
 
+    @Override
     public Set<StationDTO> getAllStations()
     {
         return stationDAO.getAll()
@@ -94,6 +99,7 @@ public class StationService
             .collect(Collectors.toSet());
     }
 
+    @Override
     public StationDTO getStationByName(String name)
     {
         ValidationUtil.validateNotBlank(name, "Station name");
