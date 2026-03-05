@@ -34,7 +34,6 @@ public class DishSuggestionService
 
     public DishSuggestionDTO submitSuggestion(Long creatorId, DishSuggestionCreateDTO dto)
     {
-        ValidationUtil.validateId(dto.stationId());
         ValidationUtil.validateId(creatorId);
         validateCreateInput(dto);
 
@@ -90,6 +89,8 @@ public class DishSuggestionService
     {
         ValidationUtil.validateId(dishId);
         ValidationUtil.validateId(approverId);
+        ValidationUtil.validateNotBlank(feedback, "Feedback");
+        ValidationUtil.validateText(feedback, "Feedback", 5, 255);
 
         DishSuggestion dish = dishSuggestionDAO.getByID(dishId);
         User approver = userReader.getByID(approverId);
@@ -174,6 +175,8 @@ public class DishSuggestionService
 
     public Set<DishSuggestionDTO> getPendingForWeek(int week, int year)
     {
+        validateWeekAndYear(week,year);
+
         Set<DishSuggestion> dishes = dishSuggestionDAO.findByWeekYearAndStatus(week, year, Status.PENDING);
 
         return dishes.stream()
@@ -183,6 +186,8 @@ public class DishSuggestionService
 
     public Set<DishSuggestionDTO> getApprovedForWeek(int week, int year)
     {
+        validateWeekAndYear(week,year);
+
         Set<DishSuggestion> dishes = dishSuggestionDAO.findByWeekYearAndStatus(week, year, Status.APPROVED);
 
         return dishes.stream()
@@ -192,6 +197,8 @@ public class DishSuggestionService
 
     public Set<DishSuggestionDTO> getByStatus(Status status)
     {
+        ValidationUtil.validateNotNull(status, "Dish status");
+
         Set<DishSuggestion> dishes = dishSuggestionDAO.findByStatus(status);
 
         return dishes.stream()
@@ -220,12 +227,18 @@ public class DishSuggestionService
             .collect(Collectors.toSet());
     }
 
+    private void validateWeekAndYear(int week, int year)
+    {
+        ValidationUtil.validateRange(week, 1, 53, "Week");
+        ValidationUtil.validateRange(year, 2020, 2100, "Year");
+    }
+
     private void validateCreateInput(DishSuggestionCreateDTO dto)
     {
-        ValidationUtil.validateNotNull(dto, "Suggestion");
-        ValidationUtil.validateNotBlank(dto.nameDA(), "Name");
-        ValidationUtil.validateNotBlank(dto.descriptionDA(), "Description");
+        ValidationUtil.validateNotNull(dto, "Dish Suggestion");
         ValidationUtil.validateId(dto.stationId());
+        ValidationUtil.validateName(dto.nameDA(), "Name");
+        ValidationUtil.validateDescription(dto.descriptionDA(), "Description");
         ValidationUtil.validateRange(dto.targetWeek(), 1, 53, "Target week");
         ValidationUtil.validateRange(dto.targetYear(), 2020, 2100, "Target year");
     }
@@ -233,7 +246,7 @@ public class DishSuggestionService
     private void validateUpdateInput(DishSuggestionUpdateDTO dto)
     {
         ValidationUtil.validateNotNull(dto, "Suggestion");
-        ValidationUtil.validateNotBlank(dto.nameDA(), "Name");
-        ValidationUtil.validateNotBlank(dto.descriptionDA(), "Description");
+        ValidationUtil.validateName(dto.nameDA(), "Name");
+        ValidationUtil.validateDescription(dto.descriptionDA(), "Description");
     }
 }

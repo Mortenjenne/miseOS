@@ -226,7 +226,7 @@ public class DishService
         {
             ValidationUtil.validateName(dto.nameEN(), "Name EN");
         }
-        
+
         if (dto.descriptionEN() != null)
         {
             ValidationUtil.validateDescription(dto.descriptionEN(), "Description EN");
