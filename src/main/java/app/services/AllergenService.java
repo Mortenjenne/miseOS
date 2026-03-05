@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class AllergenService
+public class AllergenService implements IAllergenService
 {
     private final IAllergenDAO allergenDAO;
     private final IUserReader userReader;
@@ -30,6 +30,7 @@ public class AllergenService
         this.userReader = userReader;
     }
 
+    @Override
     public AllergenDTO registerAllergen(Long creatorId, AllergenCreateRequestDTO dto)
     {
         ValidationUtil.validateId(creatorId);
@@ -54,6 +55,7 @@ public class AllergenService
         return AllergenMapper.toDTO(saved);
     }
 
+    @Override
     public AllergenDTO updateAllergen(Long allergenId, Long editorId, AllergenUpdateRequestDTO dto)
     {
         ValidationUtil.validateId(allergenId);
@@ -92,6 +94,7 @@ public class AllergenService
         return AllergenMapper.toDTO(updated);
     }
 
+    @Override
     public boolean deleteAllergen(Long allergenId, Long requesterId)
     {
         ValidationUtil.validateId(requesterId);
@@ -111,6 +114,7 @@ public class AllergenService
         return allergenDAO.delete(allergen.getId());
     }
 
+    @Override
     public AllergenDTO getAllergenById(Long id)
     {
         ValidationUtil.validateId(id);
@@ -118,6 +122,7 @@ public class AllergenService
         return AllergenMapper.toDTO(allergen);
     }
 
+    @Override
     public Set<AllergenDTO> getAllAllergens()
     {
         return allergenDAO.getAll().stream()
@@ -125,6 +130,7 @@ public class AllergenService
             .collect(Collectors.toSet());
     }
 
+    @Override
     public AllergenDTO getAllergenByNameDA(String nameDA)
     {
         ValidationUtil.validateNotBlank(nameDA, "Name");
@@ -134,6 +140,7 @@ public class AllergenService
             .orElseThrow(() -> new EntityNotFoundException("Allergen not found: " + nameDA));
     }
 
+    @Override
     public List<AllergenDTO> seedEUAllergens(Long headChefId)
     {
         ValidationUtil.validateId(headChefId);
