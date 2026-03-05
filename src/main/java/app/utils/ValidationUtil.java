@@ -6,6 +6,8 @@ import java.time.LocalDate;
 
 public class ValidationUtil
 {
+    private static final String SAFE_TEXT_PATTERN = "^[\\p{L}0-9\\s&,\\-.( )]*$";
+
     private ValidationUtil(){}
 
     public static void validateNotNull(Object obj, String entityName)
@@ -33,16 +35,23 @@ public class ValidationUtil
         }
     }
 
-    public static void requireLength(String value, String field, int min, int max)
+    public static void validateText(String value, String fieldName, int min, int max)
     {
         String trimmed = value.trim();
+
         if (trimmed.length() < min)
         {
-            throw new ValidationException(field + " must be at least " + min + " characters");
+            throw new ValidationException(String.format("%s must be at least %d characters", fieldName, min));
         }
+
         if (trimmed.length() > max)
         {
-            throw new ValidationException(field + " must be at most " + max + " characters");
+            throw new ValidationException(String.format("%s must be at most %d characters",fieldName, max));
+        }
+
+        if (!trimmed.matches(SAFE_TEXT_PATTERN)) {
+
+            throw new ValidationException(String.format("%s can only contain letters, numbers, and common symbols like '&', '-', or '.'.", fieldName));
         }
     }
 

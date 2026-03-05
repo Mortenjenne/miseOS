@@ -210,16 +210,16 @@ public class AllergenService
     {
         ValidationUtil.validateNotBlank(nameDA, "Name DA");
         ValidationUtil.validateNotBlank(nameEN, "Name EN");
-        ValidationUtil.requireLength(nameDA, "Name DA", NAME_MIN_LENGTH, NAME_MAX_LENGTH);
-        ValidationUtil.requireLength(nameEN, "Name EN", NAME_MIN_LENGTH, NAME_MAX_LENGTH);
+        ValidationUtil.validateText(nameDA, "Name DA", NAME_MIN_LENGTH, NAME_MAX_LENGTH);
+        ValidationUtil.validateText(nameEN, "Name EN", NAME_MIN_LENGTH, NAME_MAX_LENGTH);
     }
 
     private void validateDescriptions(String descDA, String descEN)
     {
         ValidationUtil.validateNotBlank(descDA, "Description DA");
         ValidationUtil.validateNotBlank(descEN, "Description EN");
-        ValidationUtil.requireLength(descDA, "Description DA", DESCRIPTION_MIN_LENGTH, DESCRIPTION_MAX_LENGTH);
-        ValidationUtil.requireLength(descEN, "Description EN", DESCRIPTION_MIN_LENGTH, DESCRIPTION_MAX_LENGTH);
+        ValidationUtil.validateText(descDA, "Description DA", DESCRIPTION_MIN_LENGTH, DESCRIPTION_MAX_LENGTH);
+        ValidationUtil.validateText(descEN, "Description EN", DESCRIPTION_MIN_LENGTH, DESCRIPTION_MAX_LENGTH);
     }
 
     private void validateDisplayNumber(Integer displayNumber)
