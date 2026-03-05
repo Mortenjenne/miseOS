@@ -1,4 +1,4 @@
-package app.services;
+package app.services.impl;
 
 import app.dtos.ingredient.CreateIngredientRequestDTO;
 import app.dtos.ingredient.IngredientRequestDTO;
@@ -14,6 +14,7 @@ import app.persistence.daos.interfaces.IUserReader;
 import app.persistence.entities.Dish;
 import app.persistence.entities.IngredientRequest;
 import app.persistence.entities.User;
+import app.services.IIngredientRequestService;
 import app.utils.ValidationUtil;
 
 import java.time.LocalDate;

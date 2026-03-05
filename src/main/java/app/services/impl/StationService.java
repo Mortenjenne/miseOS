@@ -1,4 +1,4 @@
-package app.services;
+package app.services.impl;
 
 import app.dtos.station.StationRequestDTO;
 import app.dtos.station.StationDTO;
@@ -9,6 +9,7 @@ import app.persistence.daos.interfaces.IStationDAO;
 import app.persistence.daos.interfaces.IUserReader;
 import app.persistence.entities.Station;
 import app.persistence.entities.User;
+import app.services.IStationService;
 import app.utils.ValidationUtil;
 import jakarta.persistence.EntityNotFoundException;
 

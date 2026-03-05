@@ -1,19 +1,15 @@
 package app.config;
 
-import app.dtos.dishsuggestion.DishTranslationDTO;
 import app.dtos.gemini.AiDishSuggestionDTO;
 import app.dtos.weather.WeatherForecastDTO;
-import app.enums.UserRole;
 import app.integrations.ai.GeminiClient;
 import app.integrations.ai.IAiClient;
 import app.integrations.translation.DeepLTranslationClient;
 import app.integrations.translation.ITranslationClient;
 import app.integrations.weather.WeatherClient;
-import app.persistence.entities.Allergen;
-import app.persistence.entities.DishSuggestion;
-import app.persistence.entities.Station;
-import app.persistence.entities.User;
 import app.services.*;
+import app.services.impl.AiService;
+import app.services.impl.DishTranslationService;
 import app.utils.WeatherForecastBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;

@@ -1,4 +1,4 @@
-package app.services;
+package app.services.impl;
 
 import app.dtos.shopping.*;
 import app.enums.ShoppingListStatus;
@@ -12,6 +12,8 @@ import app.persistence.entities.IngredientRequest;
 import app.persistence.entities.ShoppingList;
 import app.persistence.entities.ShoppingListItem;
 import app.persistence.entities.User;
+import app.services.IAiService;
+import app.services.IShoppingListService;
 import app.utils.ValidationUtil;
 import jakarta.persistence.EntityNotFoundException;
 

@@ -1,4 +1,4 @@
-package app.services;
+package app.services.impl;
 
 import app.dtos.dishsuggestion.DishSuggestionCreateDTO;
 import app.dtos.dishsuggestion.DishSuggestionDTO;
@@ -8,6 +8,7 @@ import app.exceptions.UnauthorizedActionException;
 import app.mappers.DishSuggestionMapper;
 import app.persistence.daos.interfaces.*;
 import app.persistence.entities.*;
+import app.services.IDishSuggestionService;
 import app.utils.ValidationUtil;
 import jakarta.persistence.EntityNotFoundException;
 
@@ -15,7 +16,7 @@ import java.time.LocalDate;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class DishSuggestionService
+public class DishSuggestionService implements IDishSuggestionService
 {
     private final IDishSuggestionDAO dishSuggestionDAO;
     private final IDishDAO dishDAO;
@@ -32,6 +33,7 @@ public class DishSuggestionService
         this.allergenDAO = allergenDAO;
     }
 
+    @Override
     public DishSuggestionDTO submitSuggestion(Long creatorId, DishSuggestionCreateDTO dto)
     {
         ValidationUtil.validateId(creatorId);
@@ -59,6 +61,7 @@ public class DishSuggestionService
         return DishSuggestionMapper.toDTO(saved);
     }
 
+    @Override
     public DishSuggestionDTO approveDish(Long dishId, Long approverId)
     {
         ValidationUtil.validateId(dishId);
@@ -85,6 +88,7 @@ public class DishSuggestionService
         return DishSuggestionMapper.toDTO(updated);
     }
 
+    @Override
     public DishSuggestionDTO rejectDish(Long dishId, Long approverId, String feedback)
     {
         ValidationUtil.validateId(dishId);
@@ -101,6 +105,7 @@ public class DishSuggestionService
         return DishSuggestionMapper.toDTO(updated);
     }
 
+    @Override
     public DishSuggestionDTO updateDish(Long editorId, Long suggestionId, DishSuggestionUpdateDTO dto)
     {
         ValidationUtil.validateId(editorId);
@@ -123,6 +128,7 @@ public class DishSuggestionService
         return DishSuggestionMapper.toDTO(updated);
     }
 
+    @Override
     public boolean deleteDish(Long dishId, Long userId)
     {
         ValidationUtil.validateId(dishId);
@@ -141,6 +147,7 @@ public class DishSuggestionService
         return dishSuggestionDAO.delete(dishId);
     }
 
+    @Override
     public DishSuggestionDTO getById(Long id)
     {
         ValidationUtil.validateId(id);
@@ -148,6 +155,7 @@ public class DishSuggestionService
         return DishSuggestionMapper.toDTO(dish);
     }
 
+    @Override
     public DishSuggestionDTO getByIdWithAllergens(Long id) {
         ValidationUtil.validateId(id);
 
@@ -156,6 +164,7 @@ public class DishSuggestionService
             .orElseThrow(() -> new EntityNotFoundException("DishSuggestion with ID " + id + " not found"));
     }
 
+    @Override
     public Set<DishSuggestionDTO> getAllDishSuggestions()
     {
         return dishSuggestionDAO.getAll()
@@ -164,6 +173,7 @@ public class DishSuggestionService
             .collect(Collectors.toSet());
     }
 
+    @Override
     public Set<DishSuggestionDTO> getPendingSuggestions()
     {
         Set<DishSuggestion> dishes = dishSuggestionDAO.findByStatus(Status.PENDING);
@@ -173,6 +183,7 @@ public class DishSuggestionService
             .collect(Collectors.toSet());
     }
 
+    @Override
     public Set<DishSuggestionDTO> getPendingForWeek(int week, int year)
     {
         validateWeekAndYear(week,year);
@@ -184,6 +195,7 @@ public class DishSuggestionService
             .collect(Collectors.toSet());
     }
 
+    @Override
     public Set<DishSuggestionDTO> getApprovedForWeek(int week, int year)
     {
         validateWeekAndYear(week,year);
@@ -195,6 +207,7 @@ public class DishSuggestionService
             .collect(Collectors.toSet());
     }
 
+    @Override
     public Set<DishSuggestionDTO> getByStatus(Status status)
     {
         ValidationUtil.validateNotNull(status, "Dish status");

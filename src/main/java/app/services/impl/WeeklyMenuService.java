@@ -1,4 +1,4 @@
-package app.services;
+package app.services.impl;
 
 import app.dtos.menu.AddMenuSlotDTO;
 import app.dtos.menu.CreateWeeklyMenuDTO;
@@ -10,6 +10,8 @@ import app.exceptions.ValidationException;
 import app.mappers.WeeklyMenuMapper;
 import app.persistence.daos.interfaces.*;
 import app.persistence.entities.*;
+import app.services.IDishTranslationService;
+import app.services.IWeeklyMenuService;
 import app.utils.ValidationUtil;
 import jakarta.persistence.EntityNotFoundException;
 
@@ -26,7 +28,7 @@ public class WeeklyMenuService implements IWeeklyMenuService
     private final IUserReader userReader;
     private final IStationReader stationReader;
     private final IDishTranslationService dishTranslationService;
-    
+
     public WeeklyMenuService(IWeeklyMenuDAO menuDAO, IDishReader dishReader, IUserReader userReader, IStationReader stationReader, IDishTranslationService dishTranslationService)
     {
         this.menuDAO = menuDAO;

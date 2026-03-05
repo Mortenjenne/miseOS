@@ -1,4 +1,4 @@
-package app.services;
+package app.services.impl;
 
 import app.dtos.allergen.AllergenCreateRequestDTO;
 import app.dtos.allergen.AllergenDTO;
@@ -10,6 +10,7 @@ import app.persistence.daos.interfaces.IAllergenDAO;
 import app.persistence.daos.interfaces.IUserReader;
 import app.persistence.entities.Allergen;
 import app.persistence.entities.User;
+import app.services.IAllergenService;
 import app.utils.EUAllergens;
 import app.utils.ValidationUtil;
 import jakarta.persistence.EntityNotFoundException;

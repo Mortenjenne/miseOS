@@ -1,4 +1,4 @@
-package app.services;
+package app.services.impl;
 
 import app.dtos.dish.*;
 import app.exceptions.UnauthorizedActionException;
@@ -11,6 +11,7 @@ import app.persistence.entities.Allergen;
 import app.persistence.entities.Dish;
 import app.persistence.entities.Station;
 import app.persistence.entities.User;
+import app.services.IDishService;
 import app.utils.ValidationUtil;
 import jakarta.persistence.EntityNotFoundException;
 
