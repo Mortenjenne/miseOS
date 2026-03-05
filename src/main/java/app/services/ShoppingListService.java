@@ -19,7 +19,7 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class ShoppingListService
+public class ShoppingListService implements IShoppingListService
 {
     private final IShoppingListDAO shoppingListDAO;
     private final IIngredientRequestDAO ingredientRequestDAO;
@@ -36,6 +36,7 @@ public class ShoppingListService
         this.aiService = aiService;
     }
 
+    @Override
     public ShoppingListDTO generateShoppingList(Long userId, CreateShoppingListDTO dto)
     {
         ValidationUtil.validateId(userId);
@@ -79,6 +80,7 @@ public class ShoppingListService
         return ShoppingListMapper.toDTO(saved);
     }
 
+    @Override
     public ShoppingListDTO finalizeShoppingList(Long userId, Long shoppingListId)
     {
         ValidationUtil.validateId(shoppingListId);
@@ -96,6 +98,7 @@ public class ShoppingListService
         return ShoppingListMapper.toDTO(finalized);
     }
 
+    @Override
     public boolean deleteShoppingList(Long userId, Long shoppingListId)
     {
         ValidationUtil.validateId(shoppingListId);
@@ -109,6 +112,7 @@ public class ShoppingListService
         return shoppingListDAO.delete(list.getId());
     }
 
+    @Override
     public Set<ShoppingListDTO> getAll()
     {
         return shoppingListDAO.getAll().stream()
@@ -116,6 +120,7 @@ public class ShoppingListService
             .collect(Collectors.toSet());
     }
 
+    @Override
     public Set<ShoppingListDTO> findByStatus(ShoppingListStatus status)
     {
         ValidationUtil.validateNotNull(status, "Status");
@@ -125,6 +130,7 @@ public class ShoppingListService
             .collect(Collectors.toSet());
     }
 
+    @Override
     public ShoppingListDTO markItemOrdered(Long userId, Long shoppingListId, Long itemId)
     {
         validateItemRelatedIds(userId, shoppingListId, itemId);
@@ -142,6 +148,7 @@ public class ShoppingListService
         return ShoppingListMapper.toDTO(updated);
     }
 
+    @Override
     public ShoppingListDTO markAllItemsOrdered(Long shoppingListId, Long userId)
     {
         ValidationUtil.validateId(shoppingListId);
@@ -158,6 +165,7 @@ public class ShoppingListService
         return ShoppingListMapper.toDTO(updated);
     }
 
+    @Override
     public ShoppingListDTO addItemToShoppingList(Long userId, Long shoppingListId, CreateShoppingListItemDTO dto)
     {
         ValidationUtil.validateId(userId);
@@ -185,6 +193,7 @@ public class ShoppingListService
         return ShoppingListMapper.toDTO(updated);
     }
 
+    @Override
     public ShoppingListDTO removeItem(Long userId, Long shoppingListId, Long itemId)
     {
         validateItemRelatedIds(userId, shoppingListId, itemId);
@@ -201,6 +210,7 @@ public class ShoppingListService
         return ShoppingListMapper.toDTO(updated);
     }
 
+    @Override
     public ShoppingListDTO updateItem(Long userId, Long shoppingListId, Long itemId, UpdateShoppingListItemDTO dto)
     {
         validateItemRelatedIds(userId, shoppingListId, itemId);
@@ -218,6 +228,7 @@ public class ShoppingListService
         return ShoppingListMapper.toDTO(updated);
     }
 
+    @Override
     public ShoppingListDTO getById(Long shoppingListId)
     {
         ValidationUtil.validateId(shoppingListId);
@@ -226,6 +237,7 @@ public class ShoppingListService
         return ShoppingListMapper.toDTO(list);
     }
 
+    @Override
     public ShoppingListDTO findByDeliveryDate(LocalDate deliveryDate)
     {
         ValidationUtil.validateNotNull(deliveryDate, "Local date");
