@@ -19,15 +19,14 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class WeeklyMenuService
+public class WeeklyMenuService implements IWeeklyMenuService
 {
     private final IWeeklyMenuDAO menuDAO;
     private final IDishReader dishReader;
     private final IUserReader userReader;
     private final IStationReader stationReader;
     private final IDishTranslationService dishTranslationService;
-
-
+    
     public WeeklyMenuService(IWeeklyMenuDAO menuDAO, IDishReader dishReader, IUserReader userReader, IStationReader stationReader, IDishTranslationService dishTranslationService)
     {
         this.menuDAO = menuDAO;
@@ -37,6 +36,7 @@ public class WeeklyMenuService
         this.dishTranslationService = dishTranslationService;
     }
 
+    @Override
     public WeeklyMenuDTO createMenu(Long creatorId, CreateWeeklyMenuDTO dto)
     {
         ValidationUtil.validateId(creatorId);
@@ -54,6 +54,7 @@ public class WeeklyMenuService
         return WeeklyMenuMapper.toDTO(createdMenu);
     }
 
+    @Override
     public WeeklyMenuDTO addMenuSlot(Long editorId, Long menuId, AddMenuSlotDTO dto)
     {
         ValidationUtil.validateId(editorId);
@@ -84,6 +85,7 @@ public class WeeklyMenuService
         return WeeklyMenuMapper.toDTO(updated);
     }
 
+    @Override
     public WeeklyMenuDTO removeSlot(Long editorId, Long menuId, Long slotId)
     {
         validateSlotRelatedIds(editorId, menuId, slotId);
@@ -100,6 +102,7 @@ public class WeeklyMenuService
         return WeeklyMenuMapper.toDTO(updated);
     }
 
+    @Override
     public WeeklyMenuDTO updateSlot(Long editorId, Long menuId, Long slotId, UpdateMenuSlotDTO dto)
     {
         validateSlotRelatedIds(editorId, menuId, slotId);
@@ -127,6 +130,7 @@ public class WeeklyMenuService
         return WeeklyMenuMapper.toDTO(updated);
     }
 
+    @Override
     public WeeklyMenuDTO translateMenu(Long editorId, Long menuId)
     {
         ValidationUtil.validateId(editorId);
@@ -143,6 +147,7 @@ public class WeeklyMenuService
         return WeeklyMenuMapper.toDTO(updated);
     }
 
+    @Override
     public WeeklyMenuDTO publishMenu(Long publisherId, Long menuId)
     {
        ValidationUtil.validateId(publisherId);
@@ -159,6 +164,7 @@ public class WeeklyMenuService
        return WeeklyMenuMapper.toDTO(updated);
     }
 
+    @Override
     public WeeklyMenuDTO getByWeekAndYear(int week, int year)
     {
         validateWeekAndYear(week, year);
@@ -169,6 +175,7 @@ public class WeeklyMenuService
             );
     }
 
+    @Override
     public WeeklyMenuDTO getCurrentWeekMenu()
     {
         LocalDate today = LocalDate.now();
@@ -181,6 +188,7 @@ public class WeeklyMenuService
             );
     }
 
+    @Override
     public WeeklyMenuDTO getById(Long id)
     {
         ValidationUtil.validateId(id);
@@ -188,6 +196,7 @@ public class WeeklyMenuService
         return WeeklyMenuMapper.toDTO(menu);
     }
 
+    @Override
     public Set<WeeklyMenuDTO> getAllMenus()
     {
         return menuDAO.getAll()
@@ -196,6 +205,7 @@ public class WeeklyMenuService
             .collect(Collectors.toSet());
     }
 
+    @Override
     public Set<WeeklyMenuDTO> getPublishedMenusByStatus(MenuStatus status)
     {
         ValidationUtil.validateNotNull(status, "Menu status");
