@@ -6,5 +6,8 @@ import java.util.Optional;
 
 public interface IAllergenDAO extends IEntityDAO<Allergen, Long>
 {
-    Optional<Allergen> findByName(String name);
+    Optional<Allergen> findByNameDA(String name);
+    Optional<Allergen> findByNameEN(String nameEN);
+    long count();
+    boolean isUsedByAnyDish(Long allergenId);
 }

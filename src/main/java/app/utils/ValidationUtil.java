@@ -33,6 +33,19 @@ public class ValidationUtil
         }
     }
 
+    public static void requireLength(String value, String field, int min, int max)
+    {
+        String trimmed = value.trim();
+        if (trimmed.length() < min)
+        {
+            throw new ValidationException(field + " must be at least " + min + " characters");
+        }
+        if (trimmed.length() > max)
+        {
+            throw new ValidationException(field + " must be at most " + max + " characters");
+        }
+    }
+
     public static void validateRange(int number, int min, int max, String fieldName)
     {
         if (number < min || number > max)

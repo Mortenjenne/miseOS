@@ -10,15 +10,21 @@ import app.persistence.daos.interfaces.IAllergenDAO;
 import app.persistence.daos.interfaces.IUserReader;
 import app.persistence.entities.Allergen;
 import app.persistence.entities.User;
+import app.utils.EUAllergens;
 import app.utils.ValidationUtil;
 import jakarta.persistence.EntityNotFoundException;
 
-import java.util.Optional;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 public class AllergenService
 {
+    private static final int NAME_MIN_LENGTH = 2;
+    private static final int NAME_MAX_LENGTH = 100;
+    private static final int DESCRIPTION_MIN_LENGTH = 5;
+    private static final int DESCRIPTION_MAX_LENGTH = 255;
 
     private final IAllergenDAO allergenDAO;
     private final IUserReader userReader;
@@ -29,62 +35,83 @@ public class AllergenService
         this.userReader = userReader;
     }
 
-    public AllergenDTO registerAllergen(AllergenCreateRequestDTO dto)
+    public AllergenDTO registerAllergen(Long creatorId, AllergenCreateRequestDTO dto)
     {
-        User creator = userReader.getByID(dto.createdById());
+        ValidationUtil.validateId(creatorId);
+        validateCreateInput(dto);
 
+        User creator = userReader.getByID(creatorId);
         requireHeadChef(creator);
 
-        validateAllergenNameUnique(dto.name());
+        requireUniqueNameDA(dto.nameDA());
+        requireUniqueNameEN(dto.nameEN());
 
         Allergen allergen = new Allergen(
-            dto.name(),
-            dto.description(),
+            dto.nameDA(),
+            dto.nameEN(),
+            dto.descriptionDA(),
+            dto.descriptionEN(),
             dto.displayNumber()
         );
 
         Allergen saved = allergenDAO.create(allergen);
-
         return AllergenMapper.toDTO(saved);
     }
 
-    public AllergenDTO updateAllergen(Long allergenId, AllergenUpdateRequestDTO dto)
+    public AllergenDTO updateAllergen(Long allergenId, Long editorId, AllergenUpdateRequestDTO dto)
     {
-        Allergen allergen = allergenDAO.getByID(allergenId);
-        User editor = userReader.getByID(dto.editorId());
+        ValidationUtil.validateId(allergenId);
+        ValidationUtil.validateId(editorId);
 
+        User editor = userReader.getByID(editorId);
         requireHeadChef(editor);
 
-        if (!allergen.getNameDA().equals(dto.name()))
+        Allergen allergen = allergenDAO.getByID(allergenId);
+
+        if (!allergen.getNameDA().equalsIgnoreCase(dto.nameDA()))
         {
-            validateAllergenNameUnique(dto.name());
+            requireUniqueNameDA(dto.nameDA());
+        }
+
+        if (!allergen.getNameEN().equalsIgnoreCase(dto.nameEN()))
+        {
+            requireUniqueNameEN(dto.nameEN());
         }
 
         allergen.update(
-            dto.name(),
-            dto.description(),
+            dto.nameDA(),
+            dto.nameEN(),
+            dto.descriptionDA(),
+            dto.descriptionEN(),
             dto.displayNumber()
         );
 
         Allergen updated = allergenDAO.update(allergen);
-
         return AllergenMapper.toDTO(updated);
     }
 
-    public boolean deleteAllergen(Long allergenId, Long userId)
+    public boolean deleteAllergen(Long allergenId, Long requesterId)
     {
-        Allergen allergen = allergenDAO.getByID(allergenId);
-        User user = userReader.getByID(userId);
+        ValidationUtil.validateId(requesterId);
+        ValidationUtil.validateId(allergenId);
 
+        User user = userReader.getByID(requesterId);
         requireHeadChef(user);
 
-        // TODO: Check if allergen is in use
+        Allergen allergen = allergenDAO.getByID(allergenId);
+
+        boolean isUsed = allergenDAO.isUsedByAnyDish(allergenId);
+        if (isUsed)
+        {
+            throw new ValidationException("Cannot delete allergen '" + allergen.getNameDA() + ", it is used by one or more dishes");
+        }
 
         return allergenDAO.delete(allergen.getId());
     }
 
     public AllergenDTO getAllergenById(Long id)
     {
+        ValidationUtil.validateId(id);
         Allergen allergen = allergenDAO.getByID(id);
         return AllergenMapper.toDTO(allergen);
     }
@@ -96,50 +123,100 @@ public class AllergenService
             .collect(Collectors.toSet());
     }
 
-    public AllergenDTO getAllergenByName(String name)
+    public AllergenDTO getAllergenByNameDA(String nameDA)
     {
-        return findAllergenByName(name)
-            .orElseThrow(() -> new EntityNotFoundException("Allergen not found: " + name));
+        ValidationUtil.validateNotBlank(nameDA, "Name");
+
+        return allergenDAO.findByNameDA(nameDA)
+            .map(AllergenMapper::toDTO)
+            .orElseThrow(() -> new EntityNotFoundException("Allergen not found: " + nameDA));
     }
 
-    private Optional<AllergenDTO> findAllergenByName(String name)
+    public List<AllergenDTO> seedEUAllergens(Long headChefId)
     {
-        ValidationUtil.validateNotBlank(name, "Name");
+        ValidationUtil.validateId(headChefId);
 
-        return allergenDAO.findByName(name)
-            .map(AllergenMapper::toDTO);
-    }
-
-    //TODO implement!
-    public void seedEUAllergens(Long headChefId)
-    {
         User headChef = userReader.getByID(headChefId);
         requireHeadChef(headChef);
 
-        String[] euAllergens = {
-            "Gluten",           // Cereals containing gluten
-            "Crustaceans",      // Crustaceans and products thereof
-            "Eggs",             // Eggs and products thereof
-            "Fish",             // Fish and products thereof
-            "Peanuts",          // Peanuts and products thereof
-            "Soybeans",         // Soybeans and products thereof
-            "Milk",             // Milk and products thereof (including lactose)
-            "Nuts",             // Tree nuts
-            "Celery",           // Celery and products thereof
-            "Mustard",          // Mustard and products thereof
-            "Sesame",           // Sesame seeds and products thereof
-            "Sulphites",        // Sulphur dioxide and sulphites
-            "Lupin",            // Lupin and products thereof
-            "Molluscs"          // Molluscs and products thereof
-        };
+        long numberOfAllergensInDB = allergenDAO.count();
 
-        for (String name : euAllergens)
+        if (numberOfAllergensInDB> 0)
         {
-            if (allergenDAO.findByName(name).isEmpty())
-            {
-                //Allergen allergen = new Allergen(name);
-                //allergenDAO.create(allergen);
-            }
+            throw new ValidationException("EU allergens already seeded");
+        }
+
+        List<AllergenDTO> seeded = new ArrayList<>();
+        List<Allergen> euAllergens = EUAllergens.getAll();
+
+        euAllergens.forEach(a ->
+        {
+            Allergen allergen = allergenDAO.create(a);
+            AllergenDTO allergenDTO = AllergenMapper.toDTO(allergen);
+            seeded.add(allergenDTO);
+        });
+
+        return seeded;
+    }
+
+    private void validateCreateInput(AllergenCreateRequestDTO dto)
+    {
+        ValidationUtil.validateNotNull(dto, "Allergen");
+        validateNames(dto.nameDA(), dto.nameEN());
+        validateDescriptions(dto.descriptionDA(), dto.descriptionEN());
+        validateDisplayNumber(dto.displayNumber());
+    }
+
+    private void validateUpdateInput(AllergenUpdateRequestDTO dto)
+    {
+        ValidationUtil.validateNotNull(dto, "Allergen");
+        validateNames(dto.nameDA(), dto.nameEN());
+        validateDescriptions(dto.descriptionDA(), dto.descriptionEN());
+        validateDisplayNumber(dto.displayNumber());
+    }
+
+    private void requireUniqueNameDA(String nameDA)
+    {
+        if (allergenDAO.findByNameDA(nameDA).isPresent())
+        {
+            throw new ValidationException("Allergen with Danish name '" + nameDA + "' already exists");
+        }
+    }
+
+    private void requireUniqueNameEN(String nameEN)
+    {
+        if (allergenDAO.findByNameEN(nameEN).isPresent())
+        {
+            throw new ValidationException("Allergen with English name '" + nameEN + "' already exists");
+        }
+    }
+
+    private void validateNames(String nameDA, String nameEN)
+    {
+        ValidationUtil.validateNotBlank(nameDA, "Name DA");
+        ValidationUtil.validateNotBlank(nameEN, "Name EN");
+        ValidationUtil.requireLength(nameDA, "Name DA", NAME_MIN_LENGTH, NAME_MAX_LENGTH);
+        ValidationUtil.requireLength(nameEN, "Name EN", NAME_MIN_LENGTH, NAME_MAX_LENGTH);
+    }
+
+    private void validateDescriptions(String descDA, String descEN)
+    {
+        ValidationUtil.validateNotBlank(descDA, "Description DA");
+        ValidationUtil.validateNotBlank(descEN, "Description EN");
+        ValidationUtil.requireLength(descDA, "Description DA", DESCRIPTION_MIN_LENGTH, DESCRIPTION_MAX_LENGTH);
+        ValidationUtil.requireLength(descEN, "Description EN", DESCRIPTION_MIN_LENGTH, DESCRIPTION_MAX_LENGTH);
+    }
+
+    private void validateDisplayNumber(Integer displayNumber)
+    {
+        if (displayNumber == null)
+        {
+            throw new ValidationException("Display number is required");
+        }
+
+        if (displayNumber < 1 || displayNumber > 99)
+        {
+            throw new ValidationException("Display number must be between 1 and 99");
         }
     }
 
@@ -148,16 +225,6 @@ public class AllergenService
         if (!user.isHeadChef())
         {
             throw new UnauthorizedActionException("Only head chef can manage allergens");
-        }
-    }
-
-    private void validateAllergenNameUnique(String name)
-    {
-        Optional<Allergen> existing = allergenDAO.findByName(name);
-
-        if (existing.isPresent())
-        {
-            throw new ValidationException("Allergen with name '" + name + "' already exists");
         }
     }
 }
