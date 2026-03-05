@@ -27,12 +27,12 @@ public class StationService
         this.userReader = userReader;
     }
 
-    public StationDTO registerStation(Long createdById, StationRequestDTO dto)
+    public StationDTO registerStation(Long creatorID, StationRequestDTO dto)
     {
-        ValidationUtil.validateId(createdById);
+        ValidationUtil.validateId(creatorID);
         validateInput(dto);
 
-        User creator = userReader.getByID(createdById);
+        User creator = userReader.getByID(creatorID);
         requireChef(creator);
         validateStationNameUnique(dto.name());
 
@@ -46,7 +46,7 @@ public class StationService
     {
         ValidationUtil.validateId(editorId);
         ValidationUtil.validateId(stationId);
-        ValidationUtil.validateId(editorId);
+        validateInput(dto);
 
         User editor = userReader.getByID(editorId);
         Station station = stationDAO.getByID(stationId);
@@ -66,7 +66,7 @@ public class StationService
         return StationMapper.toDTO(updated);
     }
 
-    public boolean deleteStation(Long stationId, Long userId)
+    public boolean deleteStation(Long userId, Long stationId)
     {
         ValidationUtil.validateId(stationId);
         ValidationUtil.validateId(userId);
@@ -97,6 +97,7 @@ public class StationService
     public StationDTO getStationByName(String name)
     {
         ValidationUtil.validateNotBlank(name, "Station name");
+        ValidationUtil.validateRange(name.trim().length(), 2, 100, "Search query length");
 
         return stationDAO.findByName(name)
             .map(StationMapper::toDTO)
@@ -114,8 +115,8 @@ public class StationService
     private void validateInput(StationRequestDTO dto)
     {
         ValidationUtil.validateNotNull(dto, "Station request");
-        ValidationUtil.validateNotBlank(dto.name(), "Station name");
-        ValidationUtil.validateNotBlank(dto.description(), "Description");
+        ValidationUtil.validateName(dto.name(), "Station name");
+        ValidationUtil.validateDescription(dto.description(), "Description");
     }
 
     private void validateStationNameUnique(String name)
