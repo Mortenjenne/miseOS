@@ -1,6 +1,8 @@
 package app.services;
 
 import app.dtos.menu.AddMenuSlotDTO;
+import app.dtos.menu.CreateWeeklyMenuDTO;
+import app.dtos.menu.UpdateMenuSlotDTO;
 import app.dtos.menu.WeeklyMenuDTO;
 import app.enums.MenuStatus;
 import app.exceptions.UnauthorizedActionException;
@@ -35,19 +37,18 @@ public class WeeklyMenuService
         this.dishTranslationService = dishTranslationService;
     }
 
-    public WeeklyMenuDTO createMenu(Long creatorId, int week, int year)
+    public WeeklyMenuDTO createMenu(Long creatorId, CreateWeeklyMenuDTO dto)
     {
         ValidationUtil.validateId(creatorId);
-        ValidationUtil.validateRange(week, 1, 53, "Week");
-        ValidationUtil.validateRange(year, 2020, 2100, "Year");
+        validateCreateInput(dto);
 
         User creator = userReader.getByID(creatorId);
         requireHeadOrSousChef(creator);
 
-        Optional<WeeklyMenu> menu = menuDAO.findByWeekAndYear(week, year);
+        Optional<WeeklyMenu> menu = menuDAO.findByWeekAndYear(dto.week(), dto.year());
         checkIfMenuExists(menu);
 
-        WeeklyMenu weeklyMenu = new WeeklyMenu(week, year);
+        WeeklyMenu weeklyMenu = new WeeklyMenu(dto.week(), dto.year());
 
         WeeklyMenu createdMenu = menuDAO.create(weeklyMenu);
         return WeeklyMenuMapper.toDTO(createdMenu);
@@ -57,17 +58,20 @@ public class WeeklyMenuService
     {
         ValidationUtil.validateId(editorId);
         ValidationUtil.validateId(menuId);
-        ValidationUtil.validateNotNull(dto, "Slot");
-        ValidationUtil.validateNotNull(dto.dayOfWeek(), "Day of week");
-        ValidationUtil.validateId(dto.stationId());
+        validateSlotInput(dto);
 
         User editor = userReader.getByID(editorId);
         requireHeadOrSousChef(editor);
 
         WeeklyMenu menu = menuDAO.getByID(menuId);
         Station station = stationReader.getByID(dto.stationId());
-        Dish dish = dishReader.getByID(dto.dishId());
-        validateDishForStation(dish, station);
+
+        Dish dish = null;
+        if(dto.dishId() != null)
+        {
+            dish = dishReader.getByID(dto.dishId());
+            validateDishForStation(dish, station);
+        }
 
         WeeklyMenuSlot menuSlot = new WeeklyMenuSlot(
             dto.dayOfWeek(),
@@ -82,9 +86,7 @@ public class WeeklyMenuService
 
     public WeeklyMenuDTO removeSlot(Long editorId, Long menuId, Long slotId)
     {
-        ValidationUtil.validateId(editorId);
-        ValidationUtil.validateId(menuId);
-        ValidationUtil.validateId(slotId);
+        validateSlotRelatedIds(editorId, menuId, slotId);
 
         User editor = userReader.getByID(editorId);
         requireHeadOrSousChef(editor);
@@ -98,11 +100,9 @@ public class WeeklyMenuService
         return WeeklyMenuMapper.toDTO(updated);
     }
 
-    public WeeklyMenuDTO updateSlot(Long editorId, Long menuId, Long slotId, Long newDishId)
+    public WeeklyMenuDTO updateSlot(Long editorId, Long menuId, Long slotId, UpdateMenuSlotDTO dto)
     {
-        ValidationUtil.validateId(editorId);
-        ValidationUtil.validateId(menuId);
-        ValidationUtil.validateId(slotId);
+        validateSlotRelatedIds(editorId, menuId, slotId);
 
         User editor = userReader.getByID(editorId);
         requireHeadOrSousChef(editor);
@@ -110,9 +110,9 @@ public class WeeklyMenuService
         WeeklyMenu menu = menuDAO.getByIdWithSlots(menuId);
         WeeklyMenuSlot slot = findSlot(menu, slotId);
 
-        if (newDishId != null)
+        if (dto.dishId() != null)
         {
-            Dish dish = dishReader.getByID(newDishId);
+            Dish dish = dishReader.getByID(dto.dishId());
             validateDishForStation(dish, slot.getStation());
             slot.setDish(dish);
             slot.setEmpty(false);
@@ -159,14 +159,13 @@ public class WeeklyMenuService
        return WeeklyMenuMapper.toDTO(updated);
     }
 
-    public WeeklyMenuDTO getByWeekAndYear(int weekNumber, int year)
+    public WeeklyMenuDTO getByWeekAndYear(int week, int year)
     {
-        ValidationUtil.validateRange(weekNumber, 1, 53, "Week");
-        ValidationUtil.validateRange(year, 2020, 2100, "Year");
+        validateWeekAndYear(week, year);
 
-        return menuDAO.findByWeekAndYear(weekNumber, year)
+        return menuDAO.findByWeekAndYear(week, year)
             .map(WeeklyMenuMapper::toDTO)
-            .orElseThrow(() -> new EntityNotFoundException("No menu for week " + weekNumber + "/" + year)
+            .orElseThrow(() -> new EntityNotFoundException("No menu for week " + week + "/" + year)
             );
     }
 
@@ -217,6 +216,12 @@ public class WeeklyMenuService
             ));
     }
 
+    private void validateWeekAndYear(int week, int year)
+    {
+        ValidationUtil.validateRange(week, 1, 53, "Week");
+        ValidationUtil.validateRange(year, 2020, 2100, "Year");
+    }
+
     private void validateDishForStation(Dish dish, Station station)
     {
         if (!dish.isActive())
@@ -258,7 +263,7 @@ public class WeeklyMenuService
     {
         Set<String> untranslatedDishes = menu.getWeeklyMenuSlots()
             .stream()
-            .filter(slot -> slot.getDish() != null && slot.getDish().hasTranslation())
+            .filter(slot -> slot.getDish() != null && !slot.getDish().hasTranslation())
             .map(dish -> dish.getDish().getNameDA())
             .collect(Collectors.toSet()
             );
@@ -267,5 +272,25 @@ public class WeeklyMenuService
         {
             throw new IllegalStateException("Cannot publish - untranslated dishes: " + String.join(", ", untranslatedDishes));
         }
+    }
+
+    private void validateCreateInput(CreateWeeklyMenuDTO dto)
+    {
+        ValidationUtil.validateNotNull(dto, "Weekly Menu");
+        validateWeekAndYear(dto.week(), dto.year());
+    }
+
+    private void validateSlotInput(AddMenuSlotDTO dto)
+    {
+        ValidationUtil.validateNotNull(dto, "Slot");
+        ValidationUtil.validateNotNull(dto.dayOfWeek(), "Day of week");
+        ValidationUtil.validateId(dto.stationId());
+    }
+
+    private void validateSlotRelatedIds(Long editorId, Long menuId, Long slotId)
+    {
+        ValidationUtil.validateId(editorId);
+        ValidationUtil.validateId(menuId);
+        ValidationUtil.validateId(slotId);
     }
 }

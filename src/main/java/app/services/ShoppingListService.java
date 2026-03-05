@@ -26,6 +26,8 @@ public class ShoppingListService
     private final IUserReader userReader;
     private final IAiService aiService;
 
+    private static final String DEFAULT_SUPPLIER = "AB Catering";
+
     public ShoppingListService(IShoppingListDAO shoppingListDAO, IIngredientRequestDAO ingredientRequestDAO, IUserReader userReader, IAiService aiService)
     {
         this.shoppingListDAO = shoppingListDAO;
@@ -34,13 +36,14 @@ public class ShoppingListService
         this.aiService = aiService;
     }
 
-    public ShoppingListDTO generateShoppingList(CreateShoppingListDTO dto)
+    public ShoppingListDTO generateShoppingList(Long userId, CreateShoppingListDTO dto)
     {
-        ValidationUtil.validateId(dto.userId());
+        ValidationUtil.validateId(userId);
+        validateCreateInput(dto);
 
         checkIfShoppingListExists(dto);
 
-        User creator = userReader.getByID(dto.userId());
+        User creator = userReader.getByID(userId);
         requireChef(creator);
 
         Set<IngredientRequest> approvedRequests = ingredientRequestDAO.findByStatusAndDeliveryDate(Status.APPROVED, dto.deliveryDate());
@@ -76,7 +79,7 @@ public class ShoppingListService
         return ShoppingListMapper.toDTO(saved);
     }
 
-    public ShoppingListDTO finalizeShoppingList(Long shoppingListId, Long userId)
+    public ShoppingListDTO finalizeShoppingList(Long userId, Long shoppingListId)
     {
         ValidationUtil.validateId(shoppingListId);
         ValidationUtil.validateId(userId);
@@ -93,7 +96,7 @@ public class ShoppingListService
         return ShoppingListMapper.toDTO(finalized);
     }
 
-    public boolean deleteShoppingList(Long shoppingListId, Long userId)
+    public boolean deleteShoppingList(Long userId, Long shoppingListId)
     {
         ValidationUtil.validateId(shoppingListId);
         ValidationUtil.validateId(userId);
@@ -104,12 +107,6 @@ public class ShoppingListService
         requireChef(approver);
 
         return shoppingListDAO.delete(list.getId());
-    }
-
-    //TODO missing implementation
-    public ShoppingListDTO updateShoppingList()
-    {
-        return null;
     }
 
     public Set<ShoppingListDTO> getAll()
@@ -128,11 +125,9 @@ public class ShoppingListService
             .collect(Collectors.toSet());
     }
 
-    public ShoppingListDTO markItemOrdered(Long shoppingListId, Long itemId, Long userId)
+    public ShoppingListDTO markItemOrdered(Long userId, Long shoppingListId, Long itemId)
     {
-        ValidationUtil.validateId(shoppingListId);
-        ValidationUtil.validateId(itemId);
-        ValidationUtil.validateId(userId);
+        validateItemRelatedIds(userId, shoppingListId, itemId);
 
         User user = userReader.getByID(userId);
         requireChef(user);
@@ -163,14 +158,16 @@ public class ShoppingListService
         return ShoppingListMapper.toDTO(updated);
     }
 
-    public ShoppingListDTO addItemToShoppingList(CreateShoppingListItemDTO dto)
+    public ShoppingListDTO addItemToShoppingList(Long userId, Long shoppingListId, CreateShoppingListItemDTO dto)
     {
-        ValidationUtil.validateId(dto.shoppingListId());
-        ValidationUtil.validateId(dto.userId());
+        ValidationUtil.validateId(userId);
+        ValidationUtil.validateId(shoppingListId);
+        validateItemCreateInput(dto);
 
-        ShoppingList list = shoppingListDAO.getByID(dto.shoppingListId());
-        User user = userReader.getByID(dto.userId());
+        User user = userReader.getByID(userId);
         requireChef(user);
+
+        ShoppingList list = shoppingListDAO.getByID(shoppingListId);
 
         String note = "Manual entry by: " + user.getFirstName() + " " + user.getLastName();
 
@@ -188,11 +185,9 @@ public class ShoppingListService
         return ShoppingListMapper.toDTO(updated);
     }
 
-    public ShoppingListDTO removeItem(Long shoppingListId, Long itemId, Long userId)
+    public ShoppingListDTO removeItem(Long userId, Long shoppingListId, Long itemId)
     {
-        ValidationUtil.validateId(shoppingListId);
-        ValidationUtil.validateId(itemId);
-        ValidationUtil.validateId(userId);
+        validateItemRelatedIds(userId, shoppingListId, itemId);
 
         User user = userReader.getByID(userId);
         requireChef(user);
@@ -206,17 +201,16 @@ public class ShoppingListService
         return ShoppingListMapper.toDTO(updated);
     }
 
-    public ShoppingListDTO updateItem(UpdateShoppingListItemDTO dto)
+    public ShoppingListDTO updateItem(Long userId, Long shoppingListId, Long itemId, UpdateShoppingListItemDTO dto)
     {
-        ValidationUtil.validateId(dto.shoppingListId());
-        ValidationUtil.validateId(dto.itemId());
-        ValidationUtil.validateId(dto.userId());
+        validateItemRelatedIds(userId, shoppingListId, itemId);
+        validateItemUpdateInput(dto);
 
-        User user = userReader.getByID(dto.userId());
+        User user = userReader.getByID(userId);
         requireChef(user);
 
-        ShoppingList list = shoppingListDAO.getByID(dto.shoppingListId());
-        ShoppingListItem item = findItemOrThrow(list, dto.itemId());
+        ShoppingList list = shoppingListDAO.getByID(shoppingListId);
+        ShoppingListItem item = findItemOrThrow(list, itemId);
 
         item.update(dto.quantity(), dto.unit(), dto.supplier());
 
@@ -236,14 +230,9 @@ public class ShoppingListService
     {
         ValidationUtil.validateNotNull(deliveryDate, "Local date");
 
-        Optional<ShoppingList> list = shoppingListDAO.findByDeliveryDate(deliveryDate);
-
-        if(list.isEmpty())
-        {
-            throw new EntityNotFoundException("ShoppingList not found");
-        }
-
-        return ShoppingListMapper.toDTO(list.get());
+        return shoppingListDAO.findByDeliveryDate(deliveryDate)
+            .map(ShoppingListMapper::toDTO)
+            .orElseThrow(() -> new EntityNotFoundException("ShoppingList not found for date: " + deliveryDate));
     }
 
     private String getMostCommonSupplier(List<IngredientRequest> requests)
@@ -255,7 +244,7 @@ public class ShoppingListService
             .entrySet().stream()
             .max(Map.Entry.comparingByValue())
             .map(Map.Entry::getKey)
-            .orElse("AB Catering");
+            .orElse(DEFAULT_SUPPLIER);
     }
 
     private Map<AggregationKey, List<IngredientRequest>> getIngredientsGrouped(Set<IngredientRequest> approved, Map<String, String> normalizedNames)
@@ -307,5 +296,34 @@ public class ShoppingListService
             .filter(i -> i.getId().equals(itemId))
             .findFirst()
             .orElseThrow(() -> new EntityNotFoundException("Item not found: " + itemId));
+    }
+
+    private void validateCreateInput(CreateShoppingListDTO dto)
+    {
+        ValidationUtil.validateNotNull(dto, "Shopping list");
+        ValidationUtil.validateNotNull(dto.deliveryDate(), "Delivery date");
+        ValidationUtil.validateNotBlank(dto.targetLanguage(), "Target language");
+    }
+
+    private void validateItemUpdateInput(UpdateShoppingListItemDTO dto)
+    {
+        ValidationUtil.validateNotNull(dto, "Item update");
+        ValidationUtil.validatePositive(dto.quantity(), "Quantity");
+        ValidationUtil.validateNotNull(dto.unit(), "Unit");
+    }
+
+    private void validateItemCreateInput(CreateShoppingListItemDTO dto)
+    {
+        ValidationUtil.validateNotNull(dto, "Item");
+        ValidationUtil.validateName(dto.ingredientName(), "Ingredient name");
+        ValidationUtil.validatePositive(dto.quantity(), "Quantity");
+        ValidationUtil.validateNotNull(dto.unit(), "Unit");
+    }
+
+    private void validateItemRelatedIds(Long userId, Long shoppingListId, Long itemId)
+    {
+        ValidationUtil.validateId(userId);
+        ValidationUtil.validateId(shoppingListId);
+        ValidationUtil.validateId(itemId);
     }
 }
