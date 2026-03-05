@@ -14,7 +14,8 @@ public record UpdateIngredientRequestDTO(
     String note,
     Status status,
     RequestType requestType,
-    LocalDate deliveryDate
+    LocalDate deliveryDate,
+    Long dishId
 )
 {
 }
