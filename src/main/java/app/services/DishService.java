@@ -39,7 +39,6 @@ public class DishService
     public DishDTO createDish(Long creatorId, DishCreateDTO dto)
     {
         ValidationUtil.validateId(creatorId);
-        ValidationUtil.validateId(dto.stationId());
         validateCreateInput(dto);
 
         User creator = userReader.getByID(creatorId);
@@ -116,6 +115,7 @@ public class DishService
     public Set<DishDTO> searchByName(String query)
     {
         ValidationUtil.validateNotBlank(query, "Search query");
+        ValidationUtil.validateRange(query.trim().length(), 2, 100, "Search query length");
 
         return dishDAO.searchByName(query)
             .stream()
@@ -212,14 +212,25 @@ public class DishService
     private void validateCreateInput(DishCreateDTO dto)
     {
         ValidationUtil.validateNotNull(dto, "Create input");
-        ValidationUtil.validateNotBlank(dto.nameDA(), "Dish name");
-        ValidationUtil.validateNotBlank(dto.descriptionDA(), "Dish description");
+        ValidationUtil.validateId(dto.stationId());
+        ValidationUtil.validateName(dto.nameDA(), "Name DA");
+        ValidationUtil.validateDescription(dto.descriptionDA(), "Description DA");
     }
 
     private void validateUpdateInput(DishUpdateDTO dto) {
         ValidationUtil.validateNotNull(dto, "Dish update");
-        ValidationUtil.validateNotBlank(dto.nameDA(), "Name");
-        ValidationUtil.validateNotBlank(dto.descriptionDA(), "Description");
+        ValidationUtil.validateName(dto.nameDA(), "Name DA");
+        ValidationUtil.validateDescription(dto.descriptionDA(), "Description DA");
+
+        if (dto.nameEN() != null)
+        {
+            ValidationUtil.validateName(dto.nameEN(), "Name EN");
+        }
+        
+        if (dto.descriptionEN() != null)
+        {
+            ValidationUtil.validateDescription(dto.descriptionEN(), "Description EN");
+        }
     }
 
     private void requireHeadChefOrSousChef(User user)

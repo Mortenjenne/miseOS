@@ -1,6 +1,5 @@
 package app.utils;
 
-import app.config.AppConfig;
 import app.exceptions.ValidationException;
 
 import java.time.LocalDate;
@@ -8,13 +7,12 @@ import java.time.LocalDate;
 public class ValidationUtil
 {
     private static final String SAFE_TEXT_PATTERN = "^[\\p{L}0-9\\s&,\\-.( )]*$";
-    private static final int NAME_MIN = AppConfig.getInstance().getInt("name.min");
-    private static final int NAME_MAX = AppConfig.getInstance().getInt("name.max");
-    private static final int DESCRIPTION_MIN = AppConfig.getInstance().getInt("description.min");
-    private static final int DESCRIPTION_MAX = AppConfig.getInstance().getInt("description.max");
-    private static final int USERNAME_MIN = AppConfig.getInstance().getInt("user.name.min");
-    private static final int USERNAME_MAX = AppConfig.getInstance().getInt("user.name.max");
-    private static final int PASSWORD_MIN = AppConfig.getInstance().getInt("user.password.min");
+    private static final int NAME_MIN = 2;
+    private static final int NAME_MAX = 100;
+    private static final int DESCRIPTION_MIN = 5;
+    private static final int DESCRIPTION_MAX = 150;
+    private static final int USERNAME_MIN = 2;
+    private static final int USERNAME_MAX = 50;
 
     private ValidationUtil(){}
 
@@ -35,16 +33,10 @@ public class ValidationUtil
 
     }
 
-    public static void validatePositive(double value, String fieldName)
-    {
-        if (value <= 0)
-        {
-            throw new IllegalArgumentException(fieldName + " must be greater than 0");
-        }
-    }
-
     public static void validateText(String value, String fieldName, int min, int max)
     {
+        validateNotBlank(value, fieldName);
+
         String trimmed = value.trim();
 
         if (trimmed.length() < min)
@@ -63,20 +55,35 @@ public class ValidationUtil
         }
     }
 
+    public static void validateName(String value, String fieldName)
+    {
+        validateText(value, fieldName, NAME_MIN, NAME_MAX);
+    }
+
+    public static void validateDescription(String value, String fieldName)
+    {
+        validateText(value, fieldName, DESCRIPTION_MIN, DESCRIPTION_MAX);
+    }
+
+    public static void validateUserName(String value, String fieldName)
+    {
+        validateText(value, fieldName, USERNAME_MIN, USERNAME_MAX);
+    }
+
+    public static void validatePositive(double value, String fieldName)
+    {
+        if (value <= 0)
+        {
+            throw new IllegalArgumentException(fieldName + " must be greater than 0");
+        }
+    }
+
     public static void validateRange(int number, int min, int max, String fieldName)
     {
         if (number < min || number > max)
         {
             String errorMsg = String.format("%s must be between %d and %d, got: %d", fieldName, min, max, number);
             throw new IllegalArgumentException(errorMsg);
-        }
-    }
-
-    public static void validateNotEmpty(java.util.Collection<?> collection, String fieldName)
-    {
-        if (collection == null || collection.isEmpty())
-        {
-            throw new IllegalArgumentException(fieldName + " cannot be empty");
         }
     }
 
@@ -100,16 +107,21 @@ public class ValidationUtil
 
     public static String validateEmail(String email)
     {
-        if (email == null || email.trim().isEmpty())
-        {
-            throw new IllegalArgumentException("Email kan ikke være tom");
-        }
+        validateNotBlank(email, "email");
 
         if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"))
         {
-            throw new ValidationException("Ikke gyldig email format");
+            throw new ValidationException("Invalid email format");
         }
 
         return email.trim().toLowerCase();
+    }
+
+    public static void validateNotEmpty(java.util.Collection<?> collection, String fieldName)
+    {
+        if (collection == null || collection.isEmpty())
+        {
+            throw new IllegalArgumentException(fieldName + " cannot be empty");
+        }
     }
 }

@@ -21,11 +21,6 @@ import java.util.stream.Collectors;
 
 public class AllergenService
 {
-    private static final int NAME_MIN_LENGTH = 2;
-    private static final int NAME_MAX_LENGTH = 100;
-    private static final int DESCRIPTION_MIN_LENGTH = 5;
-    private static final int DESCRIPTION_MAX_LENGTH = 255;
-
     private final IAllergenDAO allergenDAO;
     private final IUserReader userReader;
 
@@ -208,18 +203,14 @@ public class AllergenService
 
     private void validateNames(String nameDA, String nameEN)
     {
-        ValidationUtil.validateNotBlank(nameDA, "Name DA");
-        ValidationUtil.validateNotBlank(nameEN, "Name EN");
-        ValidationUtil.validateText(nameDA, "Name DA", NAME_MIN_LENGTH, NAME_MAX_LENGTH);
-        ValidationUtil.validateText(nameEN, "Name EN", NAME_MIN_LENGTH, NAME_MAX_LENGTH);
+        ValidationUtil.validateName(nameDA, "Name DA");
+        ValidationUtil.validateName(nameEN, "Name EN");
     }
 
     private void validateDescriptions(String descDA, String descEN)
     {
-        ValidationUtil.validateNotBlank(descDA, "Description DA");
-        ValidationUtil.validateNotBlank(descEN, "Description EN");
-        ValidationUtil.validateText(descDA, "Description DA", DESCRIPTION_MIN_LENGTH, DESCRIPTION_MAX_LENGTH);
-        ValidationUtil.validateText(descEN, "Description EN", DESCRIPTION_MIN_LENGTH, DESCRIPTION_MAX_LENGTH);
+        ValidationUtil.validateDescription(descDA, "Description Da");
+        ValidationUtil.validateDescription(descEN, "Description EN");
     }
 
     private void validateDisplayNumber(Integer displayNumber)
