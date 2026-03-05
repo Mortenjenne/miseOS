@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class DishService
+public class DishService implements IDishService
 {
     private final IDishDAO dishDAO;
     private final IAllergenDAO allergenDAO;
@@ -36,6 +36,7 @@ public class DishService
         this.userReader = userReader;
     }
 
+    @Override
     public DishDTO createDish(Long creatorId, DishCreateDTO dto)
     {
         ValidationUtil.validateId(creatorId);
@@ -64,6 +65,7 @@ public class DishService
         return DishMapper.toDTO(created);
     }
 
+    @Override
     public DishDTO updateDish(Long editorId, Long dishId, DishUpdateDTO dto)
     {
         ValidationUtil.validateId(editorId);
@@ -88,6 +90,7 @@ public class DishService
         return DishMapper.toDTO(updated);
     }
 
+    @Override
     public DishDTO getById(Long dishId)
     {
         ValidationUtil.validateId(dishId);
@@ -95,6 +98,7 @@ public class DishService
         return DishMapper.toDTO(dish);
     }
 
+    @Override
     public DishDTO getByIdWithAllergens(Long dishId)
     {
         ValidationUtil.validateId(dishId);
@@ -104,6 +108,7 @@ public class DishService
             .orElseThrow(() -> new EntityNotFoundException("Dish with ID " + dishId + " not found"));
     }
 
+    @Override
     public Set<DishDTO> getAllActive()
     {
         return dishDAO.findAllActive()
@@ -112,6 +117,7 @@ public class DishService
             .collect(Collectors.toSet());
     }
 
+    @Override
     public Set<DishDTO> searchByName(String query)
     {
         ValidationUtil.validateNotBlank(query, "Search query");
@@ -123,6 +129,7 @@ public class DishService
             .collect(Collectors.toSet());
     }
 
+    @Override
     public boolean deleteDish(Long dishId, Long userId)
     {
         ValidationUtil.validateId(dishId);
@@ -139,6 +146,7 @@ public class DishService
         return dishDAO.delete(dishId);
     }
 
+    @Override
     public DishDTO deactivate(Long dishId, Long userId)
     {
         ValidationUtil.validateId(dishId);
@@ -153,6 +161,7 @@ public class DishService
         return DishMapper.toDTO(updated);
     }
 
+    @Override
     public DishDTO activate(Long dishId, Long userId)
     {
         ValidationUtil.validateId(dishId);
@@ -167,6 +176,7 @@ public class DishService
         return DishMapper.toDTO(updated);
     }
 
+    @Override
     public AvailableDishesDTO getAvailableDishesForMenu(int week, int year)
     {
         ValidationUtil.validateRange(week, 1, 53, "Week");
@@ -183,6 +193,7 @@ public class DishService
         );
     }
 
+    @Override
     public Map<String, Set<DishOptionDTO>> getAllActiveDishesGrouped()
     {
         Set<Dish> dishes = dishDAO.findAllActive();
