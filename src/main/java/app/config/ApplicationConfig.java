@@ -1,33 +1,24 @@
 package app.config;
 
-import app.dtos.gemini.AiDishSuggestionDTO;
-import app.dtos.weather.WeatherForecastDTO;
-import app.integrations.ai.GeminiClient;
-import app.integrations.ai.IAiClient;
-import app.integrations.translation.DeepLTranslationClient;
-import app.integrations.translation.ITranslationClient;
-import app.integrations.weather.WeatherClient;
-import app.services.*;
-import app.services.impl.AiService;
-import app.services.impl.DishTranslationService;
-import app.utils.WeatherForecastBuilder;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import jakarta.persistence.EntityManagerFactory;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.http.HttpClient;
-import java.util.*;
+import app.routes.Routes;
+import io.javalin.Javalin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ApplicationConfig
 {
-    public static void start()
+    private static final Logger logger = LoggerFactory.getLogger(ApplicationConfig.class);
+    private static final Routes routes = new Routes();
+    private static final ServerConfig serverConfig = new ServerConfig(routes);
+
+    public static void startServer(int port)
     {
+        Javalin app = serverConfig.create();
+        app.start(port);
+    }
 
-
-
-
-
+    public static void stopServer(Javalin app)
+    {
+        app.stop();
     }
 }
