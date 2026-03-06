@@ -2,6 +2,8 @@ package app.config;
 
 import app.controllers.AllergenController;
 import app.controllers.IAllergenController;
+import app.controllers.IUserController;
+import app.controllers.UserController;
 import app.integrations.ai.GeminiClient;
 import app.integrations.ai.IAiClient;
 import app.integrations.translation.DeepLTranslationClient;
@@ -53,7 +55,7 @@ public final class DIContainer
     private final IAllergenController allergenController;
     //private final IDishController dishController;
     //private final IDishSuggestionController dishSuggestionController;
-    //private final IUserController userController;
+    private final IUserController userController;
     //private final IWeeklyMenuController weeklyMenuController;
     //private final IIngredientRequestController ingredientRequestController;
     //private final IShoppingListController shoppingListController;
@@ -92,7 +94,7 @@ public final class DIContainer
         this.allergenController = new AllergenController(allergenService);
 //        this.dishController = new DishController(dishService);
 //        this.dishSuggestionController = new DishSuggestionController(dishSuggestionService);
-//        this.userController = new UserController(userService);
+        this.userController = new UserController(userService);
 //        this.weeklyMenuController = new WeeklyMenuController(weeklyMenuService);
 //        this.ingredientRequestController = new IngredientRequestController(ingredientRequestService);
 //        this.shoppingListController = new ShoppingListController(shoppingListService);
@@ -100,11 +102,11 @@ public final class DIContainer
     }
 
     public IAllergenController getAllergenController() { return allergenController; }
-//    public DishController getDishController() { return dishController; }
-//    public DishSuggestionController getDishSuggestionController() { return dishSuggestionController; }
-//    public UserController getUserController() { return userController; }
-//    public WeeklyMenuController getWeeklyMenuController() { return weeklyMenuController; }
-//    public IngredientRequestController getIngredientRequestController() { return ingredientRequestController; }
-//    public ShoppingListController getShoppingListController() { return shoppingListController; }
-//    public StationController getStationController() { return stationController; }
+//    public IDishController getDishController() { return dishController; }
+//    public IDishSuggestionController getDishSuggestionController() { return dishSuggestionController; }
+    public IUserController getUserController() { return userController; }
+//    public IWeeklyMenuController getWeeklyMenuController() { return weeklyMenuController; }
+//    public IIngredientRequestController getIngredientRequestController() { return ingredientRequestController; }
+//    public IShoppingListController getShoppingListController() { return shoppingListController; }
+//    public IStationController getStationController() { return stationController; }
 }

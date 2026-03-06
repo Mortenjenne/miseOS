@@ -1,5 +1,19 @@
-### GET request to example server
-GET https://examples.http-client.intellij.net/get
-    ?generated-in=IntelliJ IDEA
+@local = http://localhost:7070/api/v1
+
+### GET by ID
+GET {{local}}/users/1
+
+### GET all
+GET {{local}}/users/
+
+### POST create user
+POST {{local}}/users/
+
+{
+"firstName": "Morten",
+"lastName": "Jensen",
+"password": "Morten123.",
+"email": "test@email.dk"
+}
 
 ###

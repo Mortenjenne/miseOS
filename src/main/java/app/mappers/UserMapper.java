@@ -10,11 +10,14 @@ public class UserMapper
     public static UserDTO toDTO(User user)
     {
         return new UserDTO(
+            user.getId(),
             user.getFirstName(),
             user.getLastName(),
             user.getEmail(),
             user.getUserRole(),
-            user.getStation().getStationName()
+            user.getStation() != null ? user.getStation().getId() : null,
+            user.getStation() != null ? user.getStation().getStationName() : null,
+            user.getCreatedAt()
         );
     }
 }

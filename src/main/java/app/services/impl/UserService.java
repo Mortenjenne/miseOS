@@ -35,19 +35,15 @@ public UserService(IUserDAO userDAO, IStationReader stationReader)
         validateCreateInput(dto);
         requireUniqueEmail(dto.email());
 
-        Station station = stationReader.getByID(dto.stationId());
-
         String hashedPassword = PasswordUtil.hashPassword(dto.password());
 
         User user = new User(
             dto.firstName(),
-            dto.firstName(),
+            dto.lastName(),
             dto.email(),
             hashedPassword,
             UserRole.LINE_COOK
         );
-
-        user.assignToStation(station);
 
         User created = userDAO.create(user);
         return UserMapper.toDTO(created);
@@ -100,6 +96,24 @@ public UserService(IUserDAO userDAO, IStationReader stationReader)
         );
 
         User updated = userDAO.update(user);
+        return UserMapper.toDTO(updated);
+    }
+
+    @Override
+    public UserDTO assignToStation(Long requesterId, Long targetUserId, Long stationId) {
+        ValidationUtil.validateId(requesterId);
+        ValidationUtil.validateId(targetUserId);
+        ValidationUtil.validateId(stationId);
+
+        User requester = userDAO.getByID(requesterId);
+        requireHeadChef(requester);
+
+        User targetUser = userDAO.getByID(targetUserId);
+        Station station = stationReader.getByID(stationId);
+
+        targetUser.assignToStation(station);
+
+        User updated = userDAO.update(targetUser);
         return UserMapper.toDTO(updated);
     }
 
@@ -182,7 +196,6 @@ public UserService(IUserDAO userDAO, IStationReader stationReader)
     private void validateCreateInput(CreateUserRequestDTO dto)
     {
         ValidationUtil.validateNotNull(dto, "User");
-        ValidationUtil.validateId(dto.stationId());
         requireMinimumLength(dto.firstName(), "First name");
         requireMinimumLength(dto.lastName(), "Last name");
         validatePassword(dto.password());
@@ -202,7 +215,7 @@ public UserService(IUserDAO userDAO, IStationReader stationReader)
     {
         if (password == null || password.length() < 8)
         {
-            throw new ValidationException("Password must contain at least one uppercase letter");
+            throw new ValidationException("Password must be at least 8 characters");
         }
 
         if (!password.matches(".*[A-Z].*"))

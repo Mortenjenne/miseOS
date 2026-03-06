@@ -27,7 +27,7 @@ public class ServerConfig
             config.routes.apiBuilder(routes.getRoutes());
             config.routes.before(this::logRequest);
             config.routes.after(this::logResponse);
-
+            
         });
         return app;
     }
