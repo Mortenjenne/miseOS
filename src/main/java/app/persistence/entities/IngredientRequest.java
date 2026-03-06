@@ -3,7 +3,6 @@ package app.persistence.entities;
 import app.enums.RequestType;
 import app.enums.Status;
 import app.enums.Unit;
-import app.enums.UserRole;
 import app.exceptions.UnauthorizedActionException;
 import app.utils.ValidationUtil;
 import jakarta.persistence.*;
@@ -71,10 +70,10 @@ public class IngredientRequest implements IEntity
 
     @Setter
     @ManyToOne
-    @JoinColumn(name = "dish_suggestion_id")
-    private DishSuggestion dishSuggestion;
+    @JoinColumn(name = "dish_id")
+    private Dish dish;
 
-    public IngredientRequest(String name, double quantity, Unit unit, String preferredSupplier, String note, RequestType requestType, LocalDate deliveryDate, DishSuggestion dishSuggestion, User createdBy)
+    public IngredientRequest(String name, double quantity, Unit unit, String preferredSupplier, String note, RequestType requestType, LocalDate deliveryDate, Dish dish, User createdBy)
     {
         this.name = name;
         this.quantity = quantity;
@@ -84,13 +83,13 @@ public class IngredientRequest implements IEntity
         this.requestStatus = Status.PENDING;
         this.requestType = requestType;
         this.deliveryDate = deliveryDate;
-        this.dishSuggestion = dishSuggestion;
+        this.dish = dish;
         this.createdBy = createdBy;
     }
 
     public void approve(User headChef)
     {
-        validateHeadChef(headChef);
+        requireHeadOrSousChef(headChef);
         valideIngredientRequest();
         this.requestStatus = Status.APPROVED;
         this.reviewedAt = LocalDateTime.now();
@@ -98,13 +97,13 @@ public class IngredientRequest implements IEntity
 
     public void reject(User headChef)
     {
-        validateHeadChef(headChef);
+        requireHeadOrSousChef(headChef);
         valideIngredientRequest();
         this.requestStatus = Status.REJECTED;
         this.reviewedAt = LocalDateTime.now();
     }
 
-    public void update(String name, double quantity, Unit unit, String preferredSupplier, String note, LocalDate deliveryDate, DishSuggestion dish) {
+    public void update(String name, double quantity, Unit unit, String preferredSupplier, String note, LocalDate deliveryDate, Dish dish) {
         requirePendingStatus();
         ValidationUtil.validateNotBlank(name, "Name");
         ValidationUtil.validatePositive(quantity, "Quantity");
@@ -117,7 +116,7 @@ public class IngredientRequest implements IEntity
         this.preferredSupplier = preferredSupplier;
         this.note = note;
         this.deliveryDate = deliveryDate;
-        this.dishSuggestion = dish;
+        this.dish = dish;
     }
 
     public boolean isPending() {
@@ -130,20 +129,6 @@ public class IngredientRequest implements IEntity
         this.createdAt = LocalDateTime.now();
     }
 
-    @Override
-    public boolean equals(Object o)
-    {
-        if (this == o) return true;
-        if (!(o instanceof IngredientRequest)) return false;
-        IngredientRequest other = (IngredientRequest) o;
-        return id != null && id.equals(other.id);
-    }
-
-    @Override
-    public int hashCode()
-    {
-        return getClass().hashCode();
-    }
 
     private void valideIngredientRequest()
     {
@@ -161,16 +146,31 @@ public class IngredientRequest implements IEntity
         }
     }
 
-    private void validateHeadChef(User currentUser)
+    private void requireHeadOrSousChef(User currentUser)
     {
         if(currentUser == null)
         {
             throw new IllegalArgumentException("Head chef cannot be null");
         }
 
-        if(currentUser.getUserRole() != UserRole.HEAD_CHEF)
+        if(!currentUser.isHeadChef() && !currentUser.isSousChef())
         {
-            throw new UnauthorizedActionException("Only head chefs can approve dish suggestions");
+            throw new UnauthorizedActionException("Only head or sous chefs can approve dish suggestions");
         }
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o) return true;
+        if (!(o instanceof IngredientRequest)) return false;
+        IngredientRequest other = (IngredientRequest) o;
+        return id != null && id.equals(other.id);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return getClass().hashCode();
     }
 }

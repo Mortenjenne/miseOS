@@ -1,62 +1,72 @@
 package app.services.impl;
 
-import app.dtos.user.CreateUserRequestDTO;
-import app.dtos.user.LoginRequestDTO;
-import app.dtos.user.UserDTO;
+import app.dtos.user.*;
 import app.enums.UserRole;
+import app.exceptions.UnauthorizedActionException;
+import app.exceptions.ValidationException;
+import app.mappers.UserMapper;
+import app.persistence.daos.interfaces.IStationReader;
 import app.persistence.daos.interfaces.IUserDAO;
+import app.persistence.entities.Station;
 import app.persistence.entities.User;
 import app.services.IUserService;
+import app.utils.PasswordUtil;
 import app.utils.ValidationUtil;
-import jakarta.persistence.EntityNotFoundException;
 
+
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 public class UserService implements IUserService
 {
     private final IUserDAO userDAO;
+    private final IStationReader stationReader;
 
-public UserService(IUserDAO userDAO)
+public UserService(IUserDAO userDAO, IStationReader stationReader)
     {
         this.userDAO = userDAO;
+        this.stationReader = stationReader;
     }
 
     @Override
-    public UserDTO register(CreateUserRequestDTO request)
+    public UserDTO registerUser(CreateUserRequestDTO dto)
     {
-        validateUserRegistration(request);
+        validateCreateInput(dto);
+        requireUniqueEmail(dto.email());
 
-        User userToSave = new User(
-            request.firstName(),
-            request.lastName(),
-            request.email(),
-            request.password(),
+        Station station = stationReader.getByID(dto.stationId());
+
+        String hashedPassword = PasswordUtil.hashPassword(dto.password());
+
+        User user = new User(
+            dto.firstName(),
+            dto.firstName(),
+            dto.email(),
+            hashedPassword,
             UserRole.LINE_COOK
         );
 
-        User userFromDB = userDAO.create(userToSave);
+        user.assignToStation(station);
 
-
-        return new UserDTO(userFromDB);
+        User created = userDAO.create(user);
+        return UserMapper.toDTO(created);
     }
 
     @Override
     public UserDTO findById(Long id)
     {
+        ValidationUtil.validateId(id);
+
         User user = userDAO.getByID(id);
-        if(user == null)
-        {
-          throw new EntityNotFoundException("User not found");
-        }
-        return new UserDTO(user);
+        return UserMapper.toDTO(user);
     }
 
     @Override
     public Set<UserDTO> findAll()
     {
         return userDAO.getAll().stream()
-            .map(UserDTO::new)
+            .map(UserMapper::toDTO)
             .collect(Collectors.toSet());
     }
 
@@ -64,61 +74,158 @@ public UserService(IUserDAO userDAO)
     @Override
     public UserDTO login(LoginRequestDTO loginRequest)
     {
-        ValidationUtil.validatePassword(loginRequest.password());
-        ValidationUtil.validateEmail(loginRequest.email());
+        validatePassword(loginRequest.password());
 
         return userDAO.findByEmail(loginRequest.email())
             .filter(user -> user.verifyPassword(loginRequest.password()))
-            .map(UserDTO::new)
-            .orElseThrow(() -> new IllegalArgumentException("Ugyldig mail eller password"));
+            .map(UserMapper::toDTO)
+            .orElseThrow(() -> new IllegalArgumentException("Invalid email or password"));
     }
 
     @Override
-    public UserDTO update(UserDTO updateDTO)
+    public UserDTO update(Long userId, UpdateUserDTO dto)
     {
-        ValidationUtil.validateName(updateDTO.firstName(), "Fornavn");
-        ValidationUtil.validateName(updateDTO.lastName(), "Efternavn");
-        ValidationUtil.validateEmail(updateDTO.email());
+        ValidationUtil.validateId(userId);
+        ValidationUtil.validateId(dto.stationId());
+        requireMinimumLength(dto.firstName(), "First name");
+        requireMinimumLength(dto.lastName(), "Last name");
 
-        User existingUser = userDAO.getByID(updateDTO.id());
+        User user = userDAO.getByID(userId);
+        Station station = stationReader.getByID(dto.stationId());
 
-        if(existingUser == null)
-        {
-            throw new EntityNotFoundException("Brugeren med ID " + updateDTO.id() + " findes ikke");
-        }
+        user.update(
+            dto.firstName(),
+            dto.lastName(),
+            station
+        );
 
-        existingUser.setFirstName(updateDTO.firstName());
-        existingUser.setLastName(updateDTO.lastName());
-        existingUser.setEmail(updateDTO.email());
-        existingUser.setUserRole(updateDTO.userRole());
-
-        User updatedUser = userDAO.update(existingUser);
-
-        return new UserDTO(userDAO.update(updatedUser));
+        User updated = userDAO.update(user);
+        return UserMapper.toDTO(updated);
     }
 
     @Override
-    public boolean delete(Long id)
+    public UserDTO changeRole(Long requesterId, Long targetUserId, UserRole newRole)
     {
-        User user = userDAO.getByID(id);
-        if (user == null)
-        {
-            throw new EntityNotFoundException("Kan ikke slette: Bruger med ID " + id + " findes ikke");
-        }
+        ValidationUtil.validateId(requesterId);
+        ValidationUtil.validateId(targetUserId);
+        ValidationUtil.validateNotNull(newRole, "Role");
 
-        return userDAO.delete(id);
+        User requester = userDAO.getByID(requesterId);
+        requireHeadChef(requester);
+
+        User target = userDAO.getByID(targetUserId);
+        target.changeRole(newRole);
+
+        User updated = userDAO.update(target);
+        return UserMapper.toDTO(updated);
     }
 
-    private void validateUserRegistration(CreateUserRequestDTO request)
+    @Override
+    public UserDTO changeEmail(Long userId, String newEmail)
     {
-        ValidationUtil.validateName(request.firstName(), "Fornavn");
-        ValidationUtil.validateName(request.lastName(), "Efternavn");
-        ValidationUtil.validateEmail(request.email());
-        ValidationUtil.validatePassword(request.password());
+        ValidationUtil.validateId(userId);
+        ValidationUtil.validateEmail(newEmail);
+        requireUniqueEmail(newEmail);
 
-        if (userDAO.findByEmail(request.email()).isPresent())
+        User user = userDAO.getByID(userId);
+        user.changeEmail(newEmail);
+
+        User updated = userDAO.update(user);
+        return UserMapper.toDTO(updated);
+    }
+
+    @Override
+    public UserDTO changePassword(Long userId, ChangeUserPasswordDTO dto)
+    {
+        ValidationUtil.validateId(userId);
+        validatePassword(dto.newPassword());
+
+        User user = userDAO.getByID(userId);
+
+        if (!user.verifyPassword(dto.currentPassword()))
         {
-            throw new IllegalArgumentException("En bruger med denne email findes allerede");
+            throw new IllegalArgumentException("Current password is incorrect");
+        }
+
+        String hashed = PasswordUtil.hashPassword(dto.newPassword());
+        user.changePassword(hashed);
+
+        User updated = userDAO.update(user);
+        return UserMapper.toDTO(updated);
+    }
+
+    @Override
+    public boolean delete(Long requesterId, Long targetUserId)
+    {
+        ValidationUtil.validateId(requesterId);
+        ValidationUtil.validateId(targetUserId);
+
+        User requester = userDAO.getByID(requesterId);
+        requireHeadChef(requester);
+
+        if (requesterId.equals(targetUserId))
+        {
+            throw new IllegalArgumentException("Cannot delete your own account");
+        }
+
+        return userDAO.delete(targetUserId);
+    }
+
+    private void requireHeadChef(User user)
+    {
+        if (!user.isHeadChef())
+        {
+            throw new UnauthorizedActionException("Only head chef can change roles");
+        }
+    }
+
+    private void validateCreateInput(CreateUserRequestDTO dto)
+    {
+        ValidationUtil.validateNotNull(dto, "User");
+        ValidationUtil.validateId(dto.stationId());
+        requireMinimumLength(dto.firstName(), "First name");
+        requireMinimumLength(dto.lastName(), "Last name");
+        validatePassword(dto.password());
+    }
+
+    private void requireUniqueEmail(String email)
+    {
+        Optional<User> user = userDAO.findByEmail(email);
+
+        if (user.isPresent())
+        {
+            throw new ValidationException("A user with this email already exists");
+        }
+    }
+
+    private void validatePassword(String password)
+    {
+        if (password == null || password.length() < 8)
+        {
+            throw new ValidationException("Password must contain at least one uppercase letter");
+        }
+
+        if (!password.matches(".*[A-Z].*"))
+        {
+            throw new ValidationException("Password must contain at least one uppercase letter");
+        }
+
+        if (!password.matches(".*[0-9].*"))
+        {
+            throw new ValidationException("Password must contain at least one number");
+        }
+    }
+
+    private void requireMinimumLength(String name, String field)
+    {
+        if (name == null || name.trim().isEmpty())
+        {
+            throw new IllegalArgumentException(field + " cannot be empty");
+        }
+
+        if (name.length() < 2)
+        {
+            throw new ValidationException(field + " must be at least 2 characters");
         }
     }
 }

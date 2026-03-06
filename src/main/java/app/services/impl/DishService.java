@@ -1,7 +1,8 @@
-package app.services;
+package app.services.impl;
 
 import app.dtos.dish.*;
 import app.exceptions.UnauthorizedActionException;
+import app.mappers.DishMapper;
 import app.persistence.daos.interfaces.IAllergenDAO;
 import app.persistence.daos.interfaces.IDishDAO;
 import app.persistence.daos.interfaces.IStationReader;
@@ -10,6 +11,7 @@ import app.persistence.entities.Allergen;
 import app.persistence.entities.Dish;
 import app.persistence.entities.Station;
 import app.persistence.entities.User;
+import app.services.IDishService;
 import app.utils.ValidationUtil;
 import jakarta.persistence.EntityNotFoundException;
 
@@ -19,7 +21,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class DishService
+public class DishService implements IDishService
 {
     private final IDishDAO dishDAO;
     private final IAllergenDAO allergenDAO;
@@ -35,10 +37,10 @@ public class DishService
         this.userReader = userReader;
     }
 
+    @Override
     public DishDTO createDish(Long creatorId, DishCreateDTO dto)
     {
         ValidationUtil.validateId(creatorId);
-        ValidationUtil.validateId(dto.stationId());
         validateCreateInput(dto);
 
         User creator = userReader.getByID(creatorId);
@@ -61,9 +63,10 @@ public class DishService
         );
 
         Dish created = dishDAO.create(dish);
-        return mapToDishDTO(created);
+        return DishMapper.toDTO(created);
     }
 
+    @Override
     public DishDTO updateDish(Long editorId, Long dishId, DishUpdateDTO dto)
     {
         ValidationUtil.validateId(editorId);
@@ -85,43 +88,49 @@ public class DishService
         );
 
         Dish updated = dishDAO.update(dish);
-        return mapToDishDTO(updated);
+        return DishMapper.toDTO(updated);
     }
 
+    @Override
     public DishDTO getById(Long dishId)
     {
         ValidationUtil.validateId(dishId);
         Dish dish = dishDAO.getByID(dishId);
-        return mapToDishDTO(dish);
+        return DishMapper.toDTO(dish);
     }
 
+    @Override
     public DishDTO getByIdWithAllergens(Long dishId)
     {
         ValidationUtil.validateId(dishId);
 
         return dishDAO.getByIdWithAllergens(dishId)
-            .map(this::mapToDishDTO)
+            .map(DishMapper::toDTO)
             .orElseThrow(() -> new EntityNotFoundException("Dish with ID " + dishId + " not found"));
     }
 
+    @Override
     public Set<DishDTO> getAllActive()
     {
         return dishDAO.findAllActive()
             .stream()
-            .map(this::mapToDishDTO)
+            .map(DishMapper::toDTO)
             .collect(Collectors.toSet());
     }
 
+    @Override
     public Set<DishDTO> searchByName(String query)
     {
         ValidationUtil.validateNotBlank(query, "Search query");
+        ValidationUtil.validateRange(query.trim().length(), 2, 100, "Search query length");
 
         return dishDAO.searchByName(query)
             .stream()
-            .map(this::mapToDishDTO)
+            .map(DishMapper::toDTO)
             .collect(Collectors.toSet());
     }
 
+    @Override
     public boolean deleteDish(Long dishId, Long userId)
     {
         ValidationUtil.validateId(dishId);
@@ -138,6 +147,7 @@ public class DishService
         return dishDAO.delete(dishId);
     }
 
+    @Override
     public DishDTO deactivate(Long dishId, Long userId)
     {
         ValidationUtil.validateId(dishId);
@@ -149,9 +159,10 @@ public class DishService
         Dish dish = dishDAO.getByID(dishId);
         dish.deactivate();
         Dish updated = dishDAO.update(dish);
-        return mapToDishDTO(updated);
+        return DishMapper.toDTO(updated);
     }
 
+    @Override
     public DishDTO activate(Long dishId, Long userId)
     {
         ValidationUtil.validateId(dishId);
@@ -163,9 +174,10 @@ public class DishService
         Dish dish = dishDAO.getByID(dishId);
         dish.activate();
         Dish updated = dishDAO.update(dish);
-        return mapToDishDTO(updated);
+        return DishMapper.toDTO(updated);
     }
 
+    @Override
     public AvailableDishesDTO getAvailableDishesForMenu(int week, int year)
     {
         ValidationUtil.validateRange(week, 1, 53, "Week");
@@ -182,6 +194,7 @@ public class DishService
         );
     }
 
+    @Override
     public Map<String, Set<DishOptionDTO>> getAllActiveDishesGrouped()
     {
         Set<Dish> dishes = dishDAO.findAllActive();
@@ -193,7 +206,7 @@ public class DishService
         return dishes.stream()
             .collect(Collectors.groupingBy(
                 d -> d.getStation().getStationName(),
-                Collectors.mapping(this::mapToOption, Collectors.toSet())
+                Collectors.mapping(DishMapper::toOptionDTO, Collectors.toSet())
             ));
     }
 
@@ -211,14 +224,25 @@ public class DishService
     private void validateCreateInput(DishCreateDTO dto)
     {
         ValidationUtil.validateNotNull(dto, "Create input");
-        ValidationUtil.validateNotBlank(dto.nameDA(), "Dish name");
-        ValidationUtil.validateNotBlank(dto.descriptionDA(), "Dish description");
+        ValidationUtil.validateId(dto.stationId());
+        ValidationUtil.validateName(dto.nameDA(), "Name DA");
+        ValidationUtil.validateDescription(dto.descriptionDA(), "Description DA");
     }
 
     private void validateUpdateInput(DishUpdateDTO dto) {
         ValidationUtil.validateNotNull(dto, "Dish update");
-        ValidationUtil.validateNotBlank(dto.nameDA(), "Name");
-        ValidationUtil.validateNotBlank(dto.descriptionDA(), "Description");
+        ValidationUtil.validateName(dto.nameDA(), "Name DA");
+        ValidationUtil.validateDescription(dto.descriptionDA(), "Description DA");
+
+        if (dto.nameEN() != null)
+        {
+            ValidationUtil.validateName(dto.nameEN(), "Name EN");
+        }
+
+        if (dto.descriptionEN() != null)
+        {
+            ValidationUtil.validateDescription(dto.descriptionEN(), "Description EN");
+        }
     }
 
     private void requireHeadChefOrSousChef(User user)
@@ -227,33 +251,5 @@ public class DishService
         {
             throw new UnauthorizedActionException("Only head chef or sous chef can create dishes directly");
         }
-    }
-
-    private DishOptionDTO mapToOption(Dish dish)
-    {
-        return new DishOptionDTO(
-            dish.getId(),
-            dish.getNameDA(),
-            dish.getDescriptionDA(),
-            dish.getStation().getStationName()
-        );
-    }
-
-    private DishDTO mapToDishDTO(Dish dish)
-    {
-        return new DishDTO(
-            dish.getId(),
-            dish.getNameDA(),
-            dish.getNameEN(),
-            dish.getDescriptionDA(),
-            dish.getDescriptionEN(),
-            dish.getStation().getId(),
-            dish.getStation().getStationName(),
-            dish.getAllergens().stream().map(Allergen::getName).collect(Collectors.toSet()),
-            dish.isActive(),
-            dish.getOriginWeek(),
-            dish.getOriginYear(),
-            dish.getCreatedAt()
-        );
     }
 }

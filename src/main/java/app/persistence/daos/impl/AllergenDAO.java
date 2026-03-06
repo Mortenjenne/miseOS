@@ -21,17 +21,86 @@ public class AllergenDAO implements IAllergenDAO
     }
 
     @Override
-    public Optional<Allergen> findByName(String name)
+    public Optional<Allergen> findByNameDA(String nameDA)
     {
+        DBValidator.validateNotBlank(nameDA, "Name DA");
+
         try(EntityManager em = emf.createEntityManager())
         {
-            Allergen allergen = em.createQuery("SELECT a FROM Allergen a WHERE a.name = :name", Allergen.class)
-                .setParameter("name", name)
+            Allergen allergen = em.createQuery("SELECT a FROM Allergen a WHERE a.nameDA = :nameDA", Allergen.class)
+                .setParameter("nameDA", nameDA)
                 .getResultStream()
                 .findFirst()
                 .orElse(null);
 
             return Optional.ofNullable(allergen);
+        }
+    }
+
+    @Override
+    public Optional<Allergen> findByNameEN(String nameEN)
+    {
+        DBValidator.validateNotBlank(nameEN, "Name EN");
+
+        try(EntityManager em = emf.createEntityManager())
+        {
+            Allergen allergen = em.createQuery("SELECT a FROM Allergen a WHERE a.nameEN = :nameEN", Allergen.class)
+                .setParameter("nameEN", nameEN)
+                .getResultStream()
+                .findFirst()
+                .orElse(null);
+
+            return Optional.ofNullable(allergen);
+        }
+    }
+
+    @Override
+    public long count()
+    {
+        try (EntityManager em = emf.createEntityManager())
+        {
+            return em.createQuery("SELECT COUNT(a) FROM Allergen a", Long.class)
+                .getSingleResult();
+        }
+    }
+
+    @Override
+    public boolean isUsedByAnyDish(Long allergenId)
+    {
+        DBValidator.validateId(allergenId);
+
+        try (EntityManager em = emf.createEntityManager())
+        {
+            Long dishCount = em.createQuery(
+                    "SELECT COUNT(d) FROM Dish d JOIN d.allergens a WHERE a.id = :allergenId",
+                    Long.class
+                )
+                .setParameter("allergenId", allergenId)
+                .getSingleResult();
+
+            Long suggestionCount = em.createQuery(
+                    "SELECT COUNT(s) FROM DishSuggestion s JOIN s.allergens a WHERE a.id = :allergenId",
+                    Long.class
+                )
+                .setParameter("allergenId", allergenId)
+                .getSingleResult();
+
+            return (dishCount + suggestionCount) > 0;
+        }
+    }
+
+    @Override
+    public boolean existsByDisplayNumber(Integer displayNumber)
+    {
+        DBValidator.validatePositive(displayNumber, "Display number");
+
+        try(EntityManager em = emf.createEntityManager())
+        {
+            Long count = em.createQuery("SELECT COUNT(a) FROM Allergen a WHERE a.displayNumber = :displayNumber", Long.class)
+                .setParameter("displayNumber", displayNumber)
+                .getSingleResult();
+
+            return count > 0;
         }
     }
 

@@ -2,6 +2,7 @@ package app.utils;
 
 public class DishPromptBuilder
 {
+    private DishPromptBuilder(){}
 
     private static final String ISO_14001_GUIDELINES = """
         - Environmental Focus: Adhere to ISO 14001 standards (Meyers Kantiner).

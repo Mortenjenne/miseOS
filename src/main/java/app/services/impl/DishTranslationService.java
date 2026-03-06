@@ -1,8 +1,9 @@
-package app.services;
+package app.services.impl;
 
 import app.dtos.dishsuggestion.DishTranslationDTO;
 import app.integrations.translation.ITranslationClient;
 import app.persistence.entities.DishSuggestion;
+import app.services.IDishTranslationService;
 
 public class DishTranslationService implements IDishTranslationService
 {

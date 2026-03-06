@@ -1,11 +1,11 @@
 package app.persistence.entities;
 
 import app.enums.UserRole;
-import app.exceptions.UnauthorizedActionException;
 import app.utils.PasswordUtil;
 import app.utils.ValidationUtil;
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDateTime;
 
 @NoArgsConstructor
@@ -19,17 +19,14 @@ public class User implements IEntity
     private Long id;
 
     @Getter
-    @Setter
     @Column(name = "first_name", nullable = false)
     private String firstName;
 
     @Getter
-    @Setter
     @Column(name = "last_name", nullable = false)
     private String lastName;
 
     @Getter
-    @Setter
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
@@ -37,13 +34,11 @@ public class User implements IEntity
     private String hashedPassword;
 
     @Getter
-    @Setter
     @Enumerated(EnumType.STRING)
     @Column(name = "user_role", nullable = false)
     private UserRole userRole;
 
     @Getter
-    @Setter
     @ManyToOne
     @JoinColumn(name = "station_id")
     private Station station;
@@ -58,11 +53,48 @@ public class User implements IEntity
 
     public User(String firstName, String lastName, String email, String hashedPassword, UserRole userRole)
     {
+        ValidationUtil.validateNotBlank(firstName, "First name");
+        ValidationUtil.validateNotBlank(lastName, "Last name");
+        ValidationUtil.validateNotNull(userRole, "User role");
+
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = ValidationUtil.validateEmail(email);
         this.hashedPassword = hashedPassword;
         this.userRole = userRole;
+    }
+
+    public void update(String firstName, String lastName, Station station)
+    {
+        ValidationUtil.validateNotBlank(firstName, "First name");
+        ValidationUtil.validateNotBlank(lastName, "Last name");
+
+        this.firstName = firstName.trim();
+        this.lastName = lastName.trim();
+        this.station = station;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void changeRole(UserRole newRole)
+    {
+        ValidationUtil.validateNotNull(newRole, "User role");
+        this.userRole = newRole;
+    }
+
+    public void assignToStation(Station station)
+    {
+        this.station = station;
+    }
+
+    public void changeEmail(String newEmail)
+    {
+        this.email = ValidationUtil.validateEmail(newEmail);
+    }
+
+    public void changePassword(String newHashedPassword)
+    {
+        ValidationUtil.validateNotBlank(newHashedPassword, "Password");
+        this.hashedPassword = newHashedPassword;
     }
 
     public boolean isHeadChef()
@@ -75,30 +107,16 @@ public class User implements IEntity
         return this.userRole == UserRole.LINE_COOK;
     }
 
-    public boolean isSousChef(){return this.userRole == UserRole.SOUS_CHEF; }
+    public boolean isSousChef() { return this.userRole == UserRole.SOUS_CHEF; }
 
-    public boolean hasRole(UserRole role)
+    public boolean verifyPassword(String plainTextPassword)
     {
-        return this.userRole == role;
-    }
-
-    public boolean verifyPassword(String plainTextPassword) {
         return PasswordUtil.verifyPassword(plainTextPassword, this.hashedPassword);
     }
 
     public boolean isKitchenStaff()
     {
         return userRole == UserRole.HEAD_CHEF || userRole == UserRole.SOUS_CHEF || userRole == UserRole.LINE_COOK;
-    }
-
-    public void ensureIsKitchenStaff()
-    {
-        if(!isKitchenStaff())
-        {
-            throw new UnauthorizedActionException(
-                "Only kitchen staff can create dish suggestions"
-            );
-        }
     }
 
     @PrePersist

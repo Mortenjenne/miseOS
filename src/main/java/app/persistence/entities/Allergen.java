@@ -17,44 +17,63 @@ public class Allergen implements IEntity
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Setter
-    @Column(name = "name", nullable = false, unique = true, length = 100)
-    private String name;
+    @Column(name = "name_da", nullable = false, unique = true, length = 100)
+    private String nameDA;
 
-    @Setter
-    @Column(name = "description", length = 255)
-    private String description;
+    @Column(name = "name_en", nullable = false, unique = true, length = 100)
+    private String nameEN;
 
-    @Setter
+    @Column(name = "description_da", length = 255)
+    private String descriptionDA;
+
+    @Column(name = "description_en", length = 255)
+    private String descriptionEN;
+
     @Column(name = "display_number")
     private Integer displayNumber;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    public Allergen(String name, String description, Integer displayNumber)
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    public Allergen(String nameDA, String nameEN, String descriptionDA, String descriptionEN, Integer displayNumber)
     {
         validateDisplayNumber(displayNumber);
-        ValidationUtil.validateNotBlank(name, "Name");
-        ValidationUtil.validateNotBlank(description, "Description");
-        this.name = name.trim();
-        this.description = description.trim();
+        ValidationUtil.validateNotBlank(nameDA, "Name DA");
+        ValidationUtil.validateNotBlank(nameEN, "Name EN");
+        ValidationUtil.validateNotBlank(descriptionDA, "Description DA");
+        ValidationUtil.validateNotBlank(descriptionEN, "Description EN");
+
+        this.nameDA = nameDA.trim();
+        this.nameEN = nameEN.trim();
+        this.descriptionDA = descriptionDA.trim();
+        this.descriptionEN = descriptionEN.trim();
         this.displayNumber = displayNumber;
     }
 
-    public void update(String newName, String newDescription, Integer displayNumber)
+    public void update(String nameDA, String nameEN, String descriptionDA, String descriptionEN, Integer displayNumber)
     {
+        ValidationUtil.validateNotBlank(nameDA, "Name DA");
+        ValidationUtil.validateNotBlank(nameEN, "Name EN");
+        ValidationUtil.validateNotBlank(descriptionDA, "Description DA");
+        ValidationUtil.validateNotBlank(descriptionEN, "Description EN");
         validateDisplayNumber(displayNumber);
-        ValidationUtil.validateNotBlank(newName, "New name");
-        ValidationUtil.validateNotBlank(newDescription, "New Description");
-        this.name = newName.trim();
-        this.description = newDescription.trim();
+
+        this.nameDA = nameDA.trim();
+        this.nameEN = nameEN.trim();
+        this.descriptionDA = descriptionDA.trim();
+        this.descriptionEN = descriptionEN.trim();
         this.displayNumber = displayNumber;
     }
 
     private void validateDisplayNumber(Integer displayNumber)
     {
-        if(displayNumber < 0) throw new IllegalArgumentException("Display number must be positive");
+        if(displayNumber < 0)
+        {
+            throw new IllegalArgumentException("Display number must be positive");
+        }
     }
 
     @PrePersist

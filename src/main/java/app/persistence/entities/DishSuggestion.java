@@ -62,7 +62,7 @@ public class DishSuggestion implements IEntity
     private User reviewedBy;
 
     @ManyToMany
-    @JoinTable(name = "dish_allergen", joinColumns = @JoinColumn(name = "dish_suggestion_id"), inverseJoinColumns = @JoinColumn(name = "allergen_id"))
+    @JoinTable(name = "dish_suggestion_allergen", joinColumns = @JoinColumn(name = "dish_suggestion_id"), inverseJoinColumns = @JoinColumn(name = "allergen_id"))
     private Set<Allergen> allergens = new HashSet<>();
 
     @Column(name = "reviewed_at")

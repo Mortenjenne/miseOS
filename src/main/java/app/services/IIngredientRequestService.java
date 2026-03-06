@@ -25,7 +25,7 @@ public interface IIngredientRequestService
 
     IngredientRequestDTO getById(Long id);
 
-    IngredientRequestDTO updateRequest(Long userEditorId, Long requestId, Long dishId, UpdateIngredientRequestDTO dto);
+    IngredientRequestDTO updateRequest(Long editorId, Long ingredientRequestId, UpdateIngredientRequestDTO dto);
 
-    boolean deleteRequest(Long id, User headChef);
+    boolean deleteRequest(Long requesterId, Long ingredientRequestId);
 }

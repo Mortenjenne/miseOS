@@ -1,13 +1,15 @@
-package app.services;
+package app.services.impl;
 
 import app.dtos.station.StationRequestDTO;
 import app.dtos.station.StationDTO;
 import app.exceptions.UnauthorizedActionException;
 import app.exceptions.ValidationException;
+import app.mappers.StationMapper;
 import app.persistence.daos.interfaces.IStationDAO;
 import app.persistence.daos.interfaces.IUserReader;
 import app.persistence.entities.Station;
 import app.persistence.entities.User;
+import app.services.IStationService;
 import app.utils.ValidationUtil;
 import jakarta.persistence.EntityNotFoundException;
 
@@ -15,7 +17,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class StationService
+public class StationService implements IStationService
 {
     private final IStationDAO stationDAO;
     private final IUserReader userReader;
@@ -26,26 +28,28 @@ public class StationService
         this.userReader = userReader;
     }
 
-    public StationDTO registerStation(Long createdById, StationRequestDTO dto)
+    @Override
+    public StationDTO registerStation(Long creatorID, StationRequestDTO dto)
     {
-        ValidationUtil.validateId(createdById);
+        ValidationUtil.validateId(creatorID);
         validateInput(dto);
 
-        User creator = userReader.getByID(createdById);
+        User creator = userReader.getByID(creatorID);
         requireChef(creator);
         validateStationNameUnique(dto.name());
 
         Station station = new Station(dto.name(), dto.description());
         Station saved = stationDAO.create(station);
 
-        return mapToDTO(saved);
+        return StationMapper.toDTO(saved);
     }
 
+    @Override
     public StationDTO updateStation(Long editorId, Long stationId, StationRequestDTO dto)
     {
         ValidationUtil.validateId(editorId);
         ValidationUtil.validateId(stationId);
-        ValidationUtil.validateId(editorId);
+        validateInput(dto);
 
         User editor = userReader.getByID(editorId);
         Station station = stationDAO.getByID(stationId);
@@ -62,10 +66,11 @@ public class StationService
         );
 
         Station updated = stationDAO.update(station);
-        return mapToDTO(updated);
+        return StationMapper.toDTO(updated);
     }
 
-    public boolean deleteStation(Long stationId, Long userId)
+    @Override
+    public boolean deleteStation(Long userId, Long stationId)
     {
         ValidationUtil.validateId(stationId);
         ValidationUtil.validateId(userId);
@@ -77,28 +82,32 @@ public class StationService
         return stationDAO.delete(station.getId());
     }
 
+    @Override
     public StationDTO getStationById(Long id)
     {
         ValidationUtil.validateId(id);
         Station station = stationDAO.getByID(id);
 
-        return mapToDTO(station);
+        return StationMapper.toDTO(station);
     }
 
+    @Override
     public Set<StationDTO> getAllStations()
     {
         return stationDAO.getAll()
             .stream()
-            .map(this::mapToDTO)
+            .map(StationMapper::toDTO)
             .collect(Collectors.toSet());
     }
 
+    @Override
     public StationDTO getStationByName(String name)
     {
         ValidationUtil.validateNotBlank(name, "Station name");
+        ValidationUtil.validateRange(name.trim().length(), 2, 100, "Search query length");
 
         return stationDAO.findByName(name)
-            .map(this::mapToDTO)
+            .map(StationMapper::toDTO)
             .orElseThrow(() -> new EntityNotFoundException("Station not found: " + name));
     }
 
@@ -113,8 +122,8 @@ public class StationService
     private void validateInput(StationRequestDTO dto)
     {
         ValidationUtil.validateNotNull(dto, "Station request");
-        ValidationUtil.validateNotBlank(dto.name(), "Station name");
-        ValidationUtil.validateNotBlank(dto.description(), "Description");
+        ValidationUtil.validateName(dto.name(), "Station name");
+        ValidationUtil.validateDescription(dto.description(), "Description");
     }
 
     private void validateStationNameUnique(String name)
@@ -125,14 +134,5 @@ public class StationService
         {
             throw new ValidationException("Station with name '" + name + "' already exists");
         }
-    }
-
-    private StationDTO mapToDTO(Station station)
-    {
-        return new StationDTO(
-            station.getId(),
-            station.getStationName(),
-            station.getDescription()
-        );
     }
 }

@@ -7,6 +7,7 @@ import app.enums.UserRole;
 import app.persistence.daos.impl.*;
 import app.persistence.daos.interfaces.*;
 import app.persistence.entities.*;
+import app.utils.EUAllergens;
 import jakarta.persistence.EntityManagerFactory;
 
 import java.time.LocalDate;
@@ -17,7 +18,8 @@ public class TestPopulator
     private final IStationDAO stationDAO;
     private final IUserDAO userDAO;
     private final IAllergenDAO allergenDAO;
-    private final IDishSuggestionDAO dishDAO;
+    private final IDishSuggestionDAO dishSuggestionDAO;
+    private final IDishDAO dishDAO;
     private final IWeeklyMenuDAO menuDAO;
     private final IIngredientRequestDAO ingredientRequestDAO;
     private final IShoppingListDAO shoppingListDAO;
@@ -28,7 +30,8 @@ public class TestPopulator
         this.stationDAO = new StationDAO(emf);
         this.userDAO = new UserDAO(emf);
         this.allergenDAO = new AllergenDAO(emf);
-        this.dishDAO = new DishSuggestionDAO(emf);
+        this.dishSuggestionDAO = new DishSuggestionDAO(emf);
+        this.dishDAO = new DishDAO(emf);
         this.menuDAO = new WeeklyMenuDAO(emf);
         this.ingredientRequestDAO = new IngredientRequestDAO(emf);
         this.shoppingListDAO = new ShoppingListDAO(emf);
@@ -41,6 +44,7 @@ public class TestPopulator
         populateUsers();
         populateAllergens();
         populateDishSuggestions();
+        populateDishes();
         populateIngredientRequest();
         populateWeeklyMenus();
         populateShoppingLists();
@@ -89,27 +93,15 @@ public class TestPopulator
     }
 
     private void populateAllergens() {
-        Allergen gluten = allergenDAO.create(new Allergen("Gluten", "Cereals containing gluten", 1));
-        Allergen dairy = allergenDAO.create(new Allergen("Dairy", "Milk and products thereof (including lactose)",2));
-        Allergen eggs = allergenDAO.create(new Allergen("Eggs", "Eggs and products thereof",3));
-        Allergen nuts = allergenDAO.create(new Allergen("Nuts", "Tree nuts", 4));
-        Allergen shellfish = allergenDAO.create(new Allergen("Shellfish", "Fish and products thereof", 5));
-        Allergen fish = allergenDAO.create(new Allergen("Fish", "Fish and products thereof", 6));
-        Allergen soy = allergenDAO.create(new Allergen("Soy", "Cereals containing gluten", 7));
-        Allergen celery = allergenDAO.create(new Allergen("Celery", "Celery and products thereof", 8));
-        Allergen mustard = allergenDAO.create(new Allergen("Mustard", "Mustard and products thereof", 9));
-        Allergen lactose = allergenDAO.create(new Allergen("Lactose", "Lactose and dairy derivatives", 10));
 
-        seeded.put("allergen_gluten", gluten);
-        seeded.put("allergen_dairy", dairy);
-        seeded.put("allergen_eggs", eggs);
-        seeded.put("allergen_nuts", nuts);
-        seeded.put("allergen_shellfish", shellfish);
-        seeded.put("allergen_fish", fish);
-        seeded.put("allergen_soy", soy);
-        seeded.put("allergen_celery", celery);
-        seeded.put("allergen_mustard", mustard);
-        seeded.put("allergen_lactose", lactose);
+        List<Allergen> euAllergens = EUAllergens.getAll();
+
+        euAllergens.forEach(a ->
+        {
+            Allergen allergen = allergenDAO.create(a);
+            String allergenKey = "allergen_"+ allergen.getNameEN().toLowerCase();
+            seeded.put(allergenKey, allergen);
+        });
     }
 
     private void populateDishSuggestions()
@@ -121,13 +113,13 @@ public class TestPopulator
         User cookMarco = (User) seeded.get("user_marco");
 
         Allergen gluten = (Allergen) seeded.get("allergen_gluten");
-        Allergen dairy = (Allergen) seeded.get("allergen_dairy");
+        Allergen milk = (Allergen) seeded.get("allergen_milk");
         Allergen eggs = (Allergen) seeded.get("allergen_eggs");
         Allergen fish = (Allergen) seeded.get("allergen_fish");
 
         Set<Allergen> allergens = new HashSet<>();
         allergens.add(gluten);
-        allergens.add(dairy);
+        allergens.add(milk);
         allergens.add(eggs);
         allergens.add(fish);
 
@@ -173,7 +165,7 @@ public class TestPopulator
 
         DishSuggestion d5 = new DishSuggestion(
             "Sushi",
-            "sashimi og syltet ingefær",
+            "Sashimi og syltet ingefær",
             8,
             2026,
             coldStation,
@@ -181,24 +173,123 @@ public class TestPopulator
             new HashSet<>(allergens)
         );
 
-        dishDAO.create(d1);
-        dishDAO.create(d2);
-        dishDAO.create(d3);
-        dishDAO.create(d4);
-        dishDAO.create(d5);
+        dishSuggestionDAO.create(d1);
+        dishSuggestionDAO.create(d2);
+        dishSuggestionDAO.create(d3);
+        dishSuggestionDAO.create(d4);
+        dishSuggestionDAO.create(d5);
 
-        seeded.put("dish_salmon", d1);
-        seeded.put("dish_steak", d2);
-        seeded.put("dish_tartelet", d3);
-        seeded.put("dish_roastbeef", d4);
-        seeded.put("dish_sushi",d5);
+        seeded.put("suggestion_salmon", d1);
+        seeded.put("suggestion_steak", d2);
+        seeded.put("suggestion_tartelet", d3);
+        seeded.put("suggestion_roastbeef", d4);
+        seeded.put("suggestion_sushi",d5);
+    }
+
+    private void populateDishes()
+    {
+        Station hotStation = (Station) seeded.get("station_hot");
+        Station coldStation = (Station) seeded.get("station_cold");
+
+        User gordon = (User) seeded.get("user_gordon");
+
+        Allergen gluten = (Allergen) seeded.get("allergen_gluten");
+        Allergen milk = (Allergen) seeded.get("allergen_milk");
+        Allergen eggs = (Allergen) seeded.get("allergen_eggs");
+        Allergen fish = (Allergen) seeded.get("allergen_fish");
+
+        Set<Allergen> allergens = new HashSet<>(Set.of(gluten, milk, eggs, fish));
+
+        Dish dish1 = new Dish(
+            "Røget Laks",
+            "Laks med dildcreme og rugbrødschips",
+            coldStation,
+            new HashSet<>(allergens),
+            gordon,
+            7,
+            2026
+        );
+
+        Dish dish2 = new Dish(
+            "Bøf Bearnaise",
+            "Oksemørbrad med hjemmelavet bearnaise",
+            hotStation,
+            new HashSet<>(allergens),
+            gordon,
+            7,
+            2026
+        );
+
+        Dish dish3 = new Dish(
+            "Tarteletter",
+            "Høns i asparges",
+            hotStation,
+            new HashSet<>(allergens),
+            gordon,
+            7,
+            2026
+        );
+
+        Dish dish4 = new Dish(
+            "Roastbeef",
+            "Roastbeef med remoulade og sprøde løg",
+            coldStation,
+            new HashSet<>(allergens),
+            gordon,
+            5,
+            2026
+        );
+
+        Dish dish5 = new Dish(
+            "Stegt Flæsk",
+            "Med persillesovs og kartofler",
+            hotStation,
+            new HashSet<>(allergens),
+            gordon,
+            5,
+            2026
+        );
+
+        dish5.update(
+            "Stegt Flæsk",
+            "Med persillesovs og kartofler",
+            "Fried Pork Belly",
+            "With parsley sauce and potatoes",
+            new HashSet<>(allergens)
+        );
+
+        Dish dish6 = new Dish(
+            "Jeppe's kål",
+            "Faseret kål med brun sovs",
+            hotStation,
+            new HashSet<>(),
+            gordon,
+            1,
+            2026
+        );
+
+        dish6.deactivate(); //For inactive test
+
+        dishDAO.create(dish1);
+        dishDAO.create(dish2);
+        dishDAO.create(dish3);
+        dishDAO.create(dish4);
+        dishDAO.create(dish5);
+        dishDAO.create(dish6);
+
+        seeded.put("dish_salmon", dish1);
+        seeded.put("dish_boeuf", dish2);
+        seeded.put("dish_tartelet", dish3);
+        seeded.put("dish_roastbeef", dish4);
+        seeded.put("dish_roasted_pork", dish5);
+        seeded.put("dish_old", dish6);
     }
 
     private void populateIngredientRequest()
     {
         User headChef = (User) seeded.get("user_gordon");
         User lineCook = (User) seeded.get("user_claire");
-        DishSuggestion dish = (DishSuggestion) seeded.get("dish_salmon");
+        Dish dish = (Dish) seeded.get("dish_salmon");
 
         IngredientRequest req1 = new IngredientRequest(
             "Frisk Dild",
@@ -286,16 +377,15 @@ public class TestPopulator
         }
     }
 
-
-
-    private void populateWeeklyMenus() {
+    private void populateWeeklyMenus()
+    {
         Station hotStation = (Station) seeded.get("station_hot");
         Station coldStation = (Station) seeded.get("station_cold");
 
-        DishSuggestion salmon = (DishSuggestion) seeded.get("dish_salmon");
-        DishSuggestion steak = (DishSuggestion) seeded.get("dish_steak");
-        DishSuggestion tartelet = (DishSuggestion) seeded.get("dish_tartelet");
-        DishSuggestion roastbeef = (DishSuggestion) seeded.get("dish_roastbeef");
+        Dish salmon = (Dish) seeded.get("dish_salmon");
+        Dish steak = (Dish) seeded.get("dish_steak");
+        Dish tartelet = (Dish) seeded.get("dish_tartelet");
+        Dish roastbeef = (Dish) seeded.get("dish_roastbeef");
 
         WeeklyMenu menu1 = new WeeklyMenu(7, 2025);
 
@@ -331,11 +421,5 @@ public class TestPopulator
         shoppingListDAO.create(list1);
 
         seeded.put("shopping_list_1", list1);
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T extends IEntity> T get(String key, Class<T> type)
-    {
-        return (T) seeded.get(key);
     }
 }

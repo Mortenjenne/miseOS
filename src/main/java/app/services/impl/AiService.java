@@ -1,8 +1,9 @@
-package app.services;
+package app.services.impl;
 
 import app.dtos.gemini.AiDishSuggestionDTO;
 import app.exceptions.AIIntegrationException;
 import app.integrations.ai.IAiClient;
+import app.services.IAiService;
 import app.utils.DishPromptBuilder;
 import app.utils.NormalizeTextPromptBuilder;
 import com.fasterxml.jackson.core.JsonProcessingException;

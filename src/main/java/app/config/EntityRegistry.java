@@ -13,6 +13,7 @@ final class EntityRegistry
         configuration.addAnnotatedClass(User.class);
         configuration.addAnnotatedClass(Allergen.class);
         configuration.addAnnotatedClass(DishSuggestion.class);
+        configuration.addAnnotatedClass(Dish.class);
         configuration.addAnnotatedClass(IngredientRequest.class);
         configuration.addAnnotatedClass(ShoppingList.class);
         configuration.addAnnotatedClass(ShoppingListItem.class);

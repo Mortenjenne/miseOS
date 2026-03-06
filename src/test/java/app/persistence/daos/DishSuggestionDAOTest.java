@@ -56,7 +56,7 @@ class DishSuggestionDAOTest {
 
         DishSuggestion dish = new DishSuggestion("Pasta Carbonara", "Classic pasta", 7, 2026, station, gordon, allergens);
 
-        Allergen lactose = (Allergen) seeded.get("allergen_lactose");
+        Allergen lactose = (Allergen) seeded.get("allergen_milk");
         dish.addAllergen(lactose);
 
         DishSuggestion result = dishSuggestionDAO.create(dish);
@@ -87,7 +87,7 @@ class DishSuggestionDAOTest {
     @DisplayName("Get by ID - should return correct dish")
     void getByID()
     {
-        DishSuggestion seed = (DishSuggestion) seeded.get("dish_steak");
+        DishSuggestion seed = (DishSuggestion) seeded.get("suggestion_steak");
         DishSuggestion fetched = dishSuggestionDAO.getByID(seed.getId());
 
         assertThat(fetched.getId(), is(seed.getId()));
@@ -116,7 +116,7 @@ class DishSuggestionDAOTest {
     @Test
     @DisplayName("Get with Allergens - should fetch dish and lazy-loaded allergens")
     void getByIdWithAllergens() {
-        DishSuggestion seed = (DishSuggestion) seeded.get("dish_steak");
+        DishSuggestion seed = (DishSuggestion) seeded.get("suggestion_steak");
 
         Optional<DishSuggestion> fetched = dishSuggestionDAO.getByIdWithAllergens(seed.getId());
 
@@ -143,7 +143,7 @@ class DishSuggestionDAOTest {
     @DisplayName("Update - should update status and description")
     void update()
     {
-        DishSuggestion seed = (DishSuggestion) seeded.get("dish_salmon");
+        DishSuggestion seed = (DishSuggestion) seeded.get("suggestion_salmon");
         seed.setNameDA("Torsk");
         seed.setDescriptionDA("Updated Description");
 
@@ -157,7 +157,7 @@ class DishSuggestionDAOTest {
     @DisplayName("Update - should update suggestion status to approved")
     void updateWithHeadChef()
     {
-        DishSuggestion seed = (DishSuggestion) seeded.get("dish_salmon");
+        DishSuggestion seed = (DishSuggestion) seeded.get("suggestion_salmon");
         User headChef = (User) seeded.get("user_gordon");
         seed.approve(headChef);
 
@@ -173,7 +173,7 @@ class DishSuggestionDAOTest {
     @DisplayName("Update - should throw UnauthorizedActionException when user is not head chef")
     void updateWithLineCookThrowsException()
     {
-        DishSuggestion seed = (DishSuggestion) seeded.get("dish_salmon");
+        DishSuggestion seed = (DishSuggestion) seeded.get("suggestion_salmon");
         User lineCook = (User) seeded.get("user_claire");
 
         assertThrows(UnauthorizedActionException.class, () -> seed.approve(lineCook));
@@ -201,7 +201,7 @@ class DishSuggestionDAOTest {
     @DisplayName("Delete - should remove dish and return true")
     void delete()
     {
-        DishSuggestion seed = (DishSuggestion) seeded.get("dish_sushi");
+        DishSuggestion seed = (DishSuggestion) seeded.get("suggestion_sushi");
         boolean deleted = dishSuggestionDAO.delete(seed.getId());
 
         assertTrue(deleted);
@@ -280,10 +280,10 @@ class DishSuggestionDAOTest {
         assertThat(dishes, notNullValue());
         assertThat(dishes, hasSize(4));
         assertThat(dishes, containsInAnyOrder(
-            seeded.get("dish_salmon"),
-            seeded.get("dish_steak"),
-            seeded.get("dish_tartelet"),
-            seeded.get("dish_roastbeef")
+            seeded.get("suggestion_salmon"),
+            seeded.get("suggestion_steak"),
+            seeded.get("suggestion_tartelet"),
+            seeded.get("suggestion_roastbeef")
         ));
     }
 

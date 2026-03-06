@@ -1,10 +1,11 @@
 package app.dtos.allergen;
 
 public record AllergenUpdateRequestDTO(
-    String name,
-    String description,
-    Integer displayNumber,
-    Long editorId
+    String nameDA,
+    String nameEN,
+    String descriptionDA,
+    String descriptionEN,
+    Integer displayNumber
 )
 {
 }

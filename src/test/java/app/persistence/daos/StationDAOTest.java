@@ -111,11 +111,13 @@ class StationDAOTest
     void update()
     {
         Station seed = (Station) seeded.get("station_cold");
-        seed.setStationName("Super Cold Kitchen");
-        seed.setDescription("Updated description");
+
+        seed.update(
+            "Super Cold Kitchen",
+            "Updated description"
+        );
 
         Station updated = stationDAO.update(seed);
-
 
         assertThat(updated.getId(), is(seed.getId()));
         assertThat(updated.getStationName(), is("Super Cold Kitchen"));
