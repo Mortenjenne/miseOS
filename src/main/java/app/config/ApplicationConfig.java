@@ -15,10 +15,12 @@ public class ApplicationConfig
     {
         Javalin app = serverConfig.create();
         app.start(port);
+        logger.info("Starting javalin app");
     }
 
     public static void stopServer(Javalin app)
     {
         app.stop();
+        logger.info("Stopping javalin app");
     }
 }
