@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 public class ServerConfig
 {
     private static final Logger logger = LoggerFactory.getLogger(ServerConfig.class);
+    private static final String START_TIME = "start-time";
     private final Routes routes;
 
     public ServerConfig(Routes routes)
@@ -31,11 +32,48 @@ public class ServerConfig
         return app;
     }
 
-    private void logRequest(Context ctx) {
-        logger.info("Incoming request from {}: {} {}", ctx.ip(), ctx.method(), ctx.path());
+    private void logRequest(Context ctx)
+    {
+        ctx.attribute(START_TIME, System.currentTimeMillis());
+        String body = ctx.body();
+
+        if (!body.isBlank())
+        {
+            logger.info(
+                "Incoming {} {} from {} | UA: {} | Payload: {}",
+                ctx.method(),
+                ctx.path(),
+                ctx.ip(),
+                ctx.userAgent(),
+                body
+            );
+        }
+        else
+        {
+            logger.info(
+                "Incoming {} {} from {} | UA: {}",
+                ctx.method(),
+                ctx.path(),
+                ctx.ip(),
+                ctx.userAgent()
+            );
+        }
     }
 
-    private void logResponse(Context ctx) {
-        logger.info("Response: {} {} -> {}", ctx.method(), ctx.path(), ctx.status());
+    private void logResponse(Context ctx)
+    {
+        Long start = ctx.attribute(START_TIME);
+        if(start != null)
+        {
+            long duration = System.currentTimeMillis() - start;
+
+            logger.info(
+                "Response: {} {} -> {} ({} ms)",
+                ctx.method(),
+                ctx.path(),
+                ctx.status(),
+                duration
+            );
+        }
     }
 }
