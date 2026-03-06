@@ -6,6 +6,6 @@ public class Main
 {
     public static void main(String[] args)
     {
-        ApplicationConfig.start();
+        ApplicationConfig.startServer(7070);
     }
 }

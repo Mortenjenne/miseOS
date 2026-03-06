@@ -22,16 +22,18 @@
         <hamcrest.version>3.0</hamcrest.version>
         <jbcrypt.version>0.4</jbcrypt.version>
         <jackson.version>2.21.1</jackson.version>
+        <javalin.version>7.0.1</javalin.version>
     </properties>
 
     <dependencies>
 
-        <!--  DB    -->
+        <!--  DATABASE    -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <version>${postgres.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.hibernate.orm</groupId>
             <artifactId>hibernate-core</artifactId>
@@ -80,17 +82,20 @@
             <version>${testcontainers.version}</version>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers-postgresql</artifactId>
             <version>${testcontainers.version}</version>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers-jdbc</artifactId>
             <version>${testcontainers.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers-junit-jupiter</artifactId>
@@ -111,6 +116,7 @@
             <artifactId>logback-classic</artifactId>
             <version>${logback-classic}</version>
         </dependency>
+
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -135,6 +141,13 @@
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
             <version>${jackson.version}</version>
+        </dependency>
+
+        <!-- Javalin -->
+        <dependency>
+            <groupId>io.javalin</groupId>
+            <artifactId>javalin</artifactId>
+            <version>${javalin.version}</version>
         </dependency>
     </dependencies>
 </project>
