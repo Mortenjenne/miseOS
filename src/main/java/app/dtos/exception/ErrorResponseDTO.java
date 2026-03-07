@@ -9,7 +9,8 @@ public record ErrorResponseDTO(
     String message,
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     LocalDateTime timestamp,
-    String path
+    String path,
+    String referenceId
 )
 {
 }

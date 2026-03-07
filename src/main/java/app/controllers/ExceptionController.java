@@ -16,80 +16,91 @@ public class ExceptionController implements IExceptionController
     @Override
     public void handleIllegalArgument(IllegalArgumentException e, Context ctx)
     {
-        logger.error("Bad argument [{}] {}: {}", ctx.method(), ctx.path(), e.getMessage());
-        buildErrorResponse(400, e.getMessage(), ctx);
+        String reqId = ctx.attribute("request-id");
+        logger.warn("[{}] Bad argument [{}] {}: {}", reqId, ctx.method(), ctx.path(), e.getMessage());
+        buildErrorResponse(400, e.getMessage(), ctx, reqId);
     }
 
     @Override
     public void handleValidationException(ValidationException e, Context ctx)
     {
-        logger.error("Validation error [{}] {}: {}", ctx.method(), ctx.path(), e.getMessage());
-        buildErrorResponse(400, e.getMessage(), ctx);
+        String reqId = ctx.attribute("request-id");
+        logger.warn("[{}] Validation error [{}] {}: {}", reqId, ctx.method(), ctx.path(), e.getMessage());
+        buildErrorResponse(400, e.getMessage(), ctx, reqId);
     }
 
     @Override
     public void handleEntityNotFound(EntityNotFoundException e, Context ctx)
     {
-        logger.error("Entity not found [{}] {}: {}", ctx.method(), ctx.path(), e.getMessage());
-        buildErrorResponse(404, e.getMessage(), ctx);
+        String reqId = ctx.attribute("request-id");
+        logger.warn("[{}] Entity not found [{}] {}: {}", reqId, ctx.method(), ctx.path(), e.getMessage());
+        buildErrorResponse(404, e.getMessage(), ctx, reqId);
     }
 
     @Override
     public void handleIllegalState(IllegalStateException e, Context ctx)
     {
-        logger.error("Illegal state [{}] {}: {}", ctx.method(), ctx.path(), e.getMessage());
-        buildErrorResponse(409, e.getMessage(), ctx);
+        String reqId = ctx.attribute("request-id");
+        logger.error("[{}] Illegal state [{}] {}: {}", reqId, ctx.method(), ctx.path(), e.getMessage());
+        buildErrorResponse(409, e.getMessage(), ctx, reqId);
     }
 
     @Override
     public void handleUnauthorized(UnauthorizedActionException e, Context ctx)
     {
-        logger.error("Unauthorized [{}] {}: {}", ctx.method(), ctx.path(), e.getMessage());
-        buildErrorResponse(403, e.getMessage(), ctx);
+        String reqId = ctx.attribute("request-id");
+        logger.error("[{}] Unauthorized [{}] {}: {}", reqId, ctx.method(), ctx.path(), e.getMessage());
+        buildErrorResponse(403, e.getMessage(), ctx, reqId);
     }
 
     @Override
     public void handleDatabase(DatabaseException e, Context ctx)
     {
-        logger.error("Database [{}] {}: {}", ctx.method(), ctx.path(), e.getMessage(), e);
-        buildErrorResponse(500, "Database error occurred", ctx);
+        String reqId = ctx.attribute("request-id");
+        logger.error("[{}] Database [{}] {}: {}", reqId,  ctx.method(), ctx.path(), e.getMessage(), e);
+        buildErrorResponse(500, "Database error occurred. Reference: " + reqId , ctx, reqId);
     }
 
     @Override
     public void handleAIIntegration(AIIntegrationException e, Context ctx)
     {
-        logger.error("AIIntergration [{}] {}: {}", ctx.method(), ctx.path(), e.getMessage());
-        buildErrorResponse(502, "External service unavailable", ctx);
+        String reqId = ctx.attribute("request-id");
+        logger.error("[{}] AIIntegration [{}] {}: {}", reqId, ctx.method(), ctx.path(), e.getMessage());
+        buildErrorResponse(502, "External service unavailable", ctx, reqId);
     }
 
     @Override
     public void handleWeatherIntegration(WeatherIntegrationException e, Context ctx)
     {
-        logger.error("WeatherIntegration [{}] {}: {}", ctx.method(), ctx.path(), e.getMessage());
-        buildErrorResponse(502, "External service unavailable", ctx);
+        String reqId = ctx.attribute("request-id");
+        logger.error("[{}] WeatherIntegration [{}] {}: {}", reqId, ctx.method(), ctx.path(), e.getMessage());
+        buildErrorResponse(502, "External service unavailable", ctx, reqId);
     }
 
     @Override
     public void handleTranslation(TranslationException e, Context ctx)
     {
-        logger.error("TranslationIntegration [{}] {}: {}", ctx.method(), ctx.path(), e.getMessage());
-        buildErrorResponse(502, "External service unavailable", ctx);
+        String reqId = ctx.attribute("request-id");
+        logger.error("[{}] TranslationIntegration [{}] {}: {}", reqId, ctx.method(), ctx.path(), e.getMessage());
+        buildErrorResponse(502, "External service unavailable", ctx, reqId);
     }
 
     @Override
     public void handleGenericException(Exception e, Context ctx)
     {
-        logger.error("Unhandled exception [{}] {}", ctx.method(), ctx.path(), e);
-        buildErrorResponse(500, "An unexpected error occurred", ctx);
+        String reqId = ctx.attribute("request-id");
+        logger.error("[{}] Unhandled exception [{}] {}", reqId, ctx.method(), ctx.path(), e);
+        buildErrorResponse(500, "An unexpected error occurred. Reference: " + reqId, ctx, reqId);
     }
 
-    private void buildErrorResponse(int status, String message, Context ctx)
+    private void buildErrorResponse(int status, String message, Context ctx, String referenceId)
     {
         ErrorResponseDTO responseDTO = new ErrorResponseDTO(
             status,
             message,
             LocalDateTime.now(),
-            ctx.path()
+            ctx.path(),
+            referenceId
         );
 
         ctx.status(status);

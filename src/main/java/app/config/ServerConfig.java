@@ -10,10 +10,14 @@ import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.UUID;
+
 public class ServerConfig
 {
     private static final Logger logger = LoggerFactory.getLogger(ServerConfig.class);
     private static final String START_TIME = "start-time";
+    private static final String REQ_ID = "request-id";
+
     private final Routes routes;
     private final IExceptionController exceptionController;
 
@@ -59,13 +63,16 @@ public class ServerConfig
 
     private void logRequest(Context ctx)
     {
+        String requestId = UUID.randomUUID().toString().substring(0, 8);
+        ctx.attribute(REQ_ID, requestId);
         ctx.attribute(START_TIME, System.currentTimeMillis());
         String body = ctx.body();
 
         if (!body.isBlank())
         {
             logger.info(
-                "Incoming {} {} from {} | UA: {} | Payload: {}",
+                "[{}] Incoming {} {} from {} | UA: {} | Payload: {}",
+                requestId,
                 ctx.method(),
                 ctx.path(),
                 ctx.ip(),
@@ -76,7 +83,8 @@ public class ServerConfig
         else
         {
             logger.info(
-                "Incoming {} {} from {} | UA: {}",
+                "[{}] Incoming {} {} from {} | UA: {}",
+                requestId,
                 ctx.method(),
                 ctx.path(),
                 ctx.ip(),
@@ -88,12 +96,15 @@ public class ServerConfig
     private void logResponse(Context ctx)
     {
         Long start = ctx.attribute(START_TIME);
-        if(start != null)
+        String requestId = ctx.attribute(REQ_ID);
+
+        if(start != null && requestId != null)
         {
             long duration = System.currentTimeMillis() - start;
 
             logger.info(
-                "Response: {} {} -> {} ({} ms)",
+                "[{}] Response: {} {} -> {} ({} ms)",
+                requestId,
                 ctx.method(),
                 ctx.path(),
                 ctx.status(),
