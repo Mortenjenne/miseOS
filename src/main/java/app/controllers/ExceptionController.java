@@ -59,21 +59,21 @@ public class ExceptionController implements IExceptionController
     public void handleAIIntegration(AIIntegrationException e, Context ctx)
     {
         logger.error("AIIntergration [{}] {}: {}", ctx.method(), ctx.path(), e.getMessage());
-        buildErrorResponse(502, e.getMessage(), ctx);
+        buildErrorResponse(502, "External service unavailable", ctx);
     }
 
     @Override
     public void handleWeatherIntegration(WeatherIntegrationException e, Context ctx)
     {
         logger.error("WeatherIntegration [{}] {}: {}", ctx.method(), ctx.path(), e.getMessage());
-        buildErrorResponse(502, e.getMessage(), ctx);
+        buildErrorResponse(502, "External service unavailable", ctx);
     }
 
     @Override
     public void handleTranslation(TranslationException e, Context ctx)
     {
         logger.error("TranslationIntegration [{}] {}: {}", ctx.method(), ctx.path(), e.getMessage());
-        buildErrorResponse(502, e.getMessage(), ctx);
+        buildErrorResponse(502, "External service unavailable", ctx);
     }
 
     @Override
