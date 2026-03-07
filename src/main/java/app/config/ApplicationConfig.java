@@ -1,5 +1,7 @@
 package app.config;
 
+import app.controllers.ExceptionController;
+import app.controllers.IExceptionController;
 import app.routes.AllergenRoute;
 import app.routes.Routes;
 import app.routes.UserRoute;
@@ -15,7 +17,8 @@ public class ApplicationConfig
     {
         DIContainer di = DIContainer.getInstance();
         Routes routes = buildRoutes(di);
-        ServerConfig serverConfig = new ServerConfig(routes);
+        IExceptionController exceptionController = new ExceptionController();
+        ServerConfig serverConfig = new ServerConfig(routes, exceptionController);
 
         Javalin app = serverConfig.create();
         app.start(port);

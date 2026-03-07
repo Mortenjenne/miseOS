@@ -28,8 +28,8 @@ public class UserRoute
                 post( userController::create);
                 put("/{id}", userController::update);
                 patch("/{id}/role", userController::changeRole);
-                patch("/{id}/email", userController::changeRole);
-                patch("/{id}/password", userController::changeRole);
+                patch("/{id}/email", userController::changeEmail);
+                patch("/{id}/password", userController::changePassword);
                 delete("/{id}", userController::delete);
             });
         };
