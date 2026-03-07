@@ -1,5 +1,48 @@
-### GET request to example server
-GET https://examples.http-client.intellij.net/get
-    ?generated-in=IntelliJ IDEA
+@local = http://localhost:7070/api/v1
+
+### GET by ID
+GET {{local}}/allergens/1
+
+### GET ALL
+GET {{local}}/allergens
+
+### GET by Name
+GET {{local}}/allergens/name/Hvidløg
+
+### POST create allergen
+POST {{local}}/allergens
+Content-Type: application/json
+
+{
+"nameDA": "Pinjekerner",
+"nameEN": "Pine nuts",
+"descriptionDA": "Pinje kerner og kerner her af",
+"descriptionEN": "Pine nuts and thereof",
+"displayNumber": "15"
+}
+
+### POST seed eu allergens
+POST {{local}}/allergens/seed
+Content-Type: application/json
+
+{
+"userId": "1"
+}
+
+### PUT Update allergen
+PUT {{local}}/allergens/1
+Content-Type: application/json
+
+{
+    "nameDA": "Pinjekerner(Updated)",
+    "nameEN": "Pine nuts(Updated)",
+    "descriptionDA": "Pinje kerner og kerner her af(Updated)",
+    "descriptionEN": "Pine nuts and thereof(Updated)",
+    "displayNumber": "15"
+}
+
+### DELETE
+DELETE {{local}}/allergens/1
 
 ###
+

@@ -12,8 +12,8 @@ POST {{local}}/users/
 {
 "firstName": "Morten",
 "lastName": "Jensen",
-"password": "Morten123.",
-"email": "test@email.dk"
+"password": "Mort",
+"email": "test@email.com"
 }
 
 ###
