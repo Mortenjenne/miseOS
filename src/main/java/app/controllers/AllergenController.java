@@ -22,57 +22,60 @@ public class AllergenController implements IAllergenController
     public void getById(Context ctx)
     {
         Long id = requirePathId(ctx, "id");
-        ctx.status(200);
-        ctx.json(allergenService.getAllergenById(id));
+        ctx.status(200).json(allergenService.getAllergenById(id));
     }
 
     @Override
     public void getAll(Context ctx)
     {
-        ctx.status(200);
-        ctx.json(allergenService.getAllAllergens());
+        ctx.status(200).json(allergenService.getAllAllergens());
     }
 
     @Override
     public void create(Context ctx)
     {
+        Long userId = requireUserId(ctx);
+
         AllergenCreateRequestDTO dto = ctx.bodyValidator(AllergenCreateRequestDTO.class)
-            .check(Objects::nonNull, "Request cant be null")
-            .check(a -> a.nameDA().isBlank(), "Name should be filled")
+            .check(Objects::nonNull, "Request body cant be null")
+            .check(a -> a.nameDA() != null && !a.nameDA().isBlank(), "Name DA is required")
+            .check(a -> a.nameEN() != null && !a.nameEN().isBlank(), "Name EN is required")
+            .check(a -> a.descriptionDA() != null && !a.descriptionDA().isBlank(), "Description DA is required")
+            .check(a -> a.descriptionEN() != null && !a.descriptionEN().isBlank(), "Description EN is required")
+            .check(a -> a.displayNumber() > 1, "Display number must be positive")
             .get();
 
-        Long userId = ctx.attribute("userId");
-
         AllergenDTO allergenDTO = allergenService.registerAllergen(userId, dto);
-        ctx.status(201);
-        ctx.json(allergenDTO);
+        ctx.status(201).json(allergenDTO);
     }
 
     @Override
     public void update(Context ctx)
     {
         Long allergenId = requirePathId(ctx, "id");
-        Long userId = ctx.attribute("userId");
+        Long userId = requireUserId(ctx);
 
         AllergenUpdateRequestDTO dto = ctx.bodyValidator(AllergenUpdateRequestDTO.class)
-        .check(Objects::nonNull, "Request cant be null")
-        .check(a -> a.nameDA().isBlank(), "Name should be filled")
+        .check(Objects::nonNull, "Request body cant be null")
+            .check(a -> a.nameDA() != null && !a.nameDA().isBlank(), "Name DA is required")
+            .check(a -> a.nameEN() != null && !a.nameEN().isBlank(), "Name EN is required")
+            .check(a -> a.descriptionDA() != null && !a.descriptionDA().isBlank(), "Description DA is required")
+            .check(a -> a.descriptionEN() != null && !a.descriptionEN().isBlank(), "Description EN is required")
+            .check(a -> a.displayNumber() > 1, "Display number must be positive")
         .get();
 
         AllergenDTO allergenDTO = allergenService.updateAllergen(allergenId, userId, dto);
-        ctx.status(200);
-        ctx.json(allergenDTO);
+        ctx.status(200).json(allergenDTO);
     }
 
     @Override
     public void delete(Context ctx)
     {
         Long allergenId = requirePathId(ctx, "id");
-        Long userId = ctx.attribute("userId");
+        Long userId = requireUserId(ctx);
 
         boolean isDeleted = allergenService.deleteAllergen(allergenId, userId);
-        ctx.status(204);
-        ctx.json(isDeleted);
+        ctx.status(204).json(isDeleted);
     }
 
     @Override
@@ -80,17 +83,15 @@ public class AllergenController implements IAllergenController
     {
         String name = ctx.pathParam("name");
         AllergenDTO dto = allergenService.getAllergenByNameDA(name);
-        ctx.status(200);
-        ctx.json(dto);
+        ctx.status(200).json(dto);
     }
 
     @Override
     public void seedEUAllergens(Context ctx)
     {
-        Long userId = ctx.attribute("userId");
+        Long userId = requireUserId(ctx);
         List<AllergenDTO> allergens = allergenService.seedEUAllergens(userId);
-        ctx.status(201);
-        ctx.json(allergens);
+        ctx.status(201).json(allergens);
     }
 
     private Long requirePathId(Context ctx, String param)
@@ -98,5 +99,17 @@ public class AllergenController implements IAllergenController
         return ctx.pathParamAsClass(param, Long.class)
             .check(i -> i > 0, "ID must be positive")
             .get();
+    }
+
+    //TODO REMOVE when JWT is implemented
+    private Long requireUserId(Context ctx)
+    {
+        Long userId = ctx.attribute("userId");
+
+        if (userId == null)
+        {
+            userId = 1L;
+        }
+        return userId;
     }
 }

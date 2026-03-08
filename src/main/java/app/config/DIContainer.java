@@ -21,9 +21,6 @@ import java.net.http.HttpClient;
 
 public final class DIContainer
 {
-    @Getter
-    private static final DIContainer instance = new DIContainer();
-
     private final EntityManagerFactory emf;
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
@@ -52,14 +49,19 @@ public final class DIContainer
     private final IAiService aiService;
     private final IDishTranslationService dishTranslationService;
 
+    @Getter
     private final IAllergenController allergenController;
     //private final IDishController dishController;
     //private final IDishSuggestionController dishSuggestionController;
+    @Getter
     private final IUserController userController;
     //private final IWeeklyMenuController weeklyMenuController;
     //private final IIngredientRequestController ingredientRequestController;
     //private final IShoppingListController shoppingListController;
     //private final IStationController stationController;
+
+    @Getter
+    private static final DIContainer instance = new DIContainer();
 
     private DIContainer()
     {
@@ -100,13 +102,4 @@ public final class DIContainer
 //        this.shoppingListController = new ShoppingListController(shoppingListService);
 //        this.stationController = new StationController(stationService);
     }
-
-    public IAllergenController getAllergenController() { return allergenController; }
-//    public IDishController getDishController() { return dishController; }
-//    public IDishSuggestionController getDishSuggestionController() { return dishSuggestionController; }
-    public IUserController getUserController() { return userController; }
-//    public IWeeklyMenuController getWeeklyMenuController() { return weeklyMenuController; }
-//    public IIngredientRequestController getIngredientRequestController() { return ingredientRequestController; }
-//    public IShoppingListController getShoppingListController() { return shoppingListController; }
-//    public IStationController getStationController() { return stationController; }
 }

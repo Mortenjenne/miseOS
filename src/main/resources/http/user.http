@@ -12,7 +12,7 @@ POST {{local}}/users/
 {
 "firstName": "Morten",
 "lastName": "Jensen",
-"password": "Mort",
+"password": "Morten123.",
 "email": "test@email.com"
 }
 
