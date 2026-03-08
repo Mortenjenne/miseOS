@@ -24,8 +24,8 @@ public class DishPromptBuilder
         - Sandwich: Focus ONLY on the fillings and toppings (pålæg/fyld). Do not suggest bread types.
 
         CONTEXT:
-        - Weather forecast (next 7 days): %s
-        - Kitchen Station: %s
+        - Weather forecast (next 7 days) information in JSON: %s
+        - Kitchen Station information in JSON: %s
         - Sustainability Rules (ISO 14001):
         %s
 

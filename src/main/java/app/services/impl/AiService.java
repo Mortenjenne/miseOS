@@ -1,8 +1,11 @@
 package app.services.impl;
 
 import app.dtos.gemini.AiDishSuggestionDTO;
+import app.dtos.station.StationDTO;
+import app.dtos.weather.WeatherForecastDTO;
 import app.exceptions.AIIntegrationException;
 import app.integrations.ai.IAiClient;
+import app.persistence.entities.Station;
 import app.services.IAiService;
 import app.utils.DishPromptBuilder;
 import app.utils.NormalizeTextPromptBuilder;
@@ -48,11 +51,14 @@ public class AiService implements IAiService
     }
 
     @Override
-    public List<AiDishSuggestionDTO> getAiDishSuggestion(String weatherForecast, String stationName)
+    public List<AiDishSuggestionDTO> getAiDishSuggestion(WeatherForecastDTO weatherForecast, StationDTO station)
     {
-        String prompt = DishPromptBuilder.buildMenuInspirationPrompt(weatherForecast, stationName);
         try
         {
+            String weatherJSON = objectMapper.writeValueAsString(weatherForecast);
+            String stationJSON = objectMapper.writeValueAsString(station);
+            String prompt = DishPromptBuilder.buildMenuInspirationPrompt(weatherJSON, stationJSON);
+
             String jsonResponse = aiClient.generateResponse(prompt);
 
             return Arrays.asList(objectMapper.readValue(jsonResponse, AiDishSuggestionDTO[].class));
