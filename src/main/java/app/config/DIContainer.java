@@ -21,6 +21,7 @@ public final class DIContainer
     private final EntityManagerFactory emf;
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
+    private final ApiConfig apiConfig;
 
     private final ITranslationClient translationClient;
     private final IAiClient aiClient;
@@ -59,8 +60,10 @@ public final class DIContainer
     @Getter
     private final IMenuInspirationController menuInspirationController;
 
+    @Getter
+    private final IDishSuggestionController dishSuggestionController;
+
     //private final IDishController dishController;
-    //private final IDishSuggestionController dishSuggestionController;
     //private final IWeeklyMenuController weeklyMenuController;
     //private final IIngredientRequestController ingredientRequestController;
     //private final IShoppingListController shoppingListController;
@@ -71,13 +74,14 @@ public final class DIContainer
 
     private DIContainer()
     {
-        this.emf          = HibernateConfig.getEntityManagerFactory();
-        this.httpClient   = HttpClient.newHttpClient();
+        this.emf = HibernateConfig.getEntityManagerFactory();
+        this.httpClient = HttpClient.newHttpClient();
         this.objectMapper = ObjectMapperConfig.create();
+        this.apiConfig = new ApiConfig();
 
-        this.translationClient = new DeepLTranslationClient(httpClient, objectMapper, AppProperties.get("DEEPL_URL"), System.getenv("DEEPL_APIKEY"));
-        this.aiClient = new GeminiClient(httpClient, objectMapper, System.getenv("GEMINI_API_KEY"), AppProperties.get("GEMINI_URL"));
-        this.weatherClient = new WeatherClient(httpClient, objectMapper, AppProperties.get("OPEN_METEO_URL"));
+        this.translationClient = new DeepLTranslationClient(httpClient, objectMapper, apiConfig.getDeepLUrl(), apiConfig.getDeepLApiKey());
+        this.aiClient = new GeminiClient(httpClient, objectMapper, apiConfig.getGeminiApiKey(), apiConfig.getGeminiUrl());
+        this.weatherClient = new WeatherClient(httpClient, objectMapper, apiConfig.getOpenMeteoUrl());
 
         this.allergenDAO = new AllergenDAO(emf);
         this.userDAO = new UserDAO(emf);
@@ -104,9 +108,8 @@ public final class DIContainer
         this.stationController = new StationController(stationService);
         this.userController = new UserController(userService);
         this.menuInspirationController = new MenuInspirationController(menuInspirationService);
-
+        this.dishSuggestionController = new DishSuggestionController(dishSuggestionService);
 //        this.dishController = new DishController(dishService);
-//        this.dishSuggestionController = new DishSuggestionController(dishSuggestionService);
 //        this.weeklyMenuController = new WeeklyMenuController(weeklyMenuService);
 //        this.ingredientRequestController = new IngredientRequestController(ingredientRequestService);
 //        this.shoppingListController = new ShoppingListController(shoppingListService);
