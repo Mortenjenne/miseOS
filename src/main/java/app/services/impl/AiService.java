@@ -5,10 +5,10 @@ import app.dtos.station.StationDTO;
 import app.dtos.weather.WeatherForecastDTO;
 import app.exceptions.AIIntegrationException;
 import app.integrations.ai.IAiClient;
-import app.persistence.entities.Station;
 import app.services.IAiService;
 import app.utils.DishPromptBuilder;
 import app.utils.NormalizeTextPromptBuilder;
+import app.utils.WeatherForecastBuilder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -51,18 +51,15 @@ public class AiService implements IAiService
     }
 
     @Override
-    public List<AiDishSuggestionDTO> getAiDishSuggestion(WeatherForecastDTO weatherForecast, StationDTO station)
+    public List<AiDishSuggestionDTO> getAiDishSuggestion(WeatherForecastDTO weatherForecastDTO, StationDTO station)
     {
         try
         {
-            String weatherJSON = objectMapper.writeValueAsString(weatherForecast);
+            String forecast = WeatherForecastBuilder.getWeatherForecast(weatherForecastDTO);
             String stationJSON = objectMapper.writeValueAsString(station);
-            String prompt = DishPromptBuilder.buildMenuInspirationPrompt(weatherJSON, stationJSON);
-            System.out.println(prompt);
+            String prompt = DishPromptBuilder.buildMenuInspirationPrompt(forecast, stationJSON);
 
             String jsonResponse = aiClient.generateResponse(prompt);
-            System.out.println(jsonResponse);
-
             return Arrays.asList(objectMapper.readValue(jsonResponse, AiDishSuggestionDTO[].class));
         }
         catch (JsonProcessingException e)
