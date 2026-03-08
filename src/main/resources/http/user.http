@@ -1,12 +1,13 @@
+### Variable setup
 @local = http://localhost:7070/api/v1
 
 ### GET by ID
-GET {{local}}/users/1
+GET {{local}}/users/2
 
-### GET all
+### GET all users
 GET {{local}}/users/
 
-### POST create user
+### POST Create User
 POST {{local}}/users/
 
 {
@@ -15,5 +16,58 @@ POST {{local}}/users/
 "password": "Morten123.",
 "email": "test@email.com"
 }
+
+### POST Create Another User
+POST {{local}}/users/
+Content-Type: application/json
+
+{
+    "firstName": "Anna",
+    "lastName": "Hansen",
+    "email": "anna@email.com",
+    "password": "Anna123."
+}
+
+
+### PUT Update User
+PUT {{local}}/users/1
+Content-Type: application/json
+
+{
+    "firstName": "Morten",
+    "lastName": "Jensen Updated",
+    "stationId": 1
+}
+
+
+### PATCH Change Email
+PATCH {{local}}/users/1/email
+Content-Type: application/json
+
+"newemail@email.com"
+
+
+### PATCH Change Password
+PATCH {{local}}/users/1/password
+Content-Type: application/json
+
+{
+    "currentPassword": "Morten123.",
+    "newPassword": "NewSecure123."
+}
+
+
+### PATCH Change Role
+PATCH {{local}}/users/2/role
+Content-Type: application/json
+
+"SOUS_CHEF"
+
+### PATCH Assign User(Anna) To Station
+PATCH {{local}}/users/2/station/1
+
+
+### DELETE Delete User
+DELETE {{local}}/users/2
 
 ###

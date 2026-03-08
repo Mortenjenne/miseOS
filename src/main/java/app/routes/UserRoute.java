@@ -25,8 +25,10 @@ public class UserRoute
             {
                 get(userController::getAll);
                 get("/{id}", userController::getById);
+                post("/login", userController::login);
                 post( userController::create);
                 put("/{id}", userController::update);
+                patch("/{id}/station/{stationId}", userController::assignToStation);
                 patch("/{id}/role", userController::changeRole);
                 patch("/{id}/email", userController::changeEmail);
                 patch("/{id}/password", userController::changePassword);

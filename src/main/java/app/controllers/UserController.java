@@ -1,10 +1,12 @@
 package app.controllers;
 
-import app.dtos.user.CreateUserRequestDTO;
-import app.dtos.user.UserDTO;
+import app.dtos.user.*;
+import app.enums.UserRole;
 import app.services.IUserService;
 import app.utils.SecurityUtil;
 import io.javalin.http.Context;
+
+import java.util.Objects;
 
 public class UserController implements IUserController
 {
@@ -18,34 +20,65 @@ public class UserController implements IUserController
     @Override
     public void login(Context ctx)
     {
+        LoginRequestDTO dto = ctx.bodyValidator(LoginRequestDTO.class)
+            .check(Objects::nonNull, "Login payload cannot be null")
+            .get();
 
+        UserDTO userDTO = userService.login(dto);
+
+        ctx.status(200).json(userDTO);
     }
 
     @Override
     public void changeRole(Context ctx)
     {
+        Long requesterId = SecurityUtil.requireUserId(ctx);
+        Long targetUserId = requirePathId(ctx, "id");
 
+        UserRole role = ctx.bodyAsClass(UserRole.class);
+        UserDTO userDTO = userService.changeRole(requesterId, targetUserId, role);
+
+        ctx.status(200).json(userDTO);
     }
 
     @Override
     public void changeEmail(Context ctx)
     {
+        Long userId = SecurityUtil.requireUserId(ctx);
 
+        String newEmail = ctx.bodyValidator(String.class)
+            .check(e -> e != null && !e.isBlank(), "Email cannot be empty")
+            .check(e -> e.contains("@"), "Invalid email")
+            .get();
+
+        UserDTO userDTO = userService.changeEmail(userId, newEmail);
+
+        ctx.status(200).json(userDTO);
     }
 
     @Override
     public void changePassword(Context ctx)
     {
+        Long userId = SecurityUtil.requireUserId(ctx);
 
+        ChangeUserPasswordDTO dto = ctx.bodyValidator(ChangeUserPasswordDTO.class)
+            .check(Objects::nonNull, "Password payload cannot be null")
+            .check(p -> p.currentPassword() != null && !p.currentPassword().isBlank(), "Current password cannot be empty")
+            .check(p -> p.newPassword() != null && !p.newPassword().isBlank(), "New password cannot be empty")
+            .get();
+
+        UserDTO userDTO = userService.changePassword(userId, dto);
+
+        ctx.status(200).json(userDTO);
     }
 
-    //FIX Hardcoding
     @Override
     public void assignToStation(Context ctx)
     {
         Long requesterId = SecurityUtil.requireUserId(ctx);
-        Long targetUserId = 1L; //FIX HARDCODING
-        Long stationId = 1L; //FIX HARDCODING
+        Long targetUserId = requirePathId(ctx, "id");
+        Long stationId = requirePathId(ctx, "stationId");
+
         UserDTO userDTO = userService.assignToStation(requesterId, targetUserId, stationId);
         ctx.status(200).json(userDTO);
     }
@@ -53,9 +86,7 @@ public class UserController implements IUserController
     @Override
     public void getById(Context ctx)
     {
-        Long id = ctx.pathParamAsClass("id", Long.class)
-            .check(i -> i > 0, "ID has to be postive")
-            .get();
+        Long id = requirePathId(ctx, "id");
 
         UserDTO userDTO = userService.findById(id);
         ctx.status(200);
@@ -73,7 +104,7 @@ public class UserController implements IUserController
     public void create(Context ctx)
     {
         CreateUserRequestDTO dto = ctx.bodyValidator(CreateUserRequestDTO.class)
-            .check(u -> u != null, "Payload cant be null")
+            .check(Objects::nonNull, "Payload cant be null")
             .get();
 
         UserDTO userDTO = userService.registerUser(dto);
@@ -84,12 +115,34 @@ public class UserController implements IUserController
     @Override
     public void update(Context ctx)
     {
+        Long id = requirePathId(ctx, "id");
 
+        UpdateUserDTO dto = ctx.bodyValidator(UpdateUserDTO.class)
+            .check(Objects::nonNull, "Update payload cannot be null")
+            .get();
+
+        UserDTO userDTO = userService.update(id, dto);
+        ctx.status(200).json(userDTO);
     }
 
     @Override
     public void delete(Context ctx)
     {
+        Long requesterId = SecurityUtil.requireUserId(ctx);
 
+        Long targetUserId = ctx.pathParamAsClass("id", Long.class)
+            .check(i -> i > 0, "ID must be positive")
+            .get();
+
+        boolean deleted = userService.delete(requesterId, targetUserId);
+
+        ctx.status(deleted ? 204 : 404);
+    }
+
+    private Long requirePathId(Context ctx, String param)
+    {
+        return ctx.pathParamAsClass(param, Long.class)
+            .check(i -> i > 0, "ID must be positive")
+            .get();
     }
 }

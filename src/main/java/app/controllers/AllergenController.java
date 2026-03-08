@@ -76,7 +76,7 @@ public class AllergenController implements IAllergenController
         Long userId = SecurityUtil.requireUserId(ctx);
 
         boolean isDeleted = allergenService.deleteAllergen(allergenId, userId);
-        ctx.status(204).json(isDeleted);
+        ctx.status(isDeleted ? 204 : 404);
     }
 
     @Override

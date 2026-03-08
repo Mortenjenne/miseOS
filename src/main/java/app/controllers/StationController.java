@@ -53,7 +53,7 @@ public class StationController implements IStationController
         Long stationId = requirePathId(ctx);
 
         boolean isDeleted = stationService.deleteStation(userId, stationId);
-        ctx.status(204).json(isDeleted);
+        ctx.status(isDeleted ? 204 : 404);
     }
 
     @Override
