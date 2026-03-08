@@ -8,6 +8,7 @@ import app.utils.TransactionUtil;
 import jakarta.persistence.*;
 
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
 
@@ -27,8 +28,8 @@ public class AllergenDAO implements IAllergenDAO
 
         try(EntityManager em = emf.createEntityManager())
         {
-            Allergen allergen = em.createQuery("SELECT a FROM Allergen a WHERE a.nameDA = :nameDA", Allergen.class)
-                .setParameter("nameDA", nameDA)
+            Allergen allergen = em.createQuery("SELECT a FROM Allergen a WHERE a.nameDA ILIKE :nameDA", Allergen.class)
+                .setParameter("nameDA","%" + nameDA + "%")
                 .getResultStream()
                 .findFirst()
                 .orElse(null);
@@ -44,8 +45,8 @@ public class AllergenDAO implements IAllergenDAO
 
         try(EntityManager em = emf.createEntityManager())
         {
-            Allergen allergen = em.createQuery("SELECT a FROM Allergen a WHERE a.nameEN = :nameEN", Allergen.class)
-                .setParameter("nameEN", nameEN)
+            Allergen allergen = em.createQuery("SELECT a FROM Allergen a WHERE a.nameEN ILIKE :nameEN", Allergen.class)
+                .setParameter("nameEN","%" + nameEN + "%")
                 .getResultStream()
                 .findFirst()
                 .orElse(null);
@@ -132,7 +133,7 @@ public class AllergenDAO implements IAllergenDAO
         try(EntityManager em = emf.createEntityManager())
         {
             TypedQuery<Allergen> query = em.createQuery("SELECT a FROM Allergen a ORDER BY a.displayNumber ASC", Allergen.class);
-            return new HashSet<>(query.getResultList());
+            return new LinkedHashSet<>(query.getResultList());
         }
     }
 

@@ -16,6 +16,7 @@ import app.utils.ValidationUtil;
 import jakarta.persistence.EntityNotFoundException;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -128,7 +129,7 @@ public class AllergenService implements IAllergenService
     {
         return allergenDAO.getAll().stream()
             .map(AllergenMapper::toDTO)
-            .collect(Collectors.toSet());
+            .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     @Override

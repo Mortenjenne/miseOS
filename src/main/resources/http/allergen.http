@@ -7,7 +7,7 @@ GET {{local}}/allergens/15
 GET {{local}}/allergens
 
 ### GET by Name
-GET {{local}}/allergens/name/Hvidløg
+GET {{local}}/allergens/name/Sell
 
 ### POST create allergen
 POST {{local}}/allergens
