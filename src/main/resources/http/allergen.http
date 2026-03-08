@@ -1,4 +1,6 @@
+### Endpoint URIs
 @local = http://localhost:7070/api/v1
+@deployed = http://corral.dk/api/v1
 
 ### GET by ID
 GET {{local}}/allergens/15

@@ -9,15 +9,15 @@ import java.util.Set;
 
 public interface IDishSuggestionService
 {
-    DishSuggestionDTO submitSuggestion(Long creatorId, DishSuggestionCreateDTO dto);
+    DishSuggestionDTO createSuggestion(Long creatorId, DishSuggestionCreateDTO dto);
 
-    DishSuggestionDTO approveDish(Long dishId, Long approverId);
+    DishSuggestionDTO approveSuggestion(Long dishId, Long approverId);
 
-    DishSuggestionDTO rejectDish(Long dishId, Long approverId, String feedback);
+    DishSuggestionDTO rejectSuggestion(Long dishId, Long approverId, String feedback);
 
-    DishSuggestionDTO updateDish(Long editorId, Long suggestionId, DishSuggestionUpdateDTO dto);
+    DishSuggestionDTO updateSuggestion(Long editorId, Long suggestionId, DishSuggestionUpdateDTO dto);
 
-    boolean deleteDish(Long dishId, Long userId);
+    boolean deleteSuggestion(Long dishId, Long userId);
 
     DishSuggestionDTO getById(Long id);
 

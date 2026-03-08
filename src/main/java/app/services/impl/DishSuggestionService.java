@@ -34,7 +34,7 @@ public class DishSuggestionService implements IDishSuggestionService
     }
 
     @Override
-    public DishSuggestionDTO submitSuggestion(Long creatorId, DishSuggestionCreateDTO dto)
+    public DishSuggestionDTO createSuggestion(Long creatorId, DishSuggestionCreateDTO dto)
     {
         ValidationUtil.validateId(creatorId);
         validateCreateInput(dto);
@@ -62,7 +62,7 @@ public class DishSuggestionService implements IDishSuggestionService
     }
 
     @Override
-    public DishSuggestionDTO approveDish(Long dishId, Long approverId)
+    public DishSuggestionDTO approveSuggestion(Long dishId, Long approverId)
     {
         ValidationUtil.validateId(dishId);
         ValidationUtil.validateId(approverId);
@@ -89,7 +89,7 @@ public class DishSuggestionService implements IDishSuggestionService
     }
 
     @Override
-    public DishSuggestionDTO rejectDish(Long dishId, Long approverId, String feedback)
+    public DishSuggestionDTO rejectSuggestion(Long dishId, Long approverId, String feedback)
     {
         ValidationUtil.validateId(dishId);
         ValidationUtil.validateId(approverId);
@@ -106,7 +106,7 @@ public class DishSuggestionService implements IDishSuggestionService
     }
 
     @Override
-    public DishSuggestionDTO updateDish(Long editorId, Long suggestionId, DishSuggestionUpdateDTO dto)
+    public DishSuggestionDTO updateSuggestion(Long editorId, Long suggestionId, DishSuggestionUpdateDTO dto)
     {
         ValidationUtil.validateId(editorId);
         ValidationUtil.validateId(suggestionId);
@@ -129,7 +129,7 @@ public class DishSuggestionService implements IDishSuggestionService
     }
 
     @Override
-    public boolean deleteDish(Long dishId, Long userId)
+    public boolean deleteSuggestion(Long dishId, Long userId)
     {
         ValidationUtil.validateId(dishId);
         ValidationUtil.validateId(userId);

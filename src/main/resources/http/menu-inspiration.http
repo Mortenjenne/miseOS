@@ -1,5 +1,6 @@
-### Variable setup
+### Endpoint URIs
 @local = http://localhost:7070/api/v1
+@deployed = http://corral.dk/api/v1
 
 ### GET daily menu inspiration
 GET {{local}}/menu-inspirations/daily
