@@ -4,6 +4,7 @@ import app.controllers.ExceptionController;
 import app.controllers.IExceptionController;
 import app.routes.AllergenRoute;
 import app.routes.Routes;
+import app.routes.StationRoute;
 import app.routes.UserRoute;
 import io.javalin.Javalin;
 import org.slf4j.Logger;
@@ -35,7 +36,8 @@ public class ApplicationConfig
     {
         return new Routes(
             new AllergenRoute(di.getAllergenController()),
-            new UserRoute(di.getUserController())
+            new UserRoute(di.getUserController()),
+            new StationRoute(di.getStationController())
         );
     }
 }

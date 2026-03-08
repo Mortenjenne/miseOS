@@ -1,9 +1,6 @@
 package app.config;
 
-import app.controllers.AllergenController;
-import app.controllers.IAllergenController;
-import app.controllers.IUserController;
-import app.controllers.UserController;
+import app.controllers.*;
 import app.integrations.ai.GeminiClient;
 import app.integrations.ai.IAiClient;
 import app.integrations.translation.DeepLTranslationClient;
@@ -51,14 +48,19 @@ public final class DIContainer
 
     @Getter
     private final IAllergenController allergenController;
-    //private final IDishController dishController;
-    //private final IDishSuggestionController dishSuggestionController;
+
+    @Getter
+    private final IStationController stationController;
+
     @Getter
     private final IUserController userController;
+
+    //private final IDishController dishController;
+    //private final IDishSuggestionController dishSuggestionController;
     //private final IWeeklyMenuController weeklyMenuController;
     //private final IIngredientRequestController ingredientRequestController;
     //private final IShoppingListController shoppingListController;
-    //private final IStationController stationController;
+
 
     @Getter
     private static final DIContainer instance = new DIContainer();
@@ -94,12 +96,13 @@ public final class DIContainer
         this.shoppingListService = new ShoppingListService(shoppingListDAO, ingredientRequestDAO, userDAO, aiService);
 
         this.allergenController = new AllergenController(allergenService);
+        this.stationController = new StationController(stationService);
+        this.userController = new UserController(userService);
+
 //        this.dishController = new DishController(dishService);
 //        this.dishSuggestionController = new DishSuggestionController(dishSuggestionService);
-        this.userController = new UserController(userService);
 //        this.weeklyMenuController = new WeeklyMenuController(weeklyMenuService);
 //        this.ingredientRequestController = new IngredientRequestController(ingredientRequestService);
 //        this.shoppingListController = new ShoppingListController(shoppingListService);
-//        this.stationController = new StationController(stationService);
     }
 }

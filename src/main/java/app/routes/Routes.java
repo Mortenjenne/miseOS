@@ -10,11 +10,13 @@ public class Routes
 {
     private final AllergenRoute allergenRoute;
     private final UserRoute userRoute;
+    private final StationRoute stationRoute;
 
-    public Routes(AllergenRoute allergenRoute, UserRoute userRoute)
+    public Routes(AllergenRoute allergenRoute, UserRoute userRoute, StationRoute stationRoute)
     {
         this.allergenRoute = allergenRoute;
         this.userRoute = userRoute;
+        this.stationRoute = stationRoute;
     }
 
     public EndpointGroup getRoutes()
@@ -24,6 +26,7 @@ public class Routes
             get("/", ctx -> ctx.result("Welcome to miseOS!"));
             allergenRoute.getRoutes().addEndpoints();
             userRoute.getRoutes().addEndpoints();
+            stationRoute.getRoutes().addEndpoints();
         };
     }
 }
