@@ -7,7 +7,7 @@ import java.util.Set;
 
 public interface IStationService
 {
-    StationDTO registerStation(Long creatorID, StationRequestDTO dto);
+    StationDTO createStation(Long creatorID, StationRequestDTO dto);
 
     StationDTO updateStation(Long editorId, Long stationId, StationRequestDTO dto);
 

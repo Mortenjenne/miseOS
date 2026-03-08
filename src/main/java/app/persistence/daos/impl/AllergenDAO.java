@@ -131,7 +131,7 @@ public class AllergenDAO implements IAllergenDAO
     {
         try(EntityManager em = emf.createEntityManager())
         {
-            TypedQuery<Allergen> query = em.createQuery("SELECT a FROM Allergen a", Allergen.class);
+            TypedQuery<Allergen> query = em.createQuery("SELECT a FROM Allergen a ORDER BY a.displayNumber ASC", Allergen.class);
             return new HashSet<>(query.getResultList());
         }
     }

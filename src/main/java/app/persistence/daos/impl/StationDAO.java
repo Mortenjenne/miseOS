@@ -47,7 +47,7 @@ public class StationDAO implements IStationDAO
     {
         try(EntityManager em = emf.createEntityManager())
         {
-            TypedQuery<Station> query = em.createQuery("SELECT s FROM Station s", Station.class);
+            TypedQuery<Station> query = em.createQuery("SELECT s FROM Station s ORDER BY s.stationName ASC", Station.class);
             return new HashSet<>(query.getResultList());
         }
     }
@@ -137,6 +137,31 @@ public class StationDAO implements IStationDAO
                 .orElse(null);
 
             return Optional.ofNullable(station);
+        }
+    }
+
+    @Override
+    public boolean isUsedByAnyDish(Long stationId)
+    {
+        DBValidator.validateId(stationId);
+
+        try (EntityManager em = emf.createEntityManager())
+        {
+            Long dishCount = em.createQuery(
+                    "SELECT COUNT(d) FROM Dish d JOIN d.station s WHERE s.id = :stationId",
+                    Long.class
+                )
+                .setParameter("stationId", stationId)
+                .getSingleResult();
+
+            Long suggestionCount = em.createQuery(
+                    "SELECT COUNT(s) FROM DishSuggestion d JOIN d.station s WHERE s.id = :stationId",
+                    Long.class
+                )
+                .setParameter("stationId", stationId)
+                .getSingleResult();
+
+            return (dishCount + suggestionCount) > 0;
         }
     }
 }

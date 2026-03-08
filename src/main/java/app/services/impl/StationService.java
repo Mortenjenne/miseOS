@@ -29,7 +29,7 @@ public class StationService implements IStationService
     }
 
     @Override
-    public StationDTO registerStation(Long creatorID, StationRequestDTO dto)
+    public StationDTO createStation(Long creatorID, StationRequestDTO dto)
     {
         ValidationUtil.validateId(creatorID);
         validateInput(dto);
@@ -55,7 +55,7 @@ public class StationService implements IStationService
         Station station = stationDAO.getByID(stationId);
         requireChef(editor);
 
-        if (!station.getStationName().equals(dto.name()))
+        if (!station.getStationName().equalsIgnoreCase(dto.name()))
         {
             validateStationNameUnique(dto.name());
         }
@@ -74,6 +74,13 @@ public class StationService implements IStationService
     {
         ValidationUtil.validateId(stationId);
         ValidationUtil.validateId(userId);
+
+        boolean isStationUsed = stationDAO.isUsedByAnyDish(stationId);
+
+        if (isStationUsed)
+        {
+            throw new ValidationException("Cannot delete station, it is currently assigned to one or more dishes");
+        }
 
         Station station = stationDAO.getByID(stationId);
         User user = userReader.getByID(userId);
