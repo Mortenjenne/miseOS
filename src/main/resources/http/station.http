@@ -1,0 +1,50 @@
+### Variable setup
+@local = http://localhost:7070/api/v1
+
+### Create Cold Section
+POST {{local}}/stations/
+Content-Type: application/json
+
+{
+    "name": "Cold Section",
+    "description": "Handles small starters, charcuterie, and breakfast items."
+}
+
+### Create Hot Station
+POST {{local}}/stations/
+Content-Type: application/json
+
+{
+    "name": "Hot Station",
+    "description": "Handles vegetarian options, meat options, business lunch and hot buffet food."
+}
+
+### Create Sandwich Station
+POST {{local}}/stations/
+Content-Type: application/json
+
+{
+    "name": "Sandwich Station",
+    "description": "Handles open sandwiches (smørrebrød) and traditional sandwiches."
+}
+
+### Get all stations
+GET {{local}}/stations/
+
+### Get by ID (Station 1)
+GET {{local}}/stations/1
+
+### Get station by Name (Hot)
+GET {{local}}/stations/name/Hot%20Station
+
+### Update Hot Station
+PUT {{local}}/stations/2
+Content-Type: application/json
+
+{
+    "name": "Hot Station & Buffet",
+    "description": "Responsible for vegetarian, meat-based, test: (Updated)"
+}
+
+### Delete a station (by ID)
+DELETE {{local}}/stations/1

@@ -22,7 +22,7 @@ public class AllergenController implements IAllergenController
     @Override
     public void getById(Context ctx)
     {
-        Long id = requirePathId(ctx, "id");
+        Long id = requirePathId(ctx);
         ctx.status(200).json(allergenService.getAllergenById(id));
     }
 
@@ -53,7 +53,7 @@ public class AllergenController implements IAllergenController
     @Override
     public void update(Context ctx)
     {
-        Long allergenId = requirePathId(ctx, "id");
+        Long allergenId = requirePathId(ctx);
         Long userId = SecurityUtil.requireUserId(ctx);
 
         AllergenUpdateRequestDTO dto = ctx.bodyValidator(AllergenUpdateRequestDTO.class)
@@ -72,7 +72,7 @@ public class AllergenController implements IAllergenController
     @Override
     public void delete(Context ctx)
     {
-        Long allergenId = requirePathId(ctx, "id");
+        Long allergenId = requirePathId(ctx);
         Long userId = SecurityUtil.requireUserId(ctx);
 
         boolean isDeleted = allergenService.deleteAllergen(allergenId, userId);
@@ -95,9 +95,9 @@ public class AllergenController implements IAllergenController
         ctx.status(201).json(allergens);
     }
 
-    private Long requirePathId(Context ctx, String param)
+    private Long requirePathId(Context ctx)
     {
-        return ctx.pathParamAsClass(param, Long.class)
+        return ctx.pathParamAsClass("id", Long.class)
             .check(i -> i > 0, "ID must be positive")
             .get();
     }

@@ -8,6 +8,7 @@ import app.utils.TransactionUtil;
 import jakarta.persistence.*;
 
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
 
@@ -48,7 +49,7 @@ public class StationDAO implements IStationDAO
         try(EntityManager em = emf.createEntityManager())
         {
             TypedQuery<Station> query = em.createQuery("SELECT s FROM Station s ORDER BY s.stationName ASC", Station.class);
-            return new HashSet<>(query.getResultList());
+            return new LinkedHashSet<>(query.getResultList());
         }
     }
 
@@ -130,8 +131,8 @@ public class StationDAO implements IStationDAO
 
         try(EntityManager em = emf.createEntityManager())
         {
-            Station station = em.createQuery("SELECT st FROM Station st WHERE st.stationName = :name", Station.class)
-                .setParameter("name", name)
+            Station station = em.createQuery("SELECT st FROM Station st WHERE st.stationName ILIKE :name", Station.class)
+                .setParameter("name", "%" + name + "%")
                 .getResultStream()
                 .findFirst()
                 .orElse(null);
