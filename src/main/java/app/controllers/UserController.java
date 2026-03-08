@@ -3,6 +3,7 @@ package app.controllers;
 import app.dtos.user.CreateUserRequestDTO;
 import app.dtos.user.UserDTO;
 import app.services.IUserService;
+import app.utils.SecurityUtil;
 import io.javalin.http.Context;
 
 public class UserController implements IUserController
@@ -38,10 +39,15 @@ public class UserController implements IUserController
 
     }
 
+    //FIX Hardcoding
     @Override
     public void assignToStation(Context ctx)
     {
-
+        Long requesterId = SecurityUtil.requireUserId(ctx);
+        Long targetUserId = 1L; //FIX HARDCODING
+        Long stationId = 1L; //FIX HARDCODING
+        UserDTO userDTO = userService.assignToStation(requesterId, targetUserId, stationId);
+        ctx.status(200).json(userDTO);
     }
 
     @Override

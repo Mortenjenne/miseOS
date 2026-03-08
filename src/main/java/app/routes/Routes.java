@@ -11,12 +11,14 @@ public class Routes
     private final AllergenRoute allergenRoute;
     private final UserRoute userRoute;
     private final StationRoute stationRoute;
+    private final MenuInspirationRoute menuInspirationRoute;
 
-    public Routes(AllergenRoute allergenRoute, UserRoute userRoute, StationRoute stationRoute)
+    public Routes(AllergenRoute allergenRoute, UserRoute userRoute, StationRoute stationRoute, MenuInspirationRoute menuInspirationRoute)
     {
         this.allergenRoute = allergenRoute;
         this.userRoute = userRoute;
         this.stationRoute = stationRoute;
+        this.menuInspirationRoute = menuInspirationRoute;
     }
 
     public EndpointGroup getRoutes()
@@ -27,6 +29,7 @@ public class Routes
             allergenRoute.getRoutes().addEndpoints();
             userRoute.getRoutes().addEndpoints();
             stationRoute.getRoutes().addEndpoints();
+            menuInspirationRoute.getRoutes().addEndpoints();
         };
     }
 }

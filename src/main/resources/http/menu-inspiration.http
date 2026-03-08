@@ -1,0 +1,7 @@
+### Variable setup
+@local = http://localhost:7070/api/v1
+
+### GET daily menu inspiration
+GET {{local}}/menu-inspirations/daily
+
+###

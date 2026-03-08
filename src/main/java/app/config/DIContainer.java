@@ -45,6 +45,7 @@ public final class DIContainer
     private final IStationService stationService;
     private final IAiService aiService;
     private final IDishTranslationService dishTranslationService;
+    private final IMenuInspirationService menuInspirationService;
 
     @Getter
     private final IAllergenController allergenController;
@@ -54,6 +55,9 @@ public final class DIContainer
 
     @Getter
     private final IUserController userController;
+
+    @Getter
+    private final IMenuInspirationController menuInspirationController;
 
     //private final IDishController dishController;
     //private final IDishSuggestionController dishSuggestionController;
@@ -94,10 +98,12 @@ public final class DIContainer
         this.weeklyMenuService = new WeeklyMenuService(weeklyMenuDAO, dishDAO, userDAO, stationDAO, dishTranslationService);
         this.ingredientRequestService = new IngredientRequestService(ingredientRequestDAO, dishDAO, userDAO);
         this.shoppingListService = new ShoppingListService(shoppingListDAO, ingredientRequestDAO, userDAO, aiService);
+        this.menuInspirationService = new MenuInspirationService(aiService, userDAO, weatherClient);
 
         this.allergenController = new AllergenController(allergenService);
         this.stationController = new StationController(stationService);
         this.userController = new UserController(userService);
+        this.menuInspirationController = new MenuInspirationController(menuInspirationService);
 
 //        this.dishController = new DishController(dishService);
 //        this.dishSuggestionController = new DishSuggestionController(dishSuggestionService);

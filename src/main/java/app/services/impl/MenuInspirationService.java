@@ -1,4 +1,4 @@
-package app.services;
+package app.services.impl;
 
 import app.dtos.gemini.AiDishSuggestionDTO;
 import app.dtos.station.StationDTO;
@@ -9,11 +9,13 @@ import app.mappers.StationMapper;
 import app.persistence.daos.interfaces.IUserReader;
 import app.persistence.entities.Station;
 import app.persistence.entities.User;
+import app.services.IAiService;
+import app.services.IMenuInspirationService;
 import app.utils.ValidationUtil;
 
 import java.util.List;
 
-public class MenuInspirationService
+public class MenuInspirationService implements IMenuInspirationService
 {
     private final IAiService aiService;
     private final IUserReader userReader;
