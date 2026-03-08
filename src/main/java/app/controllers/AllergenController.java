@@ -4,6 +4,7 @@ import app.dtos.allergen.AllergenCreateRequestDTO;
 import app.dtos.allergen.AllergenDTO;
 import app.dtos.allergen.AllergenUpdateRequestDTO;
 import app.services.IAllergenService;
+import app.utils.SecurityUtil;
 import io.javalin.http.Context;
 
 import java.util.List;
@@ -34,7 +35,7 @@ public class AllergenController implements IAllergenController
     @Override
     public void create(Context ctx)
     {
-        Long userId = requireUserId(ctx);
+        Long userId = SecurityUtil.requireUserId(ctx);
 
         AllergenCreateRequestDTO dto = ctx.bodyValidator(AllergenCreateRequestDTO.class)
             .check(Objects::nonNull, "Request body cant be null")
@@ -53,7 +54,7 @@ public class AllergenController implements IAllergenController
     public void update(Context ctx)
     {
         Long allergenId = requirePathId(ctx, "id");
-        Long userId = requireUserId(ctx);
+        Long userId = SecurityUtil.requireUserId(ctx);
 
         AllergenUpdateRequestDTO dto = ctx.bodyValidator(AllergenUpdateRequestDTO.class)
         .check(Objects::nonNull, "Request body cant be null")
@@ -72,7 +73,7 @@ public class AllergenController implements IAllergenController
     public void delete(Context ctx)
     {
         Long allergenId = requirePathId(ctx, "id");
-        Long userId = requireUserId(ctx);
+        Long userId = SecurityUtil.requireUserId(ctx);
 
         boolean isDeleted = allergenService.deleteAllergen(allergenId, userId);
         ctx.status(204).json(isDeleted);
@@ -89,7 +90,7 @@ public class AllergenController implements IAllergenController
     @Override
     public void seedEUAllergens(Context ctx)
     {
-        Long userId = requireUserId(ctx);
+        Long userId = SecurityUtil.requireUserId(ctx);
         List<AllergenDTO> allergens = allergenService.seedEUAllergens(userId);
         ctx.status(201).json(allergens);
     }
@@ -99,17 +100,5 @@ public class AllergenController implements IAllergenController
         return ctx.pathParamAsClass(param, Long.class)
             .check(i -> i > 0, "ID must be positive")
             .get();
-    }
-
-    //TODO REMOVE when JWT is implemented
-    private Long requireUserId(Context ctx)
-    {
-        Long userId = ctx.attribute("userId");
-
-        if (userId == null)
-        {
-            userId = 1L;
-        }
-        return userId;
     }
 }
