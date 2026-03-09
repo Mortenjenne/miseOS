@@ -5,7 +5,6 @@ import app.dtos.dishsuggestion.DishSuggestionDTO;
 import app.dtos.station.StationReferenceDTO;
 import app.dtos.user.UserReferenceDTO;
 import app.persistence.entities.DishSuggestion;
-import app.persistence.entities.User;
 
 import java.util.List;
 
