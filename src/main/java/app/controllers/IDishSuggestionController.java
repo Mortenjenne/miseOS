@@ -2,7 +2,7 @@ package app.controllers;
 
 import io.javalin.http.Context;
 
-public interface IDishSuggestionController extends IController
+public interface IDishSuggestionController extends ICrudController
 {
     void approveSuggestion(Context ctx);
 

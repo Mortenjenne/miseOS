@@ -29,7 +29,7 @@ public class ServerConfig
 
     public Javalin create()
     {
-        Javalin app = Javalin.create(config ->
+        return Javalin.create(config ->
         {
             config.startup.showJavalinBanner = false;
             config.router.contextPath = "/api/v1";
@@ -38,7 +38,6 @@ public class ServerConfig
             configureMiddleWare(config);
             configureExceptions(config);
         });
-        return app;
     }
 
     private void configureMiddleWare(JavalinConfig config)

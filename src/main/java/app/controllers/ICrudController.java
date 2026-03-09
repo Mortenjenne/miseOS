@@ -2,7 +2,7 @@ package app.controllers;
 
 import io.javalin.http.Context;
 
-public interface IController
+public interface ICrudController
 {
     void getById(Context ctx);
     void getAll(Context ctx);

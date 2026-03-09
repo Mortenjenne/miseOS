@@ -2,7 +2,7 @@ package app.controllers;
 
 import io.javalin.http.Context;
 
-public interface IUserController extends IController
+public interface IUserController extends ICrudController
 {
     void login(Context ctx);
 

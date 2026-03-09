@@ -1,10 +1,8 @@
 package app.routes;
 
-import app.persistence.entities.Allergen;
 import io.javalin.apibuilder.EndpointGroup;
 
 import static io.javalin.apibuilder.ApiBuilder.get;
-import static io.javalin.apibuilder.ApiBuilder.path;
 
 public class Routes
 {
