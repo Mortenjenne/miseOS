@@ -4,13 +4,10 @@ import app.dtos.allergen.AllergenDTO;
 import app.dtos.dishsuggestion.DishSuggestionDTO;
 import app.dtos.station.StationReferenceDTO;
 import app.dtos.user.UserReferenceDTO;
-import app.persistence.entities.Allergen;
 import app.persistence.entities.DishSuggestion;
+import app.persistence.entities.User;
 
-import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class DishSuggestionMapper
 {
@@ -24,23 +21,9 @@ public class DishSuggestionMapper
             .map(AllergenMapper::toDTO)
             .toList();
 
-        StationReferenceDTO station = new StationReferenceDTO(
-            suggestion.getStation().getId(),
-            suggestion.getStation().getStationName()
-        );
-
-        UserReferenceDTO createdBy = new UserReferenceDTO(
-            suggestion.getCreatedBy().getId(),
-            suggestion.getCreatedBy().getFirstName(),
-            suggestion.getCreatedBy().getLastName()
-        );
-
-        UserReferenceDTO reviewedBy = suggestion.getReviewedBy() != null
-            ? new UserReferenceDTO(
-            suggestion.getReviewedBy().getId(),
-            suggestion.getReviewedBy().getFirstName(),
-            suggestion.getReviewedBy().getLastName())
-            : null;
+        StationReferenceDTO station = StationMapper.toReferenceDTO(suggestion.getStation());
+        UserReferenceDTO createdBy = UserMapper.toReferenceDTO(suggestion.getCreatedBy());
+        UserReferenceDTO reviewedBy = UserMapper.toReferenceDTO(suggestion.getReviewedBy());
 
         return new DishSuggestionDTO(
             suggestion.getId(),
