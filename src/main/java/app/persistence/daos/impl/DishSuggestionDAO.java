@@ -95,10 +95,10 @@ public class DishSuggestionDAO implements IDishSuggestionDAO
         {
             try
             {
-            em.getTransaction().begin();
-            em.persist(dishSuggestion);
-            em.getTransaction().commit();
-            return getByID(dishSuggestion.getId());
+                em.getTransaction().begin();
+                em.persist(dishSuggestion);
+                em.getTransaction().commit();
+                return getByID(dishSuggestion.getId());
             }
             catch (PersistenceException e)
             {
@@ -115,8 +115,8 @@ public class DishSuggestionDAO implements IDishSuggestionDAO
         {
             try
             {
-            TypedQuery<DishSuggestion> query = em.createQuery("SELECT DISTINCT ds FROM DishSuggestion ds LEFT JOIN FETCH ds.allergens", DishSuggestion.class);
-            return new LinkedHashSet<>(query.getResultList());
+                TypedQuery<DishSuggestion> query = em.createQuery("SELECT DISTINCT ds FROM DishSuggestion ds LEFT JOIN FETCH ds.allergens", DishSuggestion.class);
+                return new LinkedHashSet<>(query.getResultList());
             }
             catch (PersistenceException e)
             {
