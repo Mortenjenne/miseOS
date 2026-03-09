@@ -3,6 +3,7 @@ package app.controllers;
 import app.dtos.user.*;
 import app.enums.UserRole;
 import app.services.IUserService;
+import app.utils.RequestUtil;
 import app.utils.SecurityUtil;
 import io.javalin.http.Context;
 
@@ -33,7 +34,7 @@ public class UserController implements IUserController
     public void changeRole(Context ctx)
     {
         Long requesterId = SecurityUtil.requireUserId(ctx);
-        Long targetUserId = requirePathId(ctx, "id");
+        Long targetUserId = RequestUtil.requirePathId(ctx, "id");
 
         UserRole role = ctx.bodyAsClass(UserRole.class);
         UserDTO userDTO = userService.changeRole(requesterId, targetUserId, role);
@@ -76,8 +77,8 @@ public class UserController implements IUserController
     public void assignToStation(Context ctx)
     {
         Long requesterId = SecurityUtil.requireUserId(ctx);
-        Long targetUserId = requirePathId(ctx, "id");
-        Long stationId = requirePathId(ctx, "stationId");
+        Long targetUserId = RequestUtil.requirePathId(ctx, "id");
+        Long stationId = RequestUtil.requirePathId(ctx, "stationId");
 
         UserDTO userDTO = userService.assignToStation(requesterId, targetUserId, stationId);
         ctx.status(200).json(userDTO);
@@ -86,7 +87,7 @@ public class UserController implements IUserController
     @Override
     public void getById(Context ctx)
     {
-        Long id = requirePathId(ctx, "id");
+        Long id = RequestUtil.requirePathId(ctx, "id");
 
         UserDTO userDTO = userService.findById(id);
         ctx.status(200);
@@ -115,7 +116,7 @@ public class UserController implements IUserController
     @Override
     public void update(Context ctx)
     {
-        Long id = requirePathId(ctx, "id");
+        Long id = RequestUtil.requirePathId(ctx, "id");
 
         UpdateUserDTO dto = ctx.bodyValidator(UpdateUserDTO.class)
             .check(Objects::nonNull, "Update payload cannot be null")
@@ -137,12 +138,5 @@ public class UserController implements IUserController
         boolean deleted = userService.delete(requesterId, targetUserId);
 
         ctx.status(deleted ? 204 : 404);
-    }
-
-    private Long requirePathId(Context ctx, String param)
-    {
-        return ctx.pathParamAsClass(param, Long.class)
-            .check(i -> i > 0, "ID must be positive")
-            .get();
     }
 }
