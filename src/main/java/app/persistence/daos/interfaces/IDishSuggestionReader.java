@@ -6,5 +6,4 @@ import java.util.Optional;
 
 public interface IDishSuggestionReader extends IEntityReader<DishSuggestion, Long>
 {
-    Optional<DishSuggestion> getByIdWithAllergens(Long id);
 }

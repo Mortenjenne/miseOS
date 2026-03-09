@@ -1,0 +1,136 @@
+### Endpoint URIs
+@local = http://localhost:7070/api/v1
+@deployed = http://corral.dk/api/v1
+
+### GET by ID
+GET {{local}}/dish-suggestions/1
+
+### GET all - no filters
+GET {{local}}/dish-suggestions
+
+### GET all - status PENDING
+GET {{local}}/dish-suggestions?status=PENDING
+
+### GET all - status APPROVED
+GET {{local}}/dish-suggestions?status=APPROVED
+
+### GET all - status REJECTED
+GET {{local}}/dish-suggestions?status=REJECTED
+
+### GET all - invalid status → 400
+GET {{local}}/dish-suggestions?status=INVALID
+
+### GET all - week + year
+GET {{local}}/dish-suggestions?week=12&year=2026
+
+### GET all - week + year + status PENDING
+GET {{local}}/dish-suggestions?week=12&year=2026&status=PENDING
+
+### GET all - week + year + status APPROVED
+GET {{local}}/dish-suggestions?week=12&year=2026&status=APPROVED
+
+### GET all - week without year → 400 (must come together)
+GET {{local}}/dish-suggestions?week=10
+
+### GET all - year without week → 400 (must come together)
+GET {{local}}/dish-suggestions?year=2026
+
+### GET all - week out of range → 400
+GET {{local}}/dish-suggestions?week=99&year=2026
+
+### GET all - year out of range → 400
+GET {{local}}/dish-suggestions?week=10&year=1800
+
+### GET all - stationId filter
+GET {{local}}/dish-suggestions?stationId=1
+
+### GET all - stationId + status PENDING
+GET {{local}}/dish-suggestions?stationId=1&status=PENDING
+
+### GET all - full filter: status + week + year + stationId + orderBy
+GET {{local}}/dish-suggestions?status=APPROVED&week=12&year=2026&stationId=1&orderBy=status
+
+### GET all - orderBy station
+GET {{local}}/dish-suggestions?orderBy=station
+
+### GET all - orderBy unknown value → falls back to default order (no error)
+GET {{local}}/dish-suggestions?orderBy=invalid_column
+
+### GET current week - all statuses
+GET {{local}}/dish-suggestions/current-week
+
+### GET current week - PENDING only
+GET {{local}}/dish-suggestions/current-week?status=PENDING
+
+### GET current week - APPROVED only
+GET {{local}}/dish-suggestions/current-week?status=APPROVED
+
+### POST create suggestion
+POST {{local}}/dish-suggestions/
+Content-Type: application/json
+
+{
+    "nameDA": "Laks med beurre blanc",
+    "descriptionDA": "Færøsk laks bagt med fransk smør sauce",
+    "stationId": 1,
+    "allergenIds": [1, 4],
+    "targetWeek": 12,
+    "targetYear": 2026
+}
+
+### POST create suggestion (Butter chicken)
+POST {{local}}/dish-suggestions
+Content-Type: application/json
+
+{
+    "nameDA": "Butter Chicken",
+    "descriptionDA": "Marineret kylling i cremet og aromatisk curry-sauce med stegte blomkål og ris",
+    "stationId": 1,
+    "allergenIds": [1, 2, 3, 4, 5],
+    "targetWeek": 12,
+    "targetYear": 2026
+}
+
+### PUT update suggestion
+PUT {{local}}/dish-suggestions/1
+Content-Type: application/json
+
+{
+    "nameDA": "Laks med citron og kapers",
+    "descriptionDA": "Frisk laks med citron, dild og kapers",
+    "allergenIds": [1, 2, 4]
+}
+
+### PUT update suggestion allergens
+PUT {{local}}/dish-suggestions/1
+Content-Type: application/json
+
+{
+    "nameDA": "Laks med citron og kapers",
+    "descriptionDA": "Frisk laks med citron, dild og kapers",
+    "allergenIds": []
+}
+
+### PATCH approve suggestion
+PATCH {{local}}/dish-suggestions/1/approve
+
+
+### PATCH reject suggestion
+PATCH {{local}}/dish-suggestions/2/reject
+Content-Type: application/json
+
+{
+    "feedback": "Retten passer ikke til menuen - for tung til forår"
+}
+
+
+### PATCH reject - blank feedback
+PATCH {{local}}/dish-suggestions/2/reject
+Content-Type: application/json
+
+{
+    "feedback": ""
+}
+
+### DELETE - Delete suggestions
+DELETE {{local}}/dish-suggestions/3

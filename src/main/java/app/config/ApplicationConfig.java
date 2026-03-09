@@ -35,7 +35,8 @@ public class ApplicationConfig
             new AllergenRoute(di.getAllergenController()),
             new UserRoute(di.getUserController()),
             new StationRoute(di.getStationController()),
-            new MenuInspirationRoute(di.getMenuInspirationController())
+            new MenuInspirationRoute(di.getMenuInspirationController()),
+            new DishSuggestionRoute(di.getDishSuggestionController())
         );
     }
 }

@@ -1,9 +1,14 @@
 package app.mappers;
 
+import app.dtos.allergen.AllergenDTO;
 import app.dtos.dishsuggestion.DishSuggestionDTO;
+import app.dtos.station.StationReferenceDTO;
+import app.dtos.user.UserReferenceDTO;
 import app.persistence.entities.Allergen;
 import app.persistence.entities.DishSuggestion;
 
+import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -14,11 +19,28 @@ public class DishSuggestionMapper
 
     public static DishSuggestionDTO toDTO(DishSuggestion suggestion)
     {
-        Set<String> allergenNames = suggestion.getAllergens().stream()
-            .map(Allergen::getNameDA)
-            .collect(Collectors.toSet());
+        List<AllergenDTO> allergens = suggestion.getAllergens()
+            .stream()
+            .map(AllergenMapper::toDTO)
+            .toList();
 
-        String chefName = suggestion.getCreatedBy().getFirstName() + " " + suggestion.getCreatedBy().getLastName();
+        StationReferenceDTO station = new StationReferenceDTO(
+            suggestion.getStation().getId(),
+            suggestion.getStation().getStationName()
+        );
+
+        UserReferenceDTO createdBy = new UserReferenceDTO(
+            suggestion.getCreatedBy().getId(),
+            suggestion.getCreatedBy().getFirstName(),
+            suggestion.getCreatedBy().getLastName()
+        );
+
+        UserReferenceDTO reviewedBy = suggestion.getReviewedBy() != null
+            ? new UserReferenceDTO(
+            suggestion.getReviewedBy().getId(),
+            suggestion.getReviewedBy().getFirstName(),
+            suggestion.getReviewedBy().getLastName())
+            : null;
 
         return new DishSuggestionDTO(
             suggestion.getId(),
@@ -26,11 +48,14 @@ public class DishSuggestionMapper
             suggestion.getDescriptionDA(),
             suggestion.getDishStatus(),
             suggestion.getFeedback(),
-            suggestion.getStation().getStationName(),
-            chefName,
-            allergenNames,
+            station,
+            createdBy,
+            reviewedBy,
+            suggestion.getReviewedAt(),
+            allergens,
             suggestion.getTargetWeek(),
-            suggestion.getTargetYear()
+            suggestion.getTargetYear(),
+            suggestion.getCreatedAt()
         );
     }
 }

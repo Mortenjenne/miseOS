@@ -1,7 +1,13 @@
 package app.dtos.dishsuggestion;
 
+import app.dtos.allergen.AllergenDTO;
+import app.dtos.station.StationReferenceDTO;
+import app.dtos.user.UserReferenceDTO;
 import app.enums.Status;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 public record DishSuggestionDTO(
@@ -10,10 +16,15 @@ public record DishSuggestionDTO(
     String descriptionDA,
     Status dishStatus,
     String feedback,
-    String stationName,
-    String createdByUsername,
-    Set<String> allergenNames,
+    StationReferenceDTO station,
+    UserReferenceDTO createdBy,
+    UserReferenceDTO reviewedBy,
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
+    LocalDateTime reviewedAt,
+    List<AllergenDTO> allergens,
     Integer targetWeek,
-    Integer targetYear
+    Integer targetYear,
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
+    LocalDateTime createdAt
 )
 {}
