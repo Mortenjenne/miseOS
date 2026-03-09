@@ -4,6 +4,7 @@ import app.dtos.allergen.AllergenCreateRequestDTO;
 import app.dtos.allergen.AllergenDTO;
 import app.dtos.allergen.AllergenUpdateRequestDTO;
 import app.services.IAllergenService;
+import app.utils.RequestUtil;
 import app.utils.SecurityUtil;
 import io.javalin.http.Context;
 
@@ -22,7 +23,7 @@ public class AllergenController implements IAllergenController
     @Override
     public void getById(Context ctx)
     {
-        Long id = requirePathId(ctx);
+        Long id = RequestUtil.requirePathId(ctx, "id");
         ctx.status(200).json(allergenService.getAllergenById(id));
     }
 
@@ -53,7 +54,7 @@ public class AllergenController implements IAllergenController
     @Override
     public void update(Context ctx)
     {
-        Long allergenId = requirePathId(ctx);
+        Long allergenId = RequestUtil.requirePathId(ctx, "id");
         Long userId = SecurityUtil.requireUserId(ctx);
 
         AllergenUpdateRequestDTO dto = ctx.bodyValidator(AllergenUpdateRequestDTO.class)
@@ -72,7 +73,7 @@ public class AllergenController implements IAllergenController
     @Override
     public void delete(Context ctx)
     {
-        Long allergenId = requirePathId(ctx);
+        Long allergenId = RequestUtil.requirePathId(ctx, "id");
         Long userId = SecurityUtil.requireUserId(ctx);
 
         boolean isDeleted = allergenService.deleteAllergen(allergenId, userId);
@@ -93,12 +94,5 @@ public class AllergenController implements IAllergenController
         Long userId = SecurityUtil.requireUserId(ctx);
         List<AllergenDTO> allergens = allergenService.seedEUAllergens(userId);
         ctx.status(201).json(allergens);
-    }
-
-    private Long requirePathId(Context ctx)
-    {
-        return ctx.pathParamAsClass("id", Long.class)
-            .check(i -> i > 0, "ID must be positive")
-            .get();
     }
 }

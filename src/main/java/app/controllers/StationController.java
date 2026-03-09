@@ -3,6 +3,7 @@ package app.controllers;
 import app.dtos.station.StationDTO;
 import app.dtos.station.StationRequestDTO;
 import app.services.IStationService;
+import app.utils.RequestUtil;
 import app.utils.SecurityUtil;
 import io.javalin.http.Context;
 
@@ -35,7 +36,7 @@ public class StationController implements IStationController
     public void update(Context ctx)
     {
         Long userId = SecurityUtil.requireUserId(ctx);
-        Long stationId = requirePathId(ctx);
+        Long stationId = RequestUtil.requirePathId(ctx,"id");
 
         StationRequestDTO dto = ctx.bodyValidator(StationRequestDTO.class)
             .check(s -> s.name() != null && !s.name().isBlank(), "Station name is required")
@@ -50,7 +51,7 @@ public class StationController implements IStationController
     public void delete(Context ctx)
     {
         Long userId = SecurityUtil.requireUserId(ctx);
-        Long stationId = requirePathId(ctx);
+        Long stationId = RequestUtil.requirePathId(ctx,"id");
 
         boolean isDeleted = stationService.deleteStation(userId, stationId);
         ctx.status(isDeleted ? 204 : 404);
@@ -59,7 +60,7 @@ public class StationController implements IStationController
     @Override
     public void getById(Context ctx)
     {
-        Long stationId = requirePathId(ctx);
+        Long stationId = RequestUtil.requirePathId(ctx, "id");
         StationDTO stationDTO = stationService.getStationById(stationId);
 
         ctx.status(200).json(stationDTO);
@@ -75,15 +76,8 @@ public class StationController implements IStationController
     @Override
     public void getByName(Context ctx)
     {
-        String nameQuery = ctx.pathParam("name");
+        String nameQuery = RequestUtil.requirePathString(ctx, "name");
         StationDTO stationDTO = stationService.getStationByName(nameQuery);
         ctx.status(200).json(stationDTO);
-    }
-
-    private Long requirePathId(Context ctx)
-    {
-        return ctx.pathParamAsClass("id", Long.class)
-            .check(i -> i > 0, "ID must be positive")
-            .get();
     }
 }
