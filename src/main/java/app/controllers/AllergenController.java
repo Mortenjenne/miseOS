@@ -44,7 +44,7 @@ public class AllergenController implements IAllergenController
             .check(a -> a.nameEN() != null && !a.nameEN().isBlank(), "Name EN is required")
             .check(a -> a.descriptionDA() != null && !a.descriptionDA().isBlank(), "Description DA is required")
             .check(a -> a.descriptionEN() != null && !a.descriptionEN().isBlank(), "Description EN is required")
-            .check(a -> a.displayNumber() > 1, "Display number must be positive")
+            .check(a -> a.displayNumber() > 0, "Display number must be positive")
             .get();
 
         AllergenDTO allergenDTO = allergenService.registerAllergen(userId, dto);

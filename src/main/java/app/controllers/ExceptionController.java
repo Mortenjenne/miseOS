@@ -46,6 +46,14 @@ public class ExceptionController implements IExceptionController
     }
 
     @Override
+    public void handleConflict(ConflictException e, Context ctx)
+    {
+        String reqId = ctx.attribute("request-id");
+        logger.warn("[{}] Conflict [{}] {}: {}", reqId, ctx.method(), ctx.path(), e.getMessage());
+        buildErrorResponse(409, e.getMessage(), ctx, reqId);
+    }
+
+    @Override
     public void handleUnauthorized(UnauthorizedActionException e, Context ctx)
     {
         String reqId = ctx.attribute("request-id");

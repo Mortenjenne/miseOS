@@ -14,6 +14,8 @@ public interface IExceptionController
 
     void handleIllegalState(IllegalStateException e, Context ctx);
 
+    void handleConflict(ConflictException e, Context ctx);
+
     void handleUnauthorized(UnauthorizedActionException e, Context ctx);
 
     void handleDatabase(DatabaseException e, Context ctx);

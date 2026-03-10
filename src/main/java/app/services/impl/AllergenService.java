@@ -3,6 +3,7 @@ package app.services.impl;
 import app.dtos.allergen.AllergenCreateRequestDTO;
 import app.dtos.allergen.AllergenDTO;
 import app.dtos.allergen.AllergenUpdateRequestDTO;
+import app.exceptions.ConflictException;
 import app.exceptions.UnauthorizedActionException;
 import app.exceptions.ValidationException;
 import app.mappers.AllergenMapper;
@@ -190,7 +191,7 @@ public class AllergenService implements IAllergenService
     {
         if (allergenDAO.findByNameDA(nameDA).isPresent())
         {
-            throw new ValidationException("Allergen with Danish name '" + nameDA + "' already exists");
+            throw new ConflictException("Allergen with Danish name '" + nameDA + "' already exists");
         }
     }
 
@@ -198,7 +199,7 @@ public class AllergenService implements IAllergenService
     {
         if (allergenDAO.findByNameEN(nameEN).isPresent())
         {
-            throw new ValidationException("Allergen with English name '" + nameEN + "' already exists");
+            throw new ConflictException("Allergen with English name '" + nameEN + "' already exists");
         }
     }
 
@@ -206,7 +207,7 @@ public class AllergenService implements IAllergenService
     {
         if (allergenDAO.existsByDisplayNumber(displayNumber))
         {
-            throw new ValidationException("Display number already in use");
+            throw new ConflictException("Display number already in use");
         }
     }
 
