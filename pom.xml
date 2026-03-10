@@ -20,6 +20,7 @@
         <logback-classic>1.5.32</logback-classic>
         <org.slf4j>2.0.17</org.slf4j>
         <hamcrest.version>3.0</hamcrest.version>
+        <restassured.version>6.0.0</restassured.version>
         <jbcrypt.version>0.4</jbcrypt.version>
         <jackson.version>2.21.1</jackson.version>
         <javalin.version>7.0.1</javalin.version>
@@ -107,6 +108,13 @@
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest</artifactId>
             <version>${hamcrest.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <version>${restassured.version}</version>
             <scope>test</scope>
         </dependency>
 

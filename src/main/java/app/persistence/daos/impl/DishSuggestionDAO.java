@@ -24,6 +24,7 @@ public class DishSuggestionDAO implements IDishSuggestionDAO
     public Set<DishSuggestion> findByFilter(Status status, Integer week, Integer year, Long stationId, String orderBy)
     {
         String target = orderBy != null ? orderBy : "";
+
         String orderColumn = switch (target)
         {
             case "status" -> "ds.dishStatus";

@@ -21,6 +21,7 @@ public class TestCleanDB
                     shopping_list_item,
                     shopping_list,
                     ingredient_request,
+                    dish,
                     dish_suggestion,
                     allergen,
                     station,

@@ -18,6 +18,7 @@ import java.net.http.HttpClient;
 
 public final class DIContainer
 {
+    private static DIContainer instance;
     private final EntityManagerFactory emf;
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
@@ -69,12 +70,9 @@ public final class DIContainer
     //private final IShoppingListController shoppingListController;
 
 
-    @Getter
-    private static final DIContainer instance = new DIContainer();
-
-    private DIContainer()
+    private DIContainer(EntityManagerFactory emf)
     {
-        this.emf = HibernateConfig.getEntityManagerFactory();
+        this.emf = emf;
         this.httpClient = HttpClient.newHttpClient();
         this.objectMapper = ObjectMapperConfig.create();
         this.apiConfig = new ApiConfig();
@@ -113,5 +111,20 @@ public final class DIContainer
 //        this.weeklyMenuController = new WeeklyMenuController(weeklyMenuService);
 //        this.ingredientRequestController = new IngredientRequestController(ingredientRequestService);
 //        this.shoppingListController = new ShoppingListController(shoppingListService);
+    }
+
+    public static DIContainer getInstance()
+    {
+        if (instance == null)
+        {
+            instance = new DIContainer(HibernateConfig.getEntityManagerFactory());
+        }
+        return instance;
+    }
+
+    public static DIContainer getTestInstance(EntityManagerFactory emf)
+    {
+        instance = new DIContainer(emf);
+        return instance;
     }
 }
