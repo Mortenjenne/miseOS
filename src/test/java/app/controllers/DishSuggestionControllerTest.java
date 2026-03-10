@@ -2,11 +2,9 @@ package app.controllers;
 
 import app.config.ApplicationConfig;
 import app.config.HibernateTestConfig;
+import app.dtos.dishsuggestion.DishSuggestionUpdateDTO;
 import app.dtos.dishsuggestion.RejectDishSuggestionDTO;
-import app.persistence.entities.Allergen;
-import app.persistence.entities.DishSuggestion;
-import app.persistence.entities.IEntity;
-import app.persistence.entities.User;
+import app.persistence.entities.*;
 import app.testutils.TestCleanDB;
 import app.testutils.TestPopulator;
 import io.javalin.Javalin;
@@ -15,7 +13,9 @@ import io.restassured.RestAssured;
 import jakarta.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.*;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
@@ -35,7 +35,6 @@ class DishSuggestionControllerTest
     {
         emf = HibernateTestConfig.getEntityManagerFactory();
         app = ApplicationConfig.startServer(TEST_PORT, emf);
-
         RestAssured.baseURI  = "http://localhost";
         RestAssured.port     = TEST_PORT;
         RestAssured.basePath = "/api/v1";
@@ -64,7 +63,6 @@ class DishSuggestionControllerTest
     @DisplayName("GET /dish-suggestions/{id}")
     class GetById
     {
-
         @Test
         @DisplayName("Should return suggestion with correct fields")
         void returnsCorrectSuggestion()
@@ -118,18 +116,24 @@ class DishSuggestionControllerTest
     @DisplayName("GET /dish-suggestions")
     class GetAll
     {
+        @Test
+        @DisplayName("Should return all suggestions")
+        void getAll()
+        {
+            List<Integer> ids = seeded.values().stream()
+                .filter(DishSuggestion.class::isInstance)
+                .map(DishSuggestion.class::cast)
+                .map(ds -> ds.getId().intValue())
+                .toList();
 
-    @Test
-    @DisplayName("Should return all suggestions")
-    void getAll()
-    {
-        given()
-            .when()
-            .get(ENDPOINT_URL)
-            .then()
-            .body("$", hasSize(5))
-            .statusCode(200);
-    }
+            given()
+                .when()
+                .get(ENDPOINT_URL)
+                .then()
+                .statusCode(200)
+                .body("$", hasSize(5))
+                .body("id", containsInAnyOrder(ids.toArray()));
+        }
 
         @Test
         @DisplayName("Should return only PENDING suggestions")
@@ -161,6 +165,38 @@ class DishSuggestionControllerTest
                 .body("$", not(empty()))
                 .body("targetWeek", everyItem(equalTo(steak.getTargetWeek())))
                 .body("targetYear", everyItem(equalTo(steak.getTargetYear())));
+        }
+
+        @Test
+        @DisplayName("Should filter by week, year and status")
+        void filterByStatusAndWeek()
+        {
+            given()
+                .queryParam("status", "PENDING")
+                .queryParam("week", 7)
+                .queryParam("year", 2026)
+                .when()
+                .get(ENDPOINT_URL)
+                .then()
+                .statusCode(200)
+                .body("targetWeek", everyItem(equalTo(7)))
+                .body("targetYear", everyItem(equalTo(2026)))
+                .body("dishStatus", everyItem(equalTo("PENDING")));
+        }
+
+        @Test
+        @DisplayName("Should filter by Station (Cold)")
+        void filterByStation()
+        {
+            Station cold = (Station) seeded.get("station_cold");
+
+            given()
+                .queryParam("stationId", cold.getId())
+                .when()
+                .get(ENDPOINT_URL)
+                .then()
+                .statusCode(200)
+                .body("station.id", everyItem(equalTo(cold.getId().intValue())));
         }
 
         @Test
@@ -216,7 +252,6 @@ class DishSuggestionControllerTest
                 .statusCode(400);
         }
     }
-
 
     @Nested
     @DisplayName("POST /dish-suggestions")
@@ -286,9 +321,61 @@ class DishSuggestionControllerTest
         }
     }
 
-    @Test
-    void update()
+    @Nested
+    @DisplayName("PUT /dish-suggestions/{id}")
+    class Update
     {
+        @Test
+        @DisplayName("Kitchen staff should successfully update suggestion")
+        void kitchenStaffCanUpdate()
+        {
+            DishSuggestion steak = (DishSuggestion) seeded.get("suggestion_steak");
+            User lineCook = (User) seeded.get("user_claire");
+            Allergen milk = (Allergen) seeded.get("allergen_milk");
+
+            DishSuggestionUpdateDTO dto = new DishSuggestionUpdateDTO(
+                "Peberbøf",
+                "Bøf af højreb serveret med med Madagascar peber sauce med cognac og fløde",
+                Set.of(milk.getId())
+            );
+
+            given()
+                .header(HEAD_CHEF_HEADER, lineCook.getId())
+                .contentType(ContentType.JSON)
+                .body(dto)
+                .when()
+                .put(ENDPOINT_URL + "/" + steak.getId())
+                .then()
+                .statusCode(200)
+                .body("nameDA", equalTo("Peberbøf"))
+                .body("descriptionDA", equalTo("Bøf af højreb serveret med med Madagascar peber sauce med cognac og fløde"))
+                .body("allergens", hasSize(1))
+                .body("allergens.id", hasItem(milk.getId().intValue()));
+        }
+
+        @Test
+        @DisplayName("Should return 400 Bad Request for invalid characters in description")
+        void invalidDescriptionReturnsBadRequest()
+        {
+            DishSuggestion steak = (DishSuggestion) seeded.get("suggestion_steak");
+            User lineCook = (User) seeded.get("user_claire");
+
+            DishSuggestionUpdateDTO dto = new DishSuggestionUpdateDTO(
+                "Opdateret Peberbøf",
+                "Nu med endnu mere pebersauce!",
+                Set.of()
+            );
+
+            given()
+                .header(HEAD_CHEF_HEADER, lineCook.getId())
+                .contentType(ContentType.JSON)
+                .body(dto)
+                .when()
+                .put(ENDPOINT_URL + "/" + steak.getId())
+                .then()
+                .statusCode(400)
+                .body("message", equalTo("Description can only contain letters, numbers, and common symbols like '&', '-', or '.'."));
+        }
     }
 
     @Nested
@@ -316,8 +403,8 @@ class DishSuggestionControllerTest
         }
 
         @Test
-        @DisplayName("LINE COOK should get 401 when trying to approve")
-        void lineCookCannotApprove()
+        @DisplayName("Kitchen staff should get 401 when trying to approve suggestion")
+        void kitchenStaffCannotApprove()
         {
             DishSuggestion salmon = (DishSuggestion) seeded.get("suggestion_salmon");
             User lineCook = (User) seeded.get("user_claire");
@@ -327,11 +414,11 @@ class DishSuggestionControllerTest
                 .when()
                 .patch(ENDPOINT_URL + "/" + salmon.getId() + "/approve")
                 .then()
-                .statusCode(401);
+                .statusCode(403);
         }
 
         @Test
-        @DisplayName("Double approve should return 400")
+        @DisplayName("Double approve should return 409")
         void doubleApproveReturnsBadRequest()
         {
             DishSuggestion salmon = (DishSuggestion) seeded.get("suggestion_salmon");
