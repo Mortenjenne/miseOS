@@ -21,30 +21,34 @@ public final class RequestUtil
     public static String requirePathString(Context ctx, String param)
     {
         return ctx.pathParamAsClass(param, String.class)
-            .check(v -> v != null && !v.isBlank(), param + " cannot be be blank")
+            .check(v -> v != null && !v.isBlank(), "Path parameter '" + param + "' is required")
             .get().trim();
     }
 
-    public static Integer getQueryInt(Context ctx, String param)
+    public static String requireQueryString(Context ctx, String param)
     {
-        String value = ctx.queryParam(param);
-        if (value == null || value.isBlank())
-        {
-            return null;
-        }
+        return ctx.queryParamAsClass(param, String.class)
+            .check(v -> v != null && !v.isBlank(),"Query parameter '" + param + "' is required")
+            .get().trim();
+    }
 
+    public static Integer requireQueryInt(Context ctx, String param)
+    {
         return ctx.queryParamAsClass(param, Integer.class)
             .check(v -> v > 0, param + " must be positive")
             .get();
     }
 
+    public static Integer getQueryInt(Context ctx, String param)
+    {
+        if (!isPresent(ctx, param)) return null;
+
+        return requireQueryInt(ctx, param);
+    }
+
     public static Long getQueryLong(Context ctx, String param)
     {
-        String value = ctx.queryParam(param);
-        if (value == null || value.isBlank())
-        {
-            return null;
-        }
+        if (!isPresent(ctx, param)) return null;
 
         return ctx.queryParamAsClass(param, Long.class)
             .check(v -> v > 0, param + " must be positive")
@@ -53,15 +57,9 @@ public final class RequestUtil
 
     public static String getQueryString(Context ctx, String param)
     {
-        String value = ctx.queryParam(param);
-        if (value == null || value.isBlank())
-        {
-            return null;
-        }
+        if (!isPresent(ctx, param)) return null;
 
-        return ctx.queryParamAsClass(param, String.class)
-            .check(v -> v != null && !v.isBlank(), param + " cannot be be blank")
-            .get().trim();
+        return requireQueryString(ctx, param);
     }
 
     public static Status getQueryStatus(Context ctx, String param)
@@ -75,6 +73,20 @@ public final class RequestUtil
         return parseStatus(value.trim());
     }
 
+    public static Boolean getQueryBoolean(Context ctx, String param)
+    {
+        if (!isPresent(ctx, param)) return null;
+
+        String value = ctx.queryParam(param).trim().toLowerCase();
+
+        return switch (value)
+        {
+            case "true"  -> true;
+            case "false" -> false;
+            default -> throw new IllegalArgumentException("Invalid value for '" + param + "': expected true or false, got: " + value);
+        };
+    }
+
     public static Status parseStatus(String status)
     {
         try
@@ -85,5 +97,11 @@ public final class RequestUtil
         {
             throw new IllegalArgumentException("Invalid status value: " + status);
         }
+    }
+
+    private static boolean isPresent(Context ctx, String param)
+    {
+        String value = ctx.queryParam(param);
+        return value != null && !value.isBlank();
     }
 }
