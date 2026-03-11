@@ -9,7 +9,9 @@ public class TestCleanDB
     public static void truncateTables(EntityManagerFactory emf)
     {
         if (emf == null || !emf.isOpen())
+        {
             throw new IllegalStateException("EMF is closed in TestCleanDB");
+        }
 
         try (EntityManager em = emf.createEntityManager())
         {
@@ -37,5 +39,4 @@ public class TestCleanDB
             throw new RuntimeException("Failed to truncate tables", e);
         }
     }
-
 }

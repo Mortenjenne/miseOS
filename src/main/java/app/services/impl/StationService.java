@@ -2,6 +2,7 @@ package app.services.impl;
 
 import app.dtos.station.StationRequestDTO;
 import app.dtos.station.StationDTO;
+import app.exceptions.ConflictException;
 import app.exceptions.UnauthorizedActionException;
 import app.exceptions.ValidationException;
 import app.mappers.StationMapper;
@@ -35,7 +36,7 @@ public class StationService implements IStationService
         validateInput(dto);
 
         User creator = userReader.getByID(creatorID);
-        requireChef(creator);
+        requireHeadChefOrSousChef(creator);
         validateStationNameUnique(dto.name());
 
         Station station = new Station(dto.name(), dto.description());
@@ -53,7 +54,7 @@ public class StationService implements IStationService
 
         User editor = userReader.getByID(editorId);
         Station station = stationDAO.getByID(stationId);
-        requireChef(editor);
+        requireHeadChefOrSousChef(editor);
 
         if (!station.getStationName().equalsIgnoreCase(dto.name()))
         {
@@ -84,7 +85,7 @@ public class StationService implements IStationService
 
         Station station = stationDAO.getByID(stationId);
         User user = userReader.getByID(userId);
-        requireChef(user);
+        requireHeadChefOrSousChef(user);
 
         return stationDAO.delete(station.getId());
     }
@@ -118,7 +119,7 @@ public class StationService implements IStationService
             .orElseThrow(() -> new EntityNotFoundException("Station not found: " + name));
     }
 
-    private void requireChef(User user)
+    private void requireHeadChefOrSousChef(User user)
     {
         if (!user.isHeadChef() && !user.isSousChef())
         {
@@ -139,7 +140,7 @@ public class StationService implements IStationService
 
         if (existing.isPresent())
         {
-            throw new ValidationException("Station with name '" + name + "' already exists");
+            throw new ConflictException("Station with name '" + name + "' already exists");
         }
     }
 }

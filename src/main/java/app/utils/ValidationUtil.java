@@ -30,7 +30,6 @@ public class ValidationUtil
         {
             throw new IllegalArgumentException(fieldName + " cannot be blank");
         }
-
     }
 
     public static void validateText(String value, String fieldName, int min, int max)

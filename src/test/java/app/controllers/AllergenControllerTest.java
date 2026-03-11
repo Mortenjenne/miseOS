@@ -24,7 +24,7 @@ import static org.hamcrest.Matchers.*;
 class AllergenControllerTest
 {
     private static final String ENDPOINT_URL = "/allergens";
-    private static final int TEST_PORT = 7778;
+    private static final int TEST_PORT = 7773;
     private static final String USER_HEADER = "X-Dev-User-Id";
 
     private static EntityManagerFactory emf;

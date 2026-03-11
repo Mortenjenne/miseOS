@@ -24,7 +24,7 @@ import static org.hamcrest.Matchers.*;
 class DishSuggestionControllerTest
 {
     private static final String ENDPOINT_URL  = "/dish-suggestions";
-    private static final int TEST_PORT = 7777;
+    private static final int TEST_PORT = 7772;
     private static final String HEAD_CHEF_HEADER = "X-Dev-User-Id";
     private static EntityManagerFactory emf;
     private static Javalin app;
@@ -35,8 +35,8 @@ class DishSuggestionControllerTest
     {
         emf = HibernateTestConfig.getEntityManagerFactory();
         app = ApplicationConfig.startServer(TEST_PORT, emf);
-        RestAssured.baseURI  = "http://localhost";
-        RestAssured.port     = TEST_PORT;
+        RestAssured.baseURI = "http://localhost";
+        RestAssured.port = TEST_PORT;
         RestAssured.basePath = "/api/v1";
     }
 
