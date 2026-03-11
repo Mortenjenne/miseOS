@@ -3,11 +3,11 @@ package app.mappers;
 import app.dtos.allergen.AllergenDTO;
 import app.dtos.dish.DishDTO;
 import app.dtos.dish.DishOptionDTO;
-import app.persistence.entities.Allergen;
+import app.dtos.station.StationReferenceDTO;
+import app.dtos.user.UserReferenceDTO;
 import app.persistence.entities.Dish;
 
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.List;
 
 public class DishMapper
 {
@@ -15,10 +15,14 @@ public class DishMapper
 
     public static DishDTO toDTO(Dish dish)
     {
-        Set<AllergenDTO> allergens = dish.getAllergens()
+        List<AllergenDTO> allergens = dish.getAllergens()
             .stream()
             .map(AllergenMapper::toDTO)
-            .collect(Collectors.toSet());
+            .toList();
+
+        UserReferenceDTO createdBy = UserMapper.toReferenceDTO(dish.getCreatedBy());
+        StationReferenceDTO station = StationMapper.toReferenceDTO(dish.getStation());
+        boolean hasTranslations = dish.hasTranslation();
 
         return new DishDTO(
             dish.getId(),
@@ -26,13 +30,15 @@ public class DishMapper
             dish.getNameEN(),
             dish.getDescriptionDA(),
             dish.getDescriptionEN(),
-            dish.getStation().getId(),
-            dish.getStation().getStationName(),
+            station,
+            createdBy,
             allergens,
             dish.isActive(),
             dish.getOriginWeek(),
             dish.getOriginYear(),
-            dish.getCreatedAt()
+            hasTranslations,
+            dish.getCreatedAt(),
+            dish.getUpdatedAt()
         );
     }
 

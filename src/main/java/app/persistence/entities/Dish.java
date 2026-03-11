@@ -55,6 +55,9 @@ public class Dish implements IEntity
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
     public Dish(String nameDA, String descriptionDA, Station station, Set<Allergen> allergens, User createdBy, int originWeek, int originYear)
     {
         ValidationUtil.validateNotBlank(nameDA, "Name");
@@ -81,6 +84,7 @@ public class Dish implements IEntity
         this.descriptionDA = descriptionDA.trim();
         this.nameEN = nameEN != null ? nameEN.trim() : null;
         this.descriptionEN = descriptionEN != null ? descriptionEN.trim() : null;
+        this.updatedAt = LocalDateTime.now();
 
         if (allergens != null)
         {

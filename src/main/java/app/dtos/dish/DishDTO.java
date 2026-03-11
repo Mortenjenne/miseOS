@@ -1,9 +1,12 @@
 package app.dtos.dish;
 
 import app.dtos.allergen.AllergenDTO;
+import app.dtos.station.StationReferenceDTO;
+import app.dtos.user.UserReferenceDTO;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.time.LocalDateTime;
-import java.util.Set;
+import java.util.List;
 
 public record DishDTO(
     Long id,
@@ -11,13 +14,16 @@ public record DishDTO(
     String nameEN,
     String descriptionDA,
     String descriptionEN,
-    Long stationId,
-    String stationName,
-    Set<AllergenDTO> allergens,
+    StationReferenceDTO station,
+    UserReferenceDTO createdBy,
+    List<AllergenDTO> allergens,
     boolean isActive,
     int originWeek,
     int originYear,
-    LocalDateTime createdAt
+    boolean hasTranslations,
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
+    LocalDateTime createdAt,
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
+    LocalDateTime updatedAt
 )
-{
-}
+{}

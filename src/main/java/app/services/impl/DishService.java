@@ -13,10 +13,10 @@ import app.persistence.entities.Station;
 import app.persistence.entities.User;
 import app.services.IDishService;
 import app.utils.ValidationUtil;
-import jakarta.persistence.EntityNotFoundException;
 
 import java.time.LocalDate;
 import java.time.temporal.IsoFields;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -100,26 +100,7 @@ public class DishService implements IDishService
     }
 
     @Override
-    public DishDTO getByIdWithAllergens(Long dishId)
-    {
-        ValidationUtil.validateId(dishId);
-
-        return dishDAO.getByIdWithAllergens(dishId)
-            .map(DishMapper::toDTO)
-            .orElseThrow(() -> new EntityNotFoundException("Dish with ID " + dishId + " not found"));
-    }
-
-    @Override
-    public Set<DishDTO> getAllActive()
-    {
-        return dishDAO.findAllActive()
-            .stream()
-            .map(DishMapper::toDTO)
-            .collect(Collectors.toSet());
-    }
-
-    @Override
-    public Set<DishDTO> searchByName(String query)
+    public List<DishDTO> searchByName(String query)
     {
         ValidationUtil.validateNotBlank(query, "Search query");
         ValidationUtil.validateRange(query.trim().length(), 2, 100, "Search query length");
@@ -127,7 +108,7 @@ public class DishService implements IDishService
         return dishDAO.searchByName(query)
             .stream()
             .map(DishMapper::toDTO)
-            .collect(Collectors.toSet());
+            .toList();
     }
 
     @Override
@@ -195,18 +176,27 @@ public class DishService implements IDishService
     }
 
     @Override
-    public Map<String, Set<DishOptionDTO>> getAllActiveDishesGrouped()
+    public List<DishDTO> getAll(Long stationId, Boolean active)
     {
-        Set<Dish> dishes = dishDAO.findAllActive();
+        return dishDAO.findByFilter(stationId, active)
+            .stream()
+            .map(DishMapper::toDTO)
+            .toList();
+    }
+
+    @Override
+    public Map<String, List<DishOptionDTO>> getAllActiveDishesGrouped()
+    {
+        Set<Dish> dishes = dishDAO.findByFilter(null, true);
         return groupDishOptionsByStation(dishes);
     }
 
-    private Map<String, Set<DishOptionDTO>> groupDishOptionsByStation(Set<Dish> dishes)
+    private Map<String, List<DishOptionDTO>> groupDishOptionsByStation(Set<Dish> dishes)
     {
         return dishes.stream()
             .collect(Collectors.groupingBy(
                 d -> d.getStation().getStationName(),
-                Collectors.mapping(DishMapper::toOptionDTO, Collectors.toSet())
+                Collectors.mapping(DishMapper::toOptionDTO, Collectors.toList())
             ));
     }
 
