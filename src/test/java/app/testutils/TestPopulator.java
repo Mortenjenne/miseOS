@@ -81,6 +81,16 @@ public class TestPopulator
         User u3 = new User("Marco", "Pierre", "marco@grill.com", "hash3", UserRole.LINE_COOK);
         User u4 = new User("Rene", "Redzepi", "rene@cold.com", "hash4", UserRole.LINE_COOK);
 
+        Station cold = (Station) seeded.get("station_cold");
+        Station hot = (Station) seeded.get("station_hot");
+        Station pastry = (Station) seeded.get("station_pastry");
+        Station grill = (Station) seeded.get("station_grill");
+
+        u1.assignToStation(cold);
+        u2.assignToStation(hot);
+        u3.assignToStation(pastry);
+        u4.assignToStation(grill);
+
         userDAO.create(u1);
         userDAO.create(u2);
         userDAO.create(u3);

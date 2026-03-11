@@ -10,6 +10,8 @@ public class StationMapper
 
     public static StationDTO toDTO(Station station)
     {
+        if(station == null) return null;
+
         return new StationDTO(
             station.getId(),
             station.getStationName(),
@@ -19,10 +21,8 @@ public class StationMapper
 
     public static StationReferenceDTO toReferenceDTO(Station station)
     {
-        if(station == null)
-        {
-            return null;
-        }
+        if(station == null) return null;
+
         return new StationReferenceDTO(
             station.getId(),
             station.getStationName()
