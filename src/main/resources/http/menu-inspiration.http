@@ -5,4 +5,7 @@
 ### GET daily menu inspiration
 GET {{local}}/menu-inspirations/daily
 
+### GET daily menu inspiration as sse stream
+GET {{local}}/menu-inspirations/stream
+
 ###

@@ -1,7 +1,6 @@
 package app.config;
 
-import app.controllers.ExceptionController;
-import app.controllers.IExceptionController;
+import app.controllers.*;
 import app.routes.*;
 import io.javalin.Javalin;
 import jakarta.persistence.EntityManagerFactory;
@@ -12,10 +11,10 @@ public class ApplicationConfig
 {
     private static final Logger logger = LoggerFactory.getLogger(ApplicationConfig.class);
 
-    public static Javalin startServer(int port)
+    public static void startServer(int port)
     {
         DIContainer di = DIContainer.getInstance();
-        return buildAndStart(port, di);
+        buildAndStart(port, di);
     }
 
     public static Javalin startServer(int port, EntityManagerFactory emf)
@@ -49,7 +48,8 @@ public class ApplicationConfig
             new UserRoute(di.getUserController()),
             new StationRoute(di.getStationController()),
             new MenuInspirationRoute(di.getMenuInspirationController()),
-            new DishSuggestionRoute(di.getDishSuggestionController())
+            new DishSuggestionRoute(di.getDishSuggestionController()),
+            new DishRoute(di.getDishController())
         );
     }
 }

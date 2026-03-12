@@ -9,6 +9,7 @@ import io.javalin.http.Context;
 import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import io.javalin.rendering.template.JavalinThymeleaf;
 
 import java.util.UUID;
 
@@ -32,7 +33,10 @@ public class ServerConfig
         return Javalin.create(config ->
         {
             config.startup.showJavalinBanner = false;
+            //REMOVE THYMELEAF AND STATICFILES
+            config.fileRenderer(new JavalinThymeleaf());
             config.router.contextPath = "/api/v1";
+            config.staticFiles.add("/public");
             config.bundledPlugins.enableRouteOverview("/routes");
             config.routes.apiBuilder(routes.getRoutes());
             configureMiddleWare(config);

@@ -19,6 +19,7 @@ public class MenuInspirationRoute
         return () -> path("/menu-inspirations", () ->
         {
             get("/daily", menuInspirationController::getDailyInspiration);
+            sse("/stream", menuInspirationController::getStreamingSuggestions);
         });
     }
 }

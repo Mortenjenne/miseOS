@@ -15,6 +15,7 @@ import jakarta.persistence.EntityManagerFactory;
 import lombok.Getter;
 
 import java.net.http.HttpClient;
+import java.time.Duration;
 
 public final class DIContainer
 {
@@ -64,7 +65,8 @@ public final class DIContainer
     @Getter
     private final IDishSuggestionController dishSuggestionController;
 
-    //private final IDishController dishController;
+    @Getter
+    private final IDishController dishController;
     //private final IWeeklyMenuController weeklyMenuController;
     //private final IIngredientRequestController ingredientRequestController;
     //private final IShoppingListController shoppingListController;
@@ -73,7 +75,8 @@ public final class DIContainer
     private DIContainer(EntityManagerFactory emf)
     {
         this.emf = emf;
-        this.httpClient = HttpClient.newHttpClient();
+        this.httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
+
         this.objectMapper = ObjectMapperConfig.create();
         this.apiConfig = new ApiConfig();
 
@@ -107,7 +110,7 @@ public final class DIContainer
         this.userController = new UserController(userService);
         this.menuInspirationController = new MenuInspirationController(menuInspirationService);
         this.dishSuggestionController = new DishSuggestionController(dishSuggestionService);
-//        this.dishController = new DishController(dishService);
+        this.dishController = new DishController(dishService);
 //        this.weeklyMenuController = new WeeklyMenuController(weeklyMenuService);
 //        this.ingredientRequestController = new IngredientRequestController(ingredientRequestService);
 //        this.shoppingListController = new ShoppingListController(shoppingListService);

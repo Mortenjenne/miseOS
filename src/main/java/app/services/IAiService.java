@@ -7,10 +7,13 @@ import app.persistence.entities.Station;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public interface IAiService
 {
     Map<String, String> normalizeIngredientList(List<String> ingredients, String targetLanguage);
 
     List<AiDishSuggestionDTO> getAiDishSuggestion(WeatherForecastDTO weatherForecast, StationDTO station);
+
+    void getStreamingDishSuggestions(WeatherForecastDTO weatherForecastDTO, StationDTO station, Consumer<AiDishSuggestionDTO> dishConsumer, Runnable onComplete, Consumer<Throwable> errorConsumer);
 }

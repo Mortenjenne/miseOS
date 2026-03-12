@@ -26,7 +26,7 @@ public class DishRoute
            put("/{id}", dishController::update);
            delete("/{id}", dishController::delete);
            patch("/{id}/activate", dishController::activate);
-            patch("/{id}/deactivate", dishController::deactivate);
+           patch("/{id}/deactivate", dishController::deactivate);
         });
     }
 }

@@ -11,26 +11,29 @@ public class Routes
     private final StationRoute stationRoute;
     private final MenuInspirationRoute menuInspirationRoute;
     private final DishSuggestionRoute dishSuggestionRoute;
+    private final DishRoute dishRoute;
 
-    public Routes(AllergenRoute allergenRoute, UserRoute userRoute, StationRoute stationRoute, MenuInspirationRoute menuInspirationRoute, DishSuggestionRoute dishSuggestionRoute)
+    public Routes(AllergenRoute allergenRoute, UserRoute userRoute, StationRoute stationRoute, MenuInspirationRoute menuInspirationRoute, DishSuggestionRoute dishSuggestionRoute, DishRoute dishRoute)
     {
         this.allergenRoute = allergenRoute;
         this.userRoute = userRoute;
         this.stationRoute = stationRoute;
         this.menuInspirationRoute = menuInspirationRoute;
         this.dishSuggestionRoute = dishSuggestionRoute;
+        this.dishRoute = dishRoute;
     }
 
     public EndpointGroup getRoutes()
     {
         return () ->
         {
-            get("/", ctx -> ctx.result("Welcome to miseOS!"));
+            get("/", ctx -> ctx.render("index.html"));
             allergenRoute.getRoutes().addEndpoints();
             userRoute.getRoutes().addEndpoints();
             stationRoute.getRoutes().addEndpoints();
             menuInspirationRoute.getRoutes().addEndpoints();
             dishSuggestionRoute.getRoutes().addEndpoints();
+            dishRoute.getRoutes().addEndpoints();
         };
     }
 }

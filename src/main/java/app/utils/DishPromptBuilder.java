@@ -36,7 +36,7 @@ public class DishPromptBuilder
         4. TONE & LENGTH: Keep descriptions STRICTLY factual, pragmatic, and short (chef-to-chef communication). Avoid ALL flowery, poetic, and marketing-like language (no "umamiglæde", "silkeblød", "fantastisk"). Maximum 1 sentences per description
 
         OUTPUT FORMAT:
-        Return ONLY a raw JSON array with exactly 3 objects. No markdown, no intro.
+        Return ONLY a raw JSON array with exactly 10 objects. No markdown, no intro.
         Language: Danish (da-DK).
 
         [

@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class AiService implements IAiService
 {
@@ -66,5 +67,52 @@ public class AiService implements IAiService
         {
             throw new AIIntegrationException("Could not map jsonResponse to dish suggestion " + e.getMessage());
         }
+    }
+
+    @Override
+    public void getStreamingDishSuggestions(WeatherForecastDTO weatherForecastDTO, StationDTO station, Consumer<AiDishSuggestionDTO> dishConsumer, Runnable onComplete, Consumer<Throwable> errorConsumer)
+    {
+        StringBuilder fullResponse = new StringBuilder();
+
+        try
+        {
+            String forecast = WeatherForecastBuilder.getWeatherForecast(weatherForecastDTO);
+            String stationJSON = objectMapper.writeValueAsString(station);
+            String prompt = DishPromptBuilder.buildMenuInspirationPrompt(forecast, stationJSON);
+
+            aiClient.streamResponse(
+                prompt,
+                fullResponse::append,
+                errorConsumer,
+                () ->
+                {
+                    try
+                    {
+                        String json = cleanResponseBody(fullResponse.toString());
+                        List<AiDishSuggestionDTO> dishes = Arrays.asList(objectMapper.readValue(json, AiDishSuggestionDTO[].class));
+                        for (AiDishSuggestionDTO dish : dishes)
+                        {
+                            dishConsumer.accept(dish);
+                        }
+                        onComplete.run();
+                    }
+                    catch (Exception e)
+                    {
+                        errorConsumer.accept(new AIIntegrationException("Could not parse streaming result"));
+                    }
+                });
+        }
+        catch (Exception e)
+        {
+            errorConsumer.accept(e);
+        }
+
+    }
+    private String cleanResponseBody(String response)
+    {
+        return response
+            .replace("```json", "")
+            .replace("```", "")
+            .trim();
     }
 }
