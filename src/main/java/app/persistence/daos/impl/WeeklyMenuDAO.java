@@ -1,6 +1,5 @@
 package app.persistence.daos.impl;
 
-import app.dtos.menu.WeeklyMenuDTO;
 import app.dtos.menu.WeeklyMenuOverviewDTO;
 import app.enums.MenuStatus;
 import app.exceptions.DatabaseException;
@@ -10,10 +9,8 @@ import app.utils.DBValidator;
 import app.utils.TransactionUtil;
 import jakarta.persistence.*;
 
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 public class WeeklyMenuDAO implements IWeeklyMenuDAO
 {
@@ -144,12 +141,6 @@ public class WeeklyMenuDAO implements IWeeklyMenuDAO
                 throw new DatabaseException("Failed to create week menu", e);
             }
         }
-    }
-
-    @Override
-    public Set<WeeklyMenu> getAll()
-    {
-        return findByFilter(null,null, null);
     }
 
     @Override

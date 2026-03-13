@@ -1,12 +1,14 @@
 package app.services.impl;
 
+import app.dtos.dish.DishTranslationDTO;
 import app.dtos.menu.*;
+import app.dtos.translation.TranslationDTO;
 import app.enums.MenuStatus;
+import app.enums.SupportedLanguage;
 import app.exceptions.UnauthorizedActionException;
 import app.exceptions.ValidationException;
 import app.mappers.WeeklyMenuMapper;
 import app.persistence.daos.interfaces.*;
-import app.persistence.daos.interfaces.readers.IDishReader;
 import app.persistence.daos.interfaces.readers.IStationReader;
 import app.persistence.daos.interfaces.readers.IUserReader;
 import app.persistence.entities.*;
@@ -17,24 +19,22 @@ import jakarta.persistence.EntityNotFoundException;
 
 import java.time.LocalDate;
 import java.time.temporal.IsoFields;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
 public class WeeklyMenuService implements IWeeklyMenuService
 {
     private final IWeeklyMenuDAO menuDAO;
-    private final IDishReader dishReader;
+    private final IDishDAO dishDAO;
     private final IUserReader userReader;
     private final IStationReader stationReader;
     private final IDishTranslationService dishTranslationService;
 
-    public WeeklyMenuService(IWeeklyMenuDAO menuDAO, IDishReader dishReader, IUserReader userReader, IStationReader stationReader, IDishTranslationService dishTranslationService)
+    public WeeklyMenuService(IWeeklyMenuDAO menuDAO, IDishDAO dishDAO, IUserReader userReader, IStationReader stationReader, IDishTranslationService dishTranslationService)
     {
         this.menuDAO = menuDAO;
-        this.dishReader = dishReader;
+        this.dishDAO = dishDAO;
         this.userReader = userReader;
         this.stationReader = stationReader;
         this.dishTranslationService = dishTranslationService;
@@ -74,7 +74,7 @@ public class WeeklyMenuService implements IWeeklyMenuService
         Dish dish = null;
         if(dto.dishId() != null)
         {
-            dish = dishReader.getByID(dto.dishId());
+            dish = dishDAO.getByID(dto.dishId());
             validateDishForStation(dish, station);
         }
 
@@ -119,7 +119,7 @@ public class WeeklyMenuService implements IWeeklyMenuService
 
         if (dto.dishId() != null)
         {
-            Dish dish = dishReader.getByID(dto.dishId());
+            Dish dish = dishDAO.getByID(dto.dishId());
             validateDishForStation(dish, slot.getStation());
             slot.setDish(dish);
             slot.setEmpty(false);
@@ -135,17 +135,50 @@ public class WeeklyMenuService implements IWeeklyMenuService
     }
 
     @Override
-    public WeeklyMenuDTO translateMenu(Long editorId, Long menuId)
+    public WeeklyMenuDTO translateSlot(Long editorId, Long menuId, Long slotId, SupportedLanguage language)
     {
-        ValidationUtil.validateId(editorId);
-        ValidationUtil.validateId(menuId);
+        validateSlotRelatedIds(editorId, menuId, slotId);
+        ValidationUtil.validateNotNull(language, "Target language");
 
         User editor = userReader.getByID(editorId);
         requireHeadOrSousChef(editor);
 
         WeeklyMenu menu = menuDAO.getByID(menuId);
+        WeeklyMenuSlot slot = findSlot(menu, slotId);
 
-        //TODO add stream of translations in to pass to translation service
+        Dish dish = slot.getDish();
+
+        if (dish == null)
+        {
+            throw new IllegalStateException("Slot " + slotId + " has no dish to translate");
+        }
+
+        DishTranslationDTO translation = dishTranslationService.translateDish(dish, language.getCode());
+        dish.applyTranslation(
+            translation.translatedName(),
+            translation.translatedDescription()
+        );
+        dishDAO.update(dish);
+
+        WeeklyMenu updated = menuDAO.getByID(menuId);
+        return WeeklyMenuMapper.toDTO(updated);
+    }
+
+    @Override
+    public WeeklyMenuDTO translateMenu(Long editorId, Long menuId, SupportedLanguage language)
+    {
+        ValidationUtil.validateId(editorId);
+        ValidationUtil.validateId(menuId);
+        ValidationUtil.validateNotNull(language, "Target language");
+
+        User editor = userReader.getByID(editorId);
+        requireHeadOrSousChef(editor);
+
+        WeeklyMenu menu = menuDAO.getByID(menuId);
+        List<Dish> dishes = getDishesFromMenu(menu);
+
+        Map<Long, DishTranslationDTO> dishTranslations = dishTranslationService.translateDishes(dishes, language.getCode());
+        updateDishesWithTranslations(dishes, dishTranslations);
 
         WeeklyMenu updated = menuDAO.getByID(menuId);
         return WeeklyMenuMapper.toDTO(updated);
@@ -212,10 +245,7 @@ public class WeeklyMenuService implements IWeeklyMenuService
         User user = userReader.getByID(userId);
         requireHeadOrSousChef(user);
 
-        return menuDAO.findByFilter(menuStatus, year, week)
-            .stream()
-            .map(WeeklyMenuMapper::toOverviewDTO)
-            .toList();
+        return menuDAO.findByFilter(menuStatus, year, week);
     }
 
     @Override
@@ -239,6 +269,28 @@ public class WeeklyMenuService implements IWeeklyMenuService
             .findFirst()
             .orElseThrow(() -> new EntityNotFoundException("Slot " + menuSlotId + " not found in menu " + menu.getId()
             ));
+    }
+
+    private static List<Dish> getDishesFromMenu(WeeklyMenu menu)
+    {
+        return menu.getWeeklyMenuSlots()
+            .stream()
+            .filter(Objects::nonNull)
+            .map(WeeklyMenuSlot::getDish)
+            .toList();
+    }
+
+    private void updateDishesWithTranslations(List<Dish> dishes, Map<Long, DishTranslationDTO> dishTranslations)
+    {
+        dishes.forEach(dish ->
+        {
+            DishTranslationDTO translation = dishTranslations.get(dish.getId());
+            dish.applyTranslation(
+                translation.translatedName(),
+                translation.translatedDescription()
+            );
+            dishDAO.update(dish);
+        });
     }
 
     private void validateWeekAndYear(int week, int year)

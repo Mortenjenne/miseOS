@@ -93,6 +93,16 @@ public class Dish implements IEntity
         }
     }
 
+    public void applyTranslation(String nameEN, String descriptionEN)
+    {
+        ValidationUtil.validateNotBlank(nameEN, "Name EN");
+        ValidationUtil.validateNotBlank(descriptionEN, "Description EN");
+
+        this.nameEN = nameEN.trim();
+        this.descriptionEN = descriptionEN.trim();
+        this.updatedAt = LocalDateTime.now();
+    }
+
     public boolean hasTranslation()
     {
         return (this.nameEN != null && !this.nameEN.isBlank()) && (this.descriptionEN != null && !this.descriptionEN.isBlank());

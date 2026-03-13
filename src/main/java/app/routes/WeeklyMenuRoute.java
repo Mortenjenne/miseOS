@@ -20,13 +20,14 @@ public class WeeklyMenuRoute
         {
             get("/", weeklyMenuController::getAll);
             get("/current", weeklyMenuController::getCurrentWeekMenu);
+            get("/by-week", weeklyMenuController::getByWeekAndYear);
             post("/", weeklyMenuController::create);
             get("/{id}", weeklyMenuController::getById);
-            put("/{id}", weeklyMenuController::update);
             delete("/{id}", weeklyMenuController::delete);
             post("/{id}/slots", weeklyMenuController::addMenuSlot);
             put("/{id}/slots/{slotId}", weeklyMenuController::updateMenuSlot);
             delete("/{id}/slots/{slotId}", weeklyMenuController::removeMenuSlot);
+            post("/{id}/slots/{slotId}/translate", weeklyMenuController::translateSlot);
             post("/{id}/translate", weeklyMenuController::translateMenu);
             post("/{id}/publish", weeklyMenuController::publishMenu);
         });

@@ -2,6 +2,7 @@ package app.services;
 
 import app.dtos.menu.*;
 import app.enums.MenuStatus;
+import app.enums.SupportedLanguage;
 
 import java.util.List;
 
@@ -15,7 +16,9 @@ public interface IWeeklyMenuService
 
     WeeklyMenuDTO updateSlot(Long editorId, Long menuId, Long slotId, UpdateMenuSlotDTO dto);
 
-    WeeklyMenuDTO translateMenu(Long editorId, Long menuId);
+    WeeklyMenuDTO translateSlot(Long userId, Long menuId, Long slotId, SupportedLanguage language);
+
+    WeeklyMenuDTO translateMenu(Long editorId, Long menuId, SupportedLanguage language);
 
     WeeklyMenuDTO publishMenu(Long publisherId, Long menuId);
 

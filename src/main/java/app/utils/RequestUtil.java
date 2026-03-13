@@ -2,6 +2,7 @@ package app.utils;
 
 import app.enums.MenuStatus;
 import app.enums.Status;
+import app.enums.SupportedLanguage;
 import io.javalin.http.Context;
 
 
@@ -74,6 +75,12 @@ public final class RequestUtil
         }
     }
 
+    public static SupportedLanguage getQueryLanguage(Context ctx, String param)
+    {
+        String value = getQueryString(ctx, param);
+        return SupportedLanguage.fromCode(value);
+    }
+
     public static Status getQueryStatus(Context ctx, String param)
     {
         String value = ctx.queryParam(param);
@@ -81,7 +88,6 @@ public final class RequestUtil
         {
             return null;
         }
-
         return parseStatus(value.trim());
     }
 

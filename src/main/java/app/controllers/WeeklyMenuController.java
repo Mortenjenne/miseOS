@@ -2,6 +2,7 @@ package app.controllers;
 
 import app.dtos.menu.*;
 import app.enums.MenuStatus;
+import app.enums.SupportedLanguage;
 import app.services.IWeeklyMenuService;
 import app.utils.RequestUtil;
 import app.utils.SecurityUtil;
@@ -64,8 +65,9 @@ public class WeeklyMenuController implements IWeeklyMenuController
     {
         Long userId = SecurityUtil.requireUserId(ctx);
         Long menuId = RequestUtil.requirePathId(ctx, "id");
+        SupportedLanguage language = RequestUtil.getQueryLanguage(ctx, "lang");
 
-        WeeklyMenuDTO weeklyMenuDTO = weeklyMenuService.translateMenu(userId, menuId);
+        WeeklyMenuDTO weeklyMenuDTO = weeklyMenuService.translateMenu(userId, menuId, language);
         ctx.status(200).json(weeklyMenuDTO);
     }
 
@@ -84,6 +86,29 @@ public class WeeklyMenuController implements IWeeklyMenuController
     {
         WeeklyMenuDTO weeklyMenuDTO = weeklyMenuService.getCurrentWeekMenu();
         ctx.status(200).json(weeklyMenuDTO);
+    }
+
+    @Override
+    public void getByWeekAndYear(Context ctx)
+    {
+        Long userId = SecurityUtil.requireUserId(ctx);
+        Integer week = RequestUtil.requireQueryInt(ctx, "week");
+        Integer year = RequestUtil.requireQueryInt(ctx, "year");
+
+        WeeklyMenuDTO weeklyMenuDTO = weeklyMenuService.getByWeekAndYear(userId, week, year);
+        ctx.status(200).json(weeklyMenuDTO);
+    }
+
+    @Override
+    public void translateSlot(Context ctx)
+    {
+        Long userId  = SecurityUtil.requireUserId(ctx);
+        Long menuId  = RequestUtil.requirePathId(ctx, "id");
+        Long slotId  = RequestUtil.requirePathId(ctx, "slotId");
+        SupportedLanguage language = RequestUtil.getQueryLanguage(ctx, "lang");
+
+        WeeklyMenuDTO dto = weeklyMenuService.translateSlot(userId, menuId, slotId, language);
+        ctx.status(200).json(dto);
     }
 
     @Override
@@ -121,19 +146,12 @@ public class WeeklyMenuController implements IWeeklyMenuController
     }
 
     @Override
-    public void update(Context ctx)
-    {
-
-    }
-
-    //TODO is needed?
-    @Override
     public void delete(Context ctx)
     {
         Long userId = SecurityUtil.requireUserId(ctx);
         Long menuId = RequestUtil.requirePathId(ctx, "id");
 
-        boolean isDeleted = weeklyMenuService
+        boolean isDeleted = weeklyMenuService.deleteMenu(userId, menuId);
 
         ctx.status(isDeleted ? 204 : 404);
     }
