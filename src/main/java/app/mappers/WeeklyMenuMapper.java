@@ -1,6 +1,7 @@
 package app.mappers;
 
 import app.dtos.menu.WeeklyMenuDTO;
+import app.dtos.menu.WeeklyMenuOverviewDTO;
 import app.dtos.menu.WeeklyMenuSlotDTO;
 import app.persistence.entities.WeeklyMenu;
 import app.persistence.entities.WeeklyMenuSlot;
@@ -33,6 +34,17 @@ public class WeeklyMenuMapper
             slot.getDayOfWeek(),
             StationMapper.toDTO(slot.getStation()),
             slot.getDish() != null ? DishMapper.toDTO(slot.getDish()) : null
+        );
+    }
+
+    public static WeeklyMenuOverviewDTO toOverviewDTO(WeeklyMenu weeklyMenu)
+    {
+        return new WeeklyMenuOverviewDTO(
+            weeklyMenu.getId(),
+            weeklyMenu.getWeekNumber(),
+            weeklyMenu.getYear(),
+            weeklyMenu.getMenuStatus(),
+            weeklyMenu.getPublishedAt()
         );
     }
 }

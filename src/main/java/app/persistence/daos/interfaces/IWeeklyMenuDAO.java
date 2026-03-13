@@ -8,8 +8,7 @@ import java.util.Set;
 
 public interface IWeeklyMenuDAO extends IEntityDAO<WeeklyMenu, Long>
 {
-    Set<WeeklyMenu> findByStatus(MenuStatus status);
-    Optional<WeeklyMenu> findByWeekAndYear(int weekNumber, int year);
-    WeeklyMenu getByIdWithSlots(Long id);
+    Set<WeeklyMenu> findByFilter(MenuStatus status, Integer year, Integer week);
 
+    Optional<WeeklyMenu> findByWeekAndYear(int weekNumber, int year, MenuStatus status);
 }
