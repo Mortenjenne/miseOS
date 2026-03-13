@@ -62,16 +62,19 @@ public class TestPopulator
         Station s2 = new Station("Hot Kitchen", "Main Courses");
         Station s3 = new Station("Pastry", "Desserts & Bread");
         Station s4 = new Station("Grill", "Steaks & BBQ");
+        Station s5 = new Station("Salad", "Salads and crudites");
 
         stationDAO.create(s1);
         stationDAO.create(s2);
         stationDAO.create(s3);
         stationDAO.create(s4);
+        stationDAO.create(s5);
 
         seeded.put("station_cold", s1);
         seeded.put("station_hot", s2);
         seeded.put("station_pastry", s3);
         seeded.put("station_grill", s4);
+        seeded.put("station_salad", s5);
     }
 
     private void populateUsers()

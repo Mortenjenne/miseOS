@@ -17,7 +17,7 @@ public record DishDTO(
     StationReferenceDTO station,
     UserReferenceDTO createdBy,
     List<AllergenDTO> allergens,
-    boolean isActive,
+    boolean active,
     int originWeek,
     int originYear,
     boolean hasTranslations,

@@ -1,18 +1,15 @@
-### Endpoint URIs
-@local = http://localhost:7070/api/v1
-@deployed = http://corral.dk/api/v1
 
 ### GET by ID
-GET {{local}}/allergens/15
+GET {{url}}/allergens/16
 
 ### GET ALL
-GET {{local}}/allergens
+GET {{url}}/allergens
 
 ### GET by Name
-GET {{local}}/allergens/name/Sell
+GET {{url}}/allergens/name/Sell
 
 ### POST create allergen
-POST {{local}}/allergens
+POST {{url}}/allergens
 Content-Type: application/json
 
 {
@@ -24,11 +21,11 @@ Content-Type: application/json
 }
 
 ### POST seed EU allergens
-POST {{local}}/allergens/seed
+POST {{url}}/allergens/seed
 Content-Type: application/json
 
 ### PUT update allergen
-PUT {{local}}/allergens/15
+PUT {{url}}/allergens/15
 Content-Type: application/json
 
 {
@@ -40,7 +37,7 @@ Content-Type: application/json
 }
 
 ### DELETE allergen
-DELETE {{local}}/allergens/15
+DELETE {{url}}/allergens/15
 
 ###
 

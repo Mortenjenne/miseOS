@@ -1,15 +1,12 @@
-### Endpoint URIs
-@local = http://localhost:7070/api/v1
-@deployed = http://corral.dk/api/v1
 
 ### GET by ID
-GET {{local}}/users/2
+GET {{url}}/users/2
 
 ### GET all users
-GET {{local}}/users/
+GET {{url}}/users/
 
 ### POST Create User
-POST {{local}}/users/
+POST {{url}}/users/
 Content-Type: application/json
 
 {
@@ -20,7 +17,7 @@ Content-Type: application/json
 }
 
 ### POST Create Another User
-POST {{local}}/users/
+POST {{url}}/users/
 Content-Type: application/json
 
 {
@@ -32,7 +29,7 @@ Content-Type: application/json
 
 
 ### PUT Update User
-PUT {{local}}/users/1
+PUT {{url}}/users/1
 Content-Type: application/json
 
 {
@@ -43,14 +40,14 @@ Content-Type: application/json
 
 
 ### PATCH Change Email
-PATCH {{local}}/users/1/email
+PATCH {{url}}/users/1/email
 Content-Type: application/json
 
 "newemail@email.com"
 
 
 ### PATCH Change Password
-PATCH {{local}}/users/1/password
+PATCH {{url}}/users/1/password
 Content-Type: application/json
 
 {
@@ -60,7 +57,7 @@ Content-Type: application/json
 
 
 ### PATCH Change Role
-PATCH {{local}}/users/2/role
+PATCH {{url}}/users/2/role
 Content-Type: application/json
 
 "SOUS_CHEF"
@@ -70,6 +67,6 @@ PATCH {{local}}/users/2/station/1
 
 
 ### DELETE Delete User
-DELETE {{local}}/users/2
+DELETE {{url}}/users/2
 
 ###

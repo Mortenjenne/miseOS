@@ -57,10 +57,6 @@ class StationControllerTest
     static void stopServer()
     {
         ApplicationConfig.stopServer(app);
-        if (emf != null && emf.isOpen())
-        {
-            emf.close();
-        }
     }
 
     @Nested
@@ -305,7 +301,7 @@ class StationControllerTest
         void deletesStation()
         {
             User headChef = (User) seeded.get("user_gordon");
-            Station station = (Station) seeded.get("station_grill");
+            Station station = (Station) seeded.get("station_salad");
 
             given()
                 .header(USER_HEADER, headChef.getId())
@@ -393,7 +389,7 @@ class StationControllerTest
         {
             given()
                 .when()
-                .get(ENDPOINT_URL + "/name/Salad")
+                .get(ENDPOINT_URL + "/name/burger")
                 .then()
                 .statusCode(404);
         }

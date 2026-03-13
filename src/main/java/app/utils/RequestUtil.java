@@ -35,7 +35,7 @@ public final class RequestUtil
     public static Integer requireQueryInt(Context ctx, String param)
     {
         return ctx.queryParamAsClass(param, Integer.class)
-            .check(v -> v > 0, param + " must be positive")
+            .check(v -> v != null && v > 0, param + " must be positive")
             .get();
     }
 

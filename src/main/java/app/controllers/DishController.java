@@ -42,7 +42,7 @@ public class DishController implements IDishController
     public void getAllGrouped(Context ctx)
     {
         Map<String, List<DishOptionDTO>> groupedDishOptions = dishService.getAllActiveDishesGrouped();
-        ctx.json(200).json(groupedDishOptions);
+        ctx.status(200).json(groupedDishOptions);
     }
 
     @Override

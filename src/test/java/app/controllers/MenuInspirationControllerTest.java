@@ -50,10 +50,6 @@ class MenuInspirationControllerTest
     static void stopServer()
     {
         ApplicationConfig.stopServer(app);
-        if (emf != null && emf.isOpen())
-        {
-            emf.close();
-        }
     }
 
     @Test
@@ -68,7 +64,7 @@ class MenuInspirationControllerTest
             .get("/daily")
             .then()
             .statusCode(200)
-            .body(".", hasSize(3))
+            .body(".", hasSize(10))
             .body("nameDA", everyItem(notNullValue()))
             .body("descriptionDA", everyItem(notNullValue()));
     }

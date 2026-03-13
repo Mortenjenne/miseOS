@@ -147,8 +147,10 @@ public class DishDAO implements IDishDAO
     @Override
     public Set<Dish> findByFilter(Long stationId, Boolean active)
     {
-        DBValidator.validateId(stationId);
-        DBValidator.validateNotNull(active, "Active");
+        if (stationId != null)
+        {
+            DBValidator.validateId(stationId);
+        }
 
         try (EntityManager em = emf.createEntityManager())
         {
@@ -214,7 +216,7 @@ public class DishDAO implements IDishDAO
 
                 Dish merged = em.merge(dish);
                 em.getTransaction().commit();
-                return merged;
+                return getByID(merged.getId());
             }
             catch (EntityNotFoundException e)
             {

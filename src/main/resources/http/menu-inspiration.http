@@ -1,11 +1,8 @@
-### Endpoint URIs
-@local = http://localhost:7070/api/v1
-@deployed = http://corral.dk/api/v1
 
 ### GET daily menu inspiration
-GET {{local}}/menu-inspirations/daily
+GET {{url}}/menu-inspirations/daily
 
 ### GET daily menu inspiration as sse stream
-GET {{local}}/menu-inspirations/stream
+GET {{url}}/menu-inspirations/stream
 
 ###

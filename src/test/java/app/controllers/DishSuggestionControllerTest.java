@@ -53,10 +53,6 @@ class DishSuggestionControllerTest
     static void stopServer()
     {
         ApplicationConfig.stopServer(app);
-        if (emf != null && emf.isOpen())
-        {
-            emf.close();
-        }
     }
 
     @Nested

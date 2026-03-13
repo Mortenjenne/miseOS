@@ -1,9 +1,6 @@
-### Endpoint URIs
-@local = http://localhost:7070/api/v1
-@deployed = http://corral.dk/api/v1
 
 ### Create Cold Section
-POST {{local}}/stations/
+POST {{url}}/stations/
 Content-Type: application/json
 
 {
@@ -12,7 +9,7 @@ Content-Type: application/json
 }
 
 ### Create Hot Station
-POST {{local}}/stations/
+POST {{url}}/stations/
 Content-Type: application/json
 
 {
@@ -21,7 +18,7 @@ Content-Type: application/json
 }
 
 ### Create Sandwich Station
-POST {{local}}/stations/
+POST {{url}}/stations/
 Content-Type: application/json
 
 {
@@ -30,16 +27,16 @@ Content-Type: application/json
 }
 
 ### Get all stations
-GET {{local}}/stations/
+GET {{url}}/stations/
 
 ### Get by ID (Station 1)
-GET {{local}}/stations/1
+GET {{url}}/stations/1
 
 ### Get station by Name (Hot)
-GET {{local}}/stations/name/Hot%20Station
+GET {{url}}/stations/name/Hot%20Station
 
 ### Update Hot Station
-PUT {{local}}/stations/2
+PUT {{url}}/stations/2
 Content-Type: application/json
 
 {
@@ -48,4 +45,4 @@ Content-Type: application/json
 }
 
 ### Delete a station (by ID)
-DELETE {{local}}/stations/1
+DELETE {{url}}/stations/1

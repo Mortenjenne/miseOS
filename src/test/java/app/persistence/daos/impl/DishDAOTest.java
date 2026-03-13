@@ -13,7 +13,6 @@ import org.junit.jupiter.api.TestInstance;
 
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -38,22 +37,22 @@ class DishDAOTest
     }
 
     @Test
-    @DisplayName("Find all active - should return only active dishes")
+    @DisplayName("Filter: Find all active - should return only active dishes")
     void findAllActive()
     {
-        Set<Dish> active = dishDAO.findAllActive();
+        Set<Dish> active = dishDAO.findByFilter(null, true);
 
         assertThat(active, hasSize(5));
         assertTrue(active.stream().allMatch(Dish::isActive));
     }
 
     @Test
-    @DisplayName("Find by station - should return active dishes for station")
+    @DisplayName("Filter: Find by station - should return active dishes for station")
     void findByStationAndActive()
     {
         Station hot = (Station) seeded.get("station_hot");
 
-        Set<Dish> dishes = dishDAO.findByStationAndActive(hot.getId());
+        Set<Dish> dishes = dishDAO.findByFilter(hot.getId(), true);
 
         assertThat(dishes, hasSize(3));
         assertTrue(dishes.stream().allMatch(Dish::isActive));
@@ -61,21 +60,21 @@ class DishDAOTest
     }
 
     @Test
-    @DisplayName("Find by station - should return empty set for station with no active dishes")
+    @DisplayName("Filter: Find by station - should return empty set for station with no active dishes")
     void findByStationAndActivesReturnsEmpty()
     {
         Station grill = (Station) seeded.get("station_grill");
 
-        Set<Dish> dishes = dishDAO.findByStationAndActive(grill.getId());
+        Set<Dish> dishes = dishDAO.findByFilter(grill.getId(), true);
 
         assertThat(dishes, is(empty()));
     }
 
     @Test
-    @DisplayName("Find by station - should throw exception for negative id")
+    @DisplayName("Filter: Find by station - should throw exception for negative id")
     void findByStationAndActiveThrowsException()
     {
-        assertThrows(IllegalArgumentException.class, () -> dishDAO.findByStationAndActive(-1L));
+        assertThrows(IllegalArgumentException.class, () -> dishDAO.findByFilter(-1L, true));
     }
 
     @Test
@@ -193,40 +192,6 @@ class DishDAOTest
     }
 
     @Test
-    @DisplayName("Get with allergens - should fetch dish with allergens loaded")
-    void getByIdWithAllergens()
-    {
-        Dish seed = (Dish) seeded.get("dish_roastbeef");
-
-        Optional<Dish> fetched = dishDAO.getByIdWithAllergens(seed.getId());
-
-        assertTrue(fetched.isPresent());
-        assertThat(fetched.get().getAllergens(), hasSize(4));
-
-        assertThat(fetched.get().getAllergens(), containsInAnyOrder(
-                seeded.get("allergen_gluten"),
-                seeded.get("allergen_milk"),
-                seeded.get("allergen_eggs"),
-                seeded.get("allergen_fish"))
-        );
-    }
-
-    @Test
-    @DisplayName("Get with allergens - should return empty Optional for missing id")
-    void getByIdWithAllergensReturnsEmpty()
-    {
-        Optional<Dish> fetched = dishDAO.getByIdWithAllergens(9999L);
-        assertTrue(fetched.isEmpty());
-    }
-
-    @Test
-    @DisplayName("Get with allergens - should throw IllegalArgumentException for negative id")
-    void getByIdWithAllergensNegativeIdThrowsException()
-    {
-        assertThrows(IllegalArgumentException.class, () -> dishDAO.getByIdWithAllergens(-1L));
-    }
-
-    @Test
     @DisplayName("Create - should persist dish with allergens")
     void create()
     {
@@ -234,10 +199,10 @@ class DishDAOTest
         User gordon = (User) seeded.get("user_gordon");
 
         Allergen gluten = (Allergen) seeded.get("allergen_gluten");
-        Allergen dairy = (Allergen) seeded.get("allergen_dairy");
+        Allergen milk = (Allergen) seeded.get("allergen_milk");
         Set<Allergen> allergens = new HashSet<>();
         allergens.add(gluten);
-        allergens.add(dairy);
+        allergens.add(milk);
 
         Dish dish = new Dish(
             "Pasta Carbonara",
@@ -276,17 +241,26 @@ class DishDAOTest
     }
 
     @Test
-    @DisplayName("Get by id - should return correct dish")
+    @DisplayName("Get by id - should return correct dish with allergens and station")
     void getByID()
     {
-        Dish seed = (Dish) seeded.get("dish_salmon");
+        Dish seed = (Dish) seeded.get("dish_roastbeef");
         Dish fetched = dishDAO.getByID(seed.getId());
 
         assertThat(fetched.getId(), is(seed.getId()));
-        assertThat(fetched.getNameDA(), is("Røget Laks"));
+        assertThat(fetched.getNameDA(), is(seed.getNameDA()));
         assertThat(fetched.isActive(), is(true));
-        assertThat(fetched.getOriginWeek(), is(7));
+        assertThat(fetched.getOriginWeek(), is(5));
         assertThat(fetched.getOriginYear(), is(2026));
+        assertThat(fetched.getStation(),is(notNullValue()));
+        assertThat(fetched.getStation().getStationName(), is(seed.getStation().getStationName()));
+        assertThat(fetched.getAllergens(), hasSize(4));
+        assertThat(fetched.getAllergens(), containsInAnyOrder(
+            seeded.get("allergen_gluten"),
+            seeded.get("allergen_milk"),
+            seeded.get("allergen_eggs"),
+            seeded.get("allergen_fish"))
+        );
         assertNotNull(fetched.getCreatedAt());
     }
 
@@ -347,7 +321,7 @@ class DishDAOTest
 
         assertFalse(updated.isActive());
 
-        Set<Dish> active = dishDAO.findAllActive();
+        Set<Dish> active = dishDAO.findByFilter(null, true);
         assertThat(active, not(hasItem(updated)));
     }
 
@@ -363,7 +337,7 @@ class DishDAOTest
 
         assertTrue(updated.isActive());
 
-        Set<Dish> active = dishDAO.findAllActive();
+        Set<Dish> active = dishDAO.findByFilter(null, true);
         assertThat(active, hasItem(updated));
     }
 

@@ -74,12 +74,13 @@ class StationDAOTest
     {
         Set<Station> stations = stationDAO.getAll();
 
-        assertThat(stations, hasSize(4));
+        assertThat(stations, hasSize(5));
         assertThat(stations, containsInAnyOrder(
             seeded.get("station_cold"),
             seeded.get("station_hot"),
             seeded.get("station_pastry"),
-            seeded.get("station_grill")
+            seeded.get("station_grill"),
+            seeded.get("station_salad")
         ));
     }
 
@@ -130,7 +131,7 @@ class StationDAOTest
     @Test
     void delete()
     {
-        Station seed = (Station) seeded.get("station_pastry");
+        Station seed = (Station) seeded.get("station_salad");
         Long id = seed.getId();
 
         boolean isDeleted = stationDAO.delete(id);
