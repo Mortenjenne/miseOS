@@ -307,7 +307,6 @@ public class WeeklyMenuService implements IWeeklyMenuService
         {
             return MenuStatus.PUBLISHED;
         }
-
         return null;
     }
 }

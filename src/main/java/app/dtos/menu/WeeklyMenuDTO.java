@@ -1,9 +1,10 @@
 package app.dtos.menu;
 
+import app.dtos.user.UserReferenceDTO;
 import app.enums.MenuStatus;
 
 import java.time.LocalDateTime;
-import java.util.Set;
+import java.util.List;
 
 public record WeeklyMenuDTO(
     Long menuId,
@@ -11,8 +12,8 @@ public record WeeklyMenuDTO(
     int year,
     MenuStatus menuStatus,
     LocalDateTime publishedAt,
-    String publishedBy,
-    Set<WeeklyMenuSlotDTO> menuSlots
+    UserReferenceDTO userReferenceDTO,
+    List<WeeklyMenuSlotDTO> menuSlots
 )
 {
 }

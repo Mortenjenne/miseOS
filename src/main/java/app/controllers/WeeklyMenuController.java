@@ -1,7 +1,12 @@
 package app.controllers;
 
+import app.dtos.menu.*;
 import app.services.IWeeklyMenuService;
+import app.utils.RequestUtil;
+import app.utils.SecurityUtil;
 import io.javalin.http.Context;
+
+import java.util.Objects;
 
 public class WeeklyMenuController implements IWeeklyMenuController
 {
@@ -15,43 +20,76 @@ public class WeeklyMenuController implements IWeeklyMenuController
     @Override
     public void addMenuSlot(Context ctx)
     {
+        Long userId = SecurityUtil.requireUserId(ctx);
+        Long menuId = RequestUtil.requirePathId(ctx, "id");
 
+        AddMenuSlotDTO dto = ctx.bodyValidator(AddMenuSlotDTO.class)
+            .check(Objects::isNull, "Add menu slot body cannot be null")
+            .get();
+
+         WeeklyMenuDTO weeklyMenuDTO = weeklyMenuService.addMenuSlot(userId, menuId, dto);
+         ctx.status(201).json(weeklyMenuDTO);
     }
 
     @Override
     public void removeMenuSlot(Context ctx)
     {
+        Long userId = SecurityUtil.requireUserId(ctx);
+        Long menuId = RequestUtil.requirePathId(ctx, "id");
+        Long slotId = RequestUtil.requirePathId(ctx, "slotId");
 
+        WeeklyMenuDTO weeklyMenuDTO = weeklyMenuService.removeSlot(userId, menuId, slotId);
+        ctx.status(204).json(weeklyMenuDTO);
     }
 
     @Override
     public void updateMenuSlot(Context ctx)
     {
+        Long userId = SecurityUtil.requireUserId(ctx);
+        Long menuId = RequestUtil.requirePathId(ctx, "id");
+        Long slotId = RequestUtil.requirePathId(ctx, "slotId");
 
+        UpdateMenuSlotDTO dto = ctx.bodyValidator(UpdateMenuSlotDTO.class)
+            .check(Objects::isNull, "Add menu slot body cannot be null")
+            .get();
+
+        WeeklyMenuDTO weeklyMenuDTO = weeklyMenuService.updateSlot(userId, menuId, slotId, dto);
+        ctx.status(200).json(weeklyMenuDTO);
     }
 
     @Override
     public void translateMenu(Context ctx)
     {
+        Long userId = SecurityUtil.requireUserId(ctx);
+        Long menuId = RequestUtil.requirePathId(ctx, "id");
 
+        WeeklyMenuDTO weeklyMenuDTO = weeklyMenuService.translateMenu(userId, menuId);
+        ctx.status(200).json(weeklyMenuDTO);
     }
 
     @Override
     public void publishMenu(Context ctx)
     {
+        Long userId = SecurityUtil.requireUserId(ctx);
+        Long menuId = RequestUtil.requirePathId(ctx, "id");
 
+        WeeklyMenuDTO weeklyMenuDTO = weeklyMenuService.publishMenu(userId, menuId);
+        ctx.status(200).json(weeklyMenuDTO);
     }
 
     @Override
     public void getCurrentWeekMenu(Context ctx)
     {
-
+        WeeklyMenuDTO weeklyMenuDTO = weeklyMenuService.getCurrentWeekMenu();
+        ctx.status(200).json(weeklyMenuDTO);
     }
 
     @Override
     public void getById(Context ctx)
     {
-
+        Long menuId = RequestUtil.requirePathId(ctx, "id");
+        WeeklyMenuDTO weeklyMenuDTO = weeklyMenuService.getById(menuId);
+        ctx.status(200).json(weeklyMenuDTO);
     }
 
     @Override
@@ -63,7 +101,13 @@ public class WeeklyMenuController implements IWeeklyMenuController
     @Override
     public void create(Context ctx)
     {
+        Long userId = SecurityUtil.requireUserId(ctx);
+        CreateWeeklyMenuDTO dto = ctx.bodyValidator(CreateWeeklyMenuDTO.class)
+            .check(Objects::nonNull, "Create weekly menu body cannot be null")
+            .get();
 
+        WeeklyMenuDTO weeklyMenuDTO = weeklyMenuService.createMenu(userId, dto);
+        ctx.status(201).json(weeklyMenuDTO);
     }
 
     @Override
@@ -72,9 +116,13 @@ public class WeeklyMenuController implements IWeeklyMenuController
 
     }
 
+    //TODO is needed?
     @Override
     public void delete(Context ctx)
     {
+        Long userId = SecurityUtil.requireUserId(ctx);
+        Long menuId = RequestUtil.requirePathId(ctx, "id");
 
+        boolean isDeleted;
     }
 }

@@ -9,8 +9,8 @@ import app.enums.DayOfWeek;
 public record WeeklyMenuSlotDTO(
     Long menuSlotId,
     DayOfWeek dayOfWeek,
-    StationReferenceDTO,
-    DishDTO dishDTO
+    StationReferenceDTO stationReferenceDTO,
+    MenuDishDTO menuDishDTO
 )
 {
 }
