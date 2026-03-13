@@ -1,6 +1,7 @@
 package app.persistence.daos.interfaces;
 
 import app.enums.Status;
+import app.persistence.daos.interfaces.generic.IEntityDAO;
 import app.persistence.entities.IngredientRequest;
 
 import java.time.LocalDate;
@@ -10,4 +11,6 @@ public interface IIngredientRequestDAO extends IEntityDAO<IngredientRequest, Lon
 {
     Set<IngredientRequest> findByStatus(Status status);
     Set<IngredientRequest> findByStatusAndDeliveryDate(Status status, LocalDate deliveryDate);
+
+    Set<IngredientRequest> getAll();
 }

@@ -30,10 +30,10 @@ public class UserDAO implements IUserDAO
         {
             try
             {
-            em.getTransaction().begin();
-            em.persist(user);
-            em.getTransaction().commit();
-            return user;
+                em.getTransaction().begin();
+                em.persist(user);
+                em.getTransaction().commit();
+                return user;
             }
             catch (PersistenceException e)
             {
@@ -48,8 +48,15 @@ public class UserDAO implements IUserDAO
     {
         try(EntityManager em = emf.createEntityManager())
         {
-            TypedQuery<User> query = em.createQuery("SELECT u FROM User u", User.class);
-            return new HashSet<>(query.getResultList());
+            try
+            {
+                TypedQuery<User> query = em.createQuery("SELECT u FROM User u", User.class);
+                return new HashSet<>(query.getResultList());
+            }
+            catch (PersistenceException e)
+            {
+                throw new DatabaseException("Failed fetch all users", e);
+            }
         }
     }
 
@@ -60,8 +67,15 @@ public class UserDAO implements IUserDAO
 
         try(EntityManager em = emf.createEntityManager())
         {
-            User user = em.find(User.class, id);
-            return DBValidator.validateExists(user, id, User.class);
+            try
+            {
+                User user = em.find(User.class, id);
+                return DBValidator.validateExists(user, id, User.class);
+            }
+            catch (PersistenceException e)
+            {
+                throw new DatabaseException("Failed to fetch user by id: " + id, e);
+            }
         }
     }
 
@@ -131,13 +145,20 @@ public class UserDAO implements IUserDAO
 
         try(EntityManager em = emf.createEntityManager())
         {
-            User user = em.createQuery("SELECT u FROM User u WHERE u.email = :email", User.class)
-                .setParameter("email", email)
-                .getResultStream()
-                .findFirst()
-                .orElse(null);
+            try
+            {
+                User user = em.createQuery("SELECT u FROM User u WHERE u.email = :email", User.class)
+                    .setParameter("email", email)
+                    .getResultStream()
+                    .findFirst()
+                    .orElse(null);
 
-            return Optional.ofNullable(user);
+                return Optional.ofNullable(user);
+            }
+            catch (PersistenceException e)
+            {
+                throw new DatabaseException("Failed to fetch user by email: " + email, e);
+            }
         }
     }
 
@@ -148,9 +169,16 @@ public class UserDAO implements IUserDAO
 
         try(EntityManager em = emf.createEntityManager())
         {
-            TypedQuery<User> query = em.createQuery("SELECT u FROM User u WHERE u.userRole = :role", User.class)
-                .setParameter("role", role);
-            return new HashSet<>(query.getResultList());
+            try
+            {
+                TypedQuery<User> query = em.createQuery("SELECT u FROM User u WHERE u.userRole = :role", User.class)
+                    .setParameter("role", role);
+                return new HashSet<>(query.getResultList());
+            }
+            catch (PersistenceException e)
+            {
+                throw new DatabaseException("Failed to find user by role: " + role, e);
+            }
         }
     }
 
@@ -161,10 +189,17 @@ public class UserDAO implements IUserDAO
 
         try (EntityManager em = emf.createEntityManager())
         {
-            Long count = em.createQuery("SELECT COUNT(u) FROM User u WHERE u.email = :email", Long.class)
-                .setParameter("email", email)
-                .getSingleResult();
-            return count > 0;
+            try
+            {
+                Long count = em.createQuery("SELECT COUNT(u) FROM User u WHERE u.email = :email", Long.class)
+                    .setParameter("email", email)
+                    .getSingleResult();
+                return count > 0;
+            }
+            catch (PersistenceException e)
+            {
+                throw new DatabaseException("Failed to check if user exists by email: " + email, e);
+            }
         }
     }
 }

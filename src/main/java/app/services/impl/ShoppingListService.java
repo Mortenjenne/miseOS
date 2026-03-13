@@ -7,7 +7,7 @@ import app.exceptions.UnauthorizedActionException;
 import app.mappers.ShoppingListMapper;
 import app.persistence.daos.interfaces.IIngredientRequestDAO;
 import app.persistence.daos.interfaces.IShoppingListDAO;
-import app.persistence.daos.interfaces.IUserReader;
+import app.persistence.daos.interfaces.readers.IUserReader;
 import app.persistence.entities.IngredientRequest;
 import app.persistence.entities.ShoppingList;
 import app.persistence.entities.ShoppingListItem;

@@ -1,6 +1,7 @@
 package app.persistence.daos.interfaces;
 
 import app.enums.MenuStatus;
+import app.persistence.daos.interfaces.generic.IEntityDAO;
 import app.persistence.entities.WeeklyMenu;
 
 import java.util.Optional;

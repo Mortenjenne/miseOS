@@ -6,7 +6,7 @@ import app.dtos.weather.WeatherForecastDTO;
 import app.exceptions.UnauthorizedActionException;
 import app.integrations.weather.IWeatherClient;
 import app.mappers.StationMapper;
-import app.persistence.daos.interfaces.IUserReader;
+import app.persistence.daos.interfaces.readers.IUserReader;
 import app.persistence.entities.Station;
 import app.persistence.entities.User;
 import app.services.IAiService;

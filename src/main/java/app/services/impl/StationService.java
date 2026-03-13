@@ -7,7 +7,7 @@ import app.exceptions.UnauthorizedActionException;
 import app.exceptions.ValidationException;
 import app.mappers.StationMapper;
 import app.persistence.daos.interfaces.IStationDAO;
-import app.persistence.daos.interfaces.IUserReader;
+import app.persistence.daos.interfaces.readers.IUserReader;
 import app.persistence.entities.Station;
 import app.persistence.entities.User;
 import app.services.IStationService;

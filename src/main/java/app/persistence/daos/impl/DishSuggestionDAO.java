@@ -110,23 +110,6 @@ public class DishSuggestionDAO implements IDishSuggestionDAO
     }
 
     @Override
-    public Set<DishSuggestion> getAll()
-    {
-        try(EntityManager em = emf.createEntityManager())
-        {
-            try
-            {
-                TypedQuery<DishSuggestion> query = em.createQuery("SELECT DISTINCT ds FROM DishSuggestion ds LEFT JOIN FETCH ds.allergens", DishSuggestion.class);
-                return new LinkedHashSet<>(query.getResultList());
-            }
-            catch (PersistenceException e)
-            {
-                throw new DatabaseException("Failed to all dish suggestions", e);
-            }
-        }
-    }
-
-    @Override
     public DishSuggestion update(DishSuggestion dishSuggestion)
     {
         DBValidator.validateNotNull(dishSuggestion, "DishSuggestion");

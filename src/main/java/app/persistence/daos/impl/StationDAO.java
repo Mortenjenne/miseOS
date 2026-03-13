@@ -7,7 +7,6 @@ import app.utils.DBValidator;
 import app.utils.TransactionUtil;
 import jakarta.persistence.*;
 
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -30,10 +29,10 @@ public class StationDAO implements IStationDAO
         {
             try
             {
-            em.getTransaction().begin();
-            em.persist(station);
-            em.getTransaction().commit();
-            return station;
+                em.getTransaction().begin();
+                em.persist(station);
+                em.getTransaction().commit();
+                return station;
             }
             catch (PersistenceException e)
             {
@@ -48,8 +47,15 @@ public class StationDAO implements IStationDAO
     {
         try(EntityManager em = emf.createEntityManager())
         {
-            TypedQuery<Station> query = em.createQuery("SELECT s FROM Station s ORDER BY s.stationName ASC", Station.class);
-            return new LinkedHashSet<>(query.getResultList());
+            try
+            {
+                TypedQuery<Station> query = em.createQuery("SELECT s FROM Station s ORDER BY s.stationName ASC", Station.class);
+                return new LinkedHashSet<>(query.getResultList());
+            }
+            catch (PersistenceException e)
+            {
+                throw new DatabaseException("Failed to fetch all stations", e);
+            }
         }
     }
 
@@ -60,8 +66,15 @@ public class StationDAO implements IStationDAO
 
         try(EntityManager em = emf.createEntityManager())
         {
-            Station station = em.find(Station.class, id);
-            return DBValidator.validateExists(station, id, Station.class);
+            try
+            {
+                Station station = em.find(Station.class, id);
+                return DBValidator.validateExists(station, id, Station.class);
+            }
+            catch (PersistenceException e)
+            {
+                throw new DatabaseException("Failed to fetch station by id: " + id, e);
+            }
         }
     }
 
@@ -131,13 +144,20 @@ public class StationDAO implements IStationDAO
 
         try(EntityManager em = emf.createEntityManager())
         {
-            Station station = em.createQuery("SELECT st FROM Station st WHERE st.stationName ILIKE :name", Station.class)
-                .setParameter("name", "%" + name + "%")
-                .getResultStream()
-                .findFirst()
-                .orElse(null);
+            try
+            {
+                Station station = em.createQuery("SELECT st FROM Station st WHERE st.stationName ILIKE :name", Station.class)
+                    .setParameter("name", "%" + name + "%")
+                    .getResultStream()
+                    .findFirst()
+                    .orElse(null);
 
-            return Optional.ofNullable(station);
+                return Optional.ofNullable(station);
+            }
+            catch (PersistenceException e)
+            {
+                throw new DatabaseException("Failed to find station by name: " + name, e);
+            }
         }
     }
 
@@ -148,21 +168,28 @@ public class StationDAO implements IStationDAO
 
         try (EntityManager em = emf.createEntityManager())
         {
-            Long dishCount = em.createQuery(
-                    "SELECT COUNT(d) FROM Dish d JOIN d.station s WHERE s.id = :stationId",
-                    Long.class
-                )
-                .setParameter("stationId", stationId)
-                .getSingleResult();
+            try
+            {
+                Long dishCount = em.createQuery(
+                        "SELECT COUNT(d) FROM Dish d JOIN d.station s WHERE s.id = :stationId",
+                        Long.class
+                    )
+                    .setParameter("stationId", stationId)
+                    .getSingleResult();
 
-            Long suggestionCount = em.createQuery(
-                    "SELECT COUNT(s) FROM DishSuggestion d JOIN d.station s WHERE s.id = :stationId",
-                    Long.class
-                )
-                .setParameter("stationId", stationId)
-                .getSingleResult();
+                Long suggestionCount = em.createQuery(
+                        "SELECT COUNT(s) FROM DishSuggestion d JOIN d.station s WHERE s.id = :stationId",
+                        Long.class
+                    )
+                    .setParameter("stationId", stationId)
+                    .getSingleResult();
 
-            return (dishCount + suggestionCount) > 0;
+                return (dishCount + suggestionCount) > 0;
+            }
+            catch (PersistenceException e)
+            {
+                throw new DatabaseException("Failed to check if station exists", e);
+            }
         }
     }
 }

@@ -6,6 +6,9 @@ import app.exceptions.UnauthorizedActionException;
 import app.exceptions.ValidationException;
 import app.mappers.WeeklyMenuMapper;
 import app.persistence.daos.interfaces.*;
+import app.persistence.daos.interfaces.readers.IDishReader;
+import app.persistence.daos.interfaces.readers.IStationReader;
+import app.persistence.daos.interfaces.readers.IUserReader;
 import app.persistence.entities.*;
 import app.services.IDishTranslationService;
 import app.services.IWeeklyMenuService;
@@ -149,12 +152,14 @@ public class WeeklyMenuService implements IWeeklyMenuService
     }
 
     @Override
+
     public WeeklyMenuDTO publishMenu(Long publisherId, Long menuId)
     {
        ValidationUtil.validateId(publisherId);
        ValidationUtil.validateId(menuId);
 
        User publisher = userReader.getByID(publisherId);
+       requireHeadOrSousChef(publisher);
 
        WeeklyMenu menu = menuDAO.getByID(menuId);
        requireNotEmpty(menu);
@@ -201,7 +206,7 @@ public class WeeklyMenuService implements IWeeklyMenuService
     }
 
     @Override
-    public List<WeeklyMenuOverviewDTO> getOverview(Long userId, MenuStatus menuStatus, int year, int week)
+    public List<WeeklyMenuOverviewDTO> getOverview(Long userId, MenuStatus menuStatus, Integer year, Integer week)
     {
         ValidationUtil.validateId(userId);
         User user = userReader.getByID(userId);
@@ -211,6 +216,19 @@ public class WeeklyMenuService implements IWeeklyMenuService
             .stream()
             .map(WeeklyMenuMapper::toOverviewDTO)
             .toList();
+    }
+
+    @Override
+    public boolean deleteMenu(Long userId, Long menuId)
+    {
+        ValidationUtil.validateId(userId);
+        ValidationUtil.validateId(menuId);
+
+        User user = userReader.getByID(userId);
+        WeeklyMenu menu = menuDAO.getByID(menuId);
+
+        menu.delete(user);
+        return menuDAO.delete(menuId);
     }
 
     private WeeklyMenuSlot findSlot(WeeklyMenu menu, Long menuSlotId)

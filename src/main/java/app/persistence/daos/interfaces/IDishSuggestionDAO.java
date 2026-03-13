@@ -1,6 +1,8 @@
 package app.persistence.daos.interfaces;
 
 import app.enums.Status;
+import app.persistence.daos.interfaces.generic.IEntityDAO;
+import app.persistence.daos.interfaces.readers.IDishSuggestionReader;
 import app.persistence.entities.DishSuggestion;
 
 import java.util.Set;

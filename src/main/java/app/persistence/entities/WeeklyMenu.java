@@ -86,6 +86,19 @@ public class WeeklyMenu implements IEntity
         }
     }
 
+    public void delete(User requestingUser)
+    {
+        if (!requestingUser.isHeadChef())
+        {
+            throw new UnauthorizedActionException("Only head chefs can delete menus");
+        }
+
+        if (this.menuStatus == MenuStatus.PUBLISHED)
+        {
+            throw new IllegalStateException("Cannot delete a published menu — archive it instead");
+        }
+    }
+
     @Override
     public boolean equals(Object o)
     {

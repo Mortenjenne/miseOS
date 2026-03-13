@@ -10,6 +10,7 @@ public record WeeklyMenuOverviewDTO(
     int weekNumber,
     int year,
     MenuStatus menuStatus,
+    int slotCount,
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     LocalDateTime publishedAt
 ) {}

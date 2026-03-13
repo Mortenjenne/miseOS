@@ -1,8 +1,9 @@
 package app.persistence.daos.interfaces;
 
+import app.persistence.daos.interfaces.generic.IEntityDAO;
+import app.persistence.daos.interfaces.readers.IDishReader;
 import app.persistence.entities.Dish;
 
-import java.util.Optional;
 import java.util.Set;
 
 public interface IDishDAO extends IDishReader, IEntityDAO<Dish, Long>

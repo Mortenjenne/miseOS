@@ -8,7 +8,7 @@ import app.exceptions.UnauthorizedActionException;
 import app.exceptions.ValidationException;
 import app.mappers.AllergenMapper;
 import app.persistence.daos.interfaces.IAllergenDAO;
-import app.persistence.daos.interfaces.IUserReader;
+import app.persistence.daos.interfaces.readers.IUserReader;
 import app.persistence.entities.Allergen;
 import app.persistence.entities.User;
 import app.services.IAllergenService;

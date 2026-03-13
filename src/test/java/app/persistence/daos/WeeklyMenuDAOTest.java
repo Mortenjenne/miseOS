@@ -75,7 +75,7 @@ class WeeklyMenuDAOTest
     void getByID()
     {
         WeeklyMenu seed = (WeeklyMenu) seeded.get("menu_week7");
-        WeeklyMenu fetched = weeklyMenuDAO.getByIdWithSlots(seed.getId());
+        WeeklyMenu fetched = weeklyMenuDAO.getByID(seed.getId());
 
         assertThat(fetched.getId(), is(seed.getId()));
         assertThat(fetched.getWeeklyMenuSlots(), hasSize(greaterThan(0)));
@@ -85,8 +85,8 @@ class WeeklyMenuDAOTest
     @DisplayName("Get by ID with slots - should throw EntityNotFoundException and IllegalArgumentException")
     void getByIdWithSlotsNotFoundThrowsException() {
 
-        assertThrows(EntityNotFoundException.class, () -> weeklyMenuDAO.getByIdWithSlots(9999L));
-        assertThrows(IllegalArgumentException.class, () -> weeklyMenuDAO.getByIdWithSlots(-1L));
+        assertThrows(EntityNotFoundException.class, () -> weeklyMenuDAO.getByID(9999L));
+        assertThrows(IllegalArgumentException.class, () -> weeklyMenuDAO.getByID(-1L));
     }
 
     @Test

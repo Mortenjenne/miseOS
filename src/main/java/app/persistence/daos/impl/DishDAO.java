@@ -124,27 +124,6 @@ public class DishDAO implements IDishDAO
     }
 
     @Override
-    public Set<Dish> getAll()
-    {
-        try (EntityManager em = emf.createEntityManager())
-        {
-            try
-            {
-                TypedQuery<Dish> query = em.createQuery(
-                    "SELECT DISTINCT d FROM Dish d " +
-                        "LEFT JOIN FETCH d.allergens " +
-                        "ORDER BY d.nameDA", Dish.class);
-
-                return new LinkedHashSet<>(query.getResultList());
-            }
-            catch (PersistenceException e)
-            {
-                throw new DatabaseException("Failed to fetch all dishes", e);
-            }
-        }
-    }
-
-    @Override
     public Set<Dish> findByFilter(Long stationId, Boolean active)
     {
         if (stationId != null)

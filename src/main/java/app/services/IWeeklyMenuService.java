@@ -25,5 +25,7 @@ public interface IWeeklyMenuService
 
     WeeklyMenuDTO getById(Long id);
 
-    List<WeeklyMenuOverviewDTO> getOverview(Long userId, MenuStatus menuStatus, int year, int week);
+    List<WeeklyMenuOverviewDTO> getOverview(Long userId, MenuStatus menuStatus, Integer year, Integer week);
+
+    boolean deleteMenu(Long userId, Long menuId);
 }

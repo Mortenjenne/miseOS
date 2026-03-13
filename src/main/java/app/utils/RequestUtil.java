@@ -1,11 +1,9 @@
 package app.utils;
 
+import app.enums.MenuStatus;
 import app.enums.Status;
-import app.exceptions.ValidationException;
 import io.javalin.http.Context;
 
-import java.util.Locale;
-import java.util.Objects;
 
 public final class RequestUtil
 {
@@ -60,6 +58,20 @@ public final class RequestUtil
         if (!isPresent(ctx, param)) return null;
 
         return requireQueryString(ctx, param);
+    }
+
+    public static MenuStatus getQueryMenuStatus(Context ctx, String param)
+    {
+        if (!isPresent(ctx, param)) return null;
+
+        try
+        {
+            return MenuStatus.valueOf(ctx.queryParam(param).trim().toUpperCase());
+        }
+        catch (IllegalArgumentException e)
+        {
+            throw new IllegalArgumentException("Invalid menu status: " + ctx.queryParam(param));
+        }
     }
 
     public static Status getQueryStatus(Context ctx, String param)

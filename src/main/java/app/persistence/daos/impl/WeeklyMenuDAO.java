@@ -1,5 +1,7 @@
 package app.persistence.daos.impl;
 
+import app.dtos.menu.WeeklyMenuDTO;
+import app.dtos.menu.WeeklyMenuOverviewDTO;
 import app.enums.MenuStatus;
 import app.exceptions.DatabaseException;
 import app.persistence.daos.interfaces.IWeeklyMenuDAO;
@@ -9,6 +11,7 @@ import app.utils.TransactionUtil;
 import jakarta.persistence.*;
 
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -22,28 +25,31 @@ public class WeeklyMenuDAO implements IWeeklyMenuDAO
     }
 
     @Override
-    public Set<WeeklyMenu> findByFilter(MenuStatus status, Integer year, Integer week)
+    public List<WeeklyMenuOverviewDTO> findByFilter(MenuStatus status, Integer year, Integer week)
     {
         try (EntityManager em = emf.createEntityManager())
         {
             try
             {
-                TypedQuery<WeeklyMenu> query = em.createQuery(
-                        "SELECT wm FROM WeeklyMenu wm " +
+                return em.createQuery(
+                        "SELECT new app.dtos.menu.WeeklyMenuOverviewDTO(" +
+                            "wm.id, wm.weekNumber, wm.year, wm.menuStatus, " +
+                            "(SELECT COUNT(s) FROM WeeklyMenuSlot s WHERE s.weeklyMenu = wm), " +
+                            "wm.publishedAt) " +
+                            "FROM WeeklyMenu wm " +
                             "WHERE (:status IS NULL OR wm.menuStatus = :status) " +
                             "AND   (:year   IS NULL OR wm.year = :year) " +
                             "AND   (:week   IS NULL OR wm.weekNumber = :week) " +
-                            "ORDER BY wm.year DESC, wm.weekNumber DESC",
-                        WeeklyMenu.class)
+                            "ORDER BY wm.year DESC, wm.weekNumber ASC",
+                        WeeklyMenuOverviewDTO.class)
                     .setParameter("status", status)
                     .setParameter("year", year)
-                    .setParameter("week", week);
-
-                return new LinkedHashSet<>(query.getResultList());
+                    .setParameter("week", week)
+                    .getResultList();
             }
             catch (PersistenceException e)
             {
-                throw new DatabaseException("Failed to fetch weekly menus", e);
+                throw new DatabaseException("Failed to fetch menu overviews", e);
             }
         }
     }

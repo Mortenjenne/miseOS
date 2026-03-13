@@ -7,7 +7,6 @@ import app.utils.DBValidator;
 import app.utils.TransactionUtil;
 import jakarta.persistence.*;
 
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -28,13 +27,20 @@ public class AllergenDAO implements IAllergenDAO
 
         try(EntityManager em = emf.createEntityManager())
         {
-            Allergen allergen = em.createQuery("SELECT a FROM Allergen a WHERE a.nameDA ILIKE :nameDA", Allergen.class)
-                .setParameter("nameDA","%" + nameDA + "%")
-                .getResultStream()
-                .findFirst()
-                .orElse(null);
+            try
+            {
+                Allergen allergen = em.createQuery("SELECT a FROM Allergen a WHERE a.nameDA ILIKE :nameDA", Allergen.class)
+                    .setParameter("nameDA", "%" + nameDA + "%")
+                    .getResultStream()
+                    .findFirst()
+                    .orElse(null);
 
-            return Optional.ofNullable(allergen);
+                return Optional.ofNullable(allergen);
+            }
+            catch (PersistenceException e)
+            {
+                throw new DatabaseException("Failed to fetch allergen with name: "+ nameDA, e);
+            }
         }
     }
 
@@ -45,13 +51,20 @@ public class AllergenDAO implements IAllergenDAO
 
         try(EntityManager em = emf.createEntityManager())
         {
-            Allergen allergen = em.createQuery("SELECT a FROM Allergen a WHERE a.nameEN ILIKE :nameEN", Allergen.class)
-                .setParameter("nameEN","%" + nameEN + "%")
-                .getResultStream()
-                .findFirst()
-                .orElse(null);
+            try
+            {
+                Allergen allergen = em.createQuery("SELECT a FROM Allergen a WHERE a.nameEN ILIKE :nameEN", Allergen.class)
+                    .setParameter("nameEN", "%" + nameEN + "%")
+                    .getResultStream()
+                    .findFirst()
+                    .orElse(null);
 
-            return Optional.ofNullable(allergen);
+                return Optional.ofNullable(allergen);
+            }
+            catch (PersistenceException e)
+            {
+                throw new DatabaseException("Failed to fetch allergen with name: "+ nameEN, e);
+            }
         }
     }
 
@@ -60,8 +73,15 @@ public class AllergenDAO implements IAllergenDAO
     {
         try (EntityManager em = emf.createEntityManager())
         {
-            return em.createQuery("SELECT COUNT(a) FROM Allergen a", Long.class)
-                .getSingleResult();
+            try
+            {
+                return em.createQuery("SELECT COUNT(a) FROM Allergen a", Long.class)
+                    .getSingleResult();
+            }
+            catch (PersistenceException e)
+            {
+                throw new DatabaseException("Failed to count allergens", e);
+            }
         }
     }
 
@@ -72,21 +92,28 @@ public class AllergenDAO implements IAllergenDAO
 
         try (EntityManager em = emf.createEntityManager())
         {
-            Long dishCount = em.createQuery(
-                    "SELECT COUNT(d) FROM Dish d JOIN d.allergens a WHERE a.id = :allergenId",
-                    Long.class
-                )
-                .setParameter("allergenId", allergenId)
-                .getSingleResult();
+            try
+            {
+                Long dishCount = em.createQuery(
+                        "SELECT COUNT(d) FROM Dish d JOIN d.allergens a WHERE a.id = :allergenId",
+                        Long.class
+                    )
+                    .setParameter("allergenId", allergenId)
+                    .getSingleResult();
 
-            Long suggestionCount = em.createQuery(
-                    "SELECT COUNT(s) FROM DishSuggestion s JOIN s.allergens a WHERE a.id = :allergenId",
-                    Long.class
-                )
-                .setParameter("allergenId", allergenId)
-                .getSingleResult();
+                Long suggestionCount = em.createQuery(
+                        "SELECT COUNT(s) FROM DishSuggestion s JOIN s.allergens a WHERE a.id = :allergenId",
+                        Long.class
+                    )
+                    .setParameter("allergenId", allergenId)
+                    .getSingleResult();
 
-            return (dishCount + suggestionCount) > 0;
+                return (dishCount + suggestionCount) > 0;
+            }
+            catch (PersistenceException e)
+            {
+                throw new DatabaseException("Failed to check if allergen is used in any dish", e);
+            }
         }
     }
 
@@ -97,11 +124,18 @@ public class AllergenDAO implements IAllergenDAO
 
         try(EntityManager em = emf.createEntityManager())
         {
-            Long count = em.createQuery("SELECT COUNT(a) FROM Allergen a WHERE a.displayNumber = :displayNumber", Long.class)
-                .setParameter("displayNumber", displayNumber)
-                .getSingleResult();
+            try
+            {
+                Long count = em.createQuery("SELECT COUNT(a) FROM Allergen a WHERE a.displayNumber = :displayNumber", Long.class)
+                    .setParameter("displayNumber", displayNumber)
+                    .getSingleResult();
 
-            return count > 0;
+                return count > 0;
+            }
+            catch (PersistenceException e)
+            {
+                throw new DatabaseException("Failed to read existing allergens", e);
+            }
         }
     }
 
@@ -132,8 +166,15 @@ public class AllergenDAO implements IAllergenDAO
     {
         try(EntityManager em = emf.createEntityManager())
         {
-            TypedQuery<Allergen> query = em.createQuery("SELECT a FROM Allergen a ORDER BY a.displayNumber ASC", Allergen.class);
-            return new LinkedHashSet<>(query.getResultList());
+            try
+            {
+                TypedQuery<Allergen> query = em.createQuery("SELECT a FROM Allergen a ORDER BY a.displayNumber ASC", Allergen.class);
+                return new LinkedHashSet<>(query.getResultList());
+            }
+            catch (PersistenceException e)
+            {
+                throw new DatabaseException("Failed to fetch all allergens", e);
+            }
         }
     }
 
@@ -144,8 +185,15 @@ public class AllergenDAO implements IAllergenDAO
 
         try(EntityManager em = emf.createEntityManager())
         {
-            Allergen allergen = em.find(Allergen.class, id);
-            return DBValidator.validateExists(allergen, id, Allergen.class);
+            try
+            {
+                Allergen allergen = em.find(Allergen.class, id);
+                return DBValidator.validateExists(allergen, id, Allergen.class);
+            }
+            catch (PersistenceException e)
+            {
+                throw new DatabaseException("Failed to fetch allergen with id: " + id, e);
+            }
         }
     }
 

@@ -5,7 +5,7 @@ import app.enums.UserRole;
 import app.exceptions.UnauthorizedActionException;
 import app.exceptions.ValidationException;
 import app.mappers.UserMapper;
-import app.persistence.daos.interfaces.IStationReader;
+import app.persistence.daos.interfaces.readers.IStationReader;
 import app.persistence.daos.interfaces.IUserDAO;
 import app.persistence.entities.Station;
 import app.persistence.entities.User;

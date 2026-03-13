@@ -1,11 +1,13 @@
 package app.controllers;
 
 import app.dtos.menu.*;
+import app.enums.MenuStatus;
 import app.services.IWeeklyMenuService;
 import app.utils.RequestUtil;
 import app.utils.SecurityUtil;
 import io.javalin.http.Context;
 
+import java.util.List;
 import java.util.Objects;
 
 public class WeeklyMenuController implements IWeeklyMenuController
@@ -95,7 +97,15 @@ public class WeeklyMenuController implements IWeeklyMenuController
     @Override
     public void getAll(Context ctx)
     {
+        Long userId = SecurityUtil.requireUserId(ctx);
 
+        MenuStatus status = RequestUtil.getQueryMenuStatus(ctx, "status");
+        Integer year = RequestUtil.getQueryInt(ctx, "year");
+        Integer week = RequestUtil.getQueryInt(ctx, "week");
+
+        List<WeeklyMenuOverviewDTO> menus = weeklyMenuService.getOverview(userId, status, year, week);
+
+        ctx.status(200).json(menus);
     }
 
     @Override
@@ -123,6 +133,8 @@ public class WeeklyMenuController implements IWeeklyMenuController
         Long userId = SecurityUtil.requireUserId(ctx);
         Long menuId = RequestUtil.requirePathId(ctx, "id");
 
-        boolean isDeleted;
+        boolean isDeleted = weeklyMenuService
+
+        ctx.status(isDeleted ? 204 : 404);
     }
 }
