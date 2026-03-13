@@ -30,15 +30,15 @@ public class DishDAO implements IDishDAO
         {
             try
             {
-            TypedQuery<Dish> query = em.createQuery(
-                "SELECT DISTINCT d FROM Dish d " +
-                    "LEFT JOIN FETCH d.allergens " +
-                    "WHERE d.originWeek = :week AND d.originYear = :year AND d.isActive = true " +
-                    "ORDER BY d.nameDA", Dish.class)
-                .setParameter("week", week)
-                .setParameter("year", year);
+                TypedQuery<Dish> query = em.createQuery(
+                        "SELECT DISTINCT d FROM Dish d " +
+                            "LEFT JOIN FETCH d.allergens " +
+                            "WHERE d.originWeek = :week AND d.originYear = :year AND d.isActive = true " +
+                            "ORDER BY d.nameDA", Dish.class)
+                    .setParameter("week", week)
+                    .setParameter("year", year);
 
-            return new LinkedHashSet<>(query.getResultList());
+                return new LinkedHashSet<>(query.getResultList());
             }
             catch (PersistenceException e)
             {
@@ -57,15 +57,15 @@ public class DishDAO implements IDishDAO
         {
             try
             {
-            TypedQuery<Dish> query = em.createQuery(
-                "SELECT DISTINCT d FROM Dish d " +
-                    "LEFT JOIN FETCH d.allergens" +
-                    " WHERE d.isActive = true AND (d.originYear < :year OR (d.originYear = :year AND d.originWeek < :week)) " +
-                    "ORDER BY d.nameDA ASC ", Dish.class)
-                .setParameter("week", currentWeek)
-                .setParameter("year", currentYear);
+                TypedQuery<Dish> query = em.createQuery(
+                        "SELECT DISTINCT d FROM Dish d " +
+                            "LEFT JOIN FETCH d.allergens" +
+                            " WHERE d.isActive = true AND (d.originYear < :year OR (d.originYear = :year AND d.originWeek < :week)) " +
+                            "ORDER BY d.nameDA ASC ", Dish.class)
+                    .setParameter("week", currentWeek)
+                    .setParameter("year", currentYear);
 
-            return new LinkedHashSet<>(query.getResultList());
+                return new LinkedHashSet<>(query.getResultList());
             }
             catch (PersistenceException e)
             {
@@ -83,15 +83,15 @@ public class DishDAO implements IDishDAO
         {
             try
             {
-            TypedQuery<Dish> query = em.createQuery(
-                "SELECT DISTINCT d FROM Dish d " +
-                    "LEFT JOIN FETCH d.allergens " +
-                    "WHERE d.isActive = true AND (LOWER(d.nameDA) LIKE LOWER(:query) OR LOWER(d.nameEN) LIKE LOWER(:query)) " +
-                    "ORDER BY d.nameDA ASC", Dish.class
-                )
-                .setParameter("query", "%" + nameQuery.trim() + "%");
+                TypedQuery<Dish> query = em.createQuery(
+                        "SELECT DISTINCT d FROM Dish d " +
+                            "LEFT JOIN FETCH d.allergens " +
+                            "WHERE d.isActive = true AND (LOWER(d.nameDA) LIKE LOWER(:query) OR LOWER(d.nameEN) LIKE LOWER(:query)) " +
+                            "ORDER BY d.nameDA ASC", Dish.class
+                    )
+                    .setParameter("query", "%" + nameQuery.trim() + "%");
 
-            return new LinkedHashSet<>(query.getResultList());
+                return new LinkedHashSet<>(query.getResultList());
             }
             catch (PersistenceException e)
             {
@@ -130,12 +130,12 @@ public class DishDAO implements IDishDAO
         {
             try
             {
-            TypedQuery<Dish> query = em.createQuery(
-                "SELECT DISTINCT d FROM Dish d " +
-                    "LEFT JOIN FETCH d.allergens " +
-                    "ORDER BY d.nameDA", Dish.class);
+                TypedQuery<Dish> query = em.createQuery(
+                    "SELECT DISTINCT d FROM Dish d " +
+                        "LEFT JOIN FETCH d.allergens " +
+                        "ORDER BY d.nameDA", Dish.class);
 
-            return new LinkedHashSet<>(query.getResultList());
+                return new LinkedHashSet<>(query.getResultList());
             }
             catch (PersistenceException e)
             {
@@ -269,13 +269,13 @@ public class DishDAO implements IDishDAO
         {
             try
             {
-            Long count = em.createQuery(
-                    "SELECT COUNT(s) FROM WeeklyMenuSlot s " +
-                        "WHERE s.dish.id = :dishId", Long.class)
-                .setParameter("dishId", dishId)
-                .getSingleResult();
+                Long count = em.createQuery(
+                        "SELECT COUNT(s) FROM WeeklyMenuSlot s " +
+                            "WHERE s.dish.id = :dishId", Long.class)
+                    .setParameter("dishId", dishId)
+                    .getSingleResult();
 
-            return count > 0;
+                return count > 0;
             }
             catch (PersistenceException e)
             {
