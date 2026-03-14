@@ -177,7 +177,7 @@ public class WeeklyMenuService implements IWeeklyMenuService
         requireHeadOrSousChef(editor);
 
         WeeklyMenu menu = menuDAO.getByID(menuId);
-        List<Dish> dishes = getDishesFromMenu(menu);
+        Set<Dish> dishes = getDishesFromMenu(menu);
 
         Map<Long, DishTranslationDTO> dishTranslations = dishTranslationService.translateDishes(dishes, language.getCode());
         updateDishesWithTranslations(dishes, dishTranslations);
@@ -273,16 +273,16 @@ public class WeeklyMenuService implements IWeeklyMenuService
             ));
     }
 
-    private static List<Dish> getDishesFromMenu(WeeklyMenu menu)
+    private static Set<Dish> getDishesFromMenu(WeeklyMenu menu)
     {
         return menu.getWeeklyMenuSlots()
             .stream()
             .filter(Objects::nonNull)
             .map(WeeklyMenuSlot::getDish)
-            .toList();
+            .collect(Collectors.toSet());
     }
 
-    private void updateDishesWithTranslations(List<Dish> dishes, Map<Long, DishTranslationDTO> dishTranslations)
+    private void updateDishesWithTranslations(Set<Dish> dishes, Map<Long, DishTranslationDTO> dishTranslations)
     {
         dishes.forEach(dish ->
         {
@@ -291,8 +291,8 @@ public class WeeklyMenuService implements IWeeklyMenuService
                 translation.translatedName(),
                 translation.translatedDescription()
             );
-            dishDAO.update(dish);
         });
+        dishDAO.updateAll(dishes);
     }
 
     private void validateWeekAndYear(int week, int year)

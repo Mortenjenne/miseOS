@@ -6,9 +6,7 @@ import app.persistence.entities.Dish;
 import app.services.IDishTranslationService;
 import app.utils.ValidationUtil;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class DishTranslationService implements IDishTranslationService
@@ -37,24 +35,23 @@ public class DishTranslationService implements IDishTranslationService
     }
 
     @Override
-    public Map<Long, DishTranslationDTO> translateDishes(List<Dish> dishes, String targetLanguage)
+    public Map<Long, DishTranslationDTO> translateDishes(Set<Dish> dishes, String targetLanguage)
     {
-        ValidationUtil.validateNotNull(dishes, "Dishes");
+        ValidationUtil.validateNotEmpty(dishes, "Dishes");
         dishes.forEach(this::validateDishInput);
         ValidationUtil.validateNotBlank(targetLanguage, "Target language");
+        
+        List<Dish> dishList = dishes.stream()
+            .sorted(Comparator.comparing(Dish::getId))
+            .toList();
 
-        if(dishes.isEmpty())
-        {
-            throw new IllegalArgumentException("Nothing to translate");
-        }
-
-        List<String> texts = dishes.stream()
+        List<String> texts = dishList.stream()
             .flatMap(d -> Stream.of(d.getNameDA(), d.getDescriptionDA()))
             .toList();
 
         List<String> translations = translationClient.translateBatch(texts, targetLanguage);
 
-        return buildDishTranslationMap(dishes, translations);
+        return buildDishTranslationMap(dishList, translations);
     }
 
     private Map<Long, DishTranslationDTO> buildDishTranslationMap(List<Dish> dishes, List<String> translations)

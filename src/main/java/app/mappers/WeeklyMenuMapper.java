@@ -53,7 +53,7 @@ public class WeeklyMenuMapper
             weeklyMenu.getWeekNumber(),
             weeklyMenu.getYear(),
             weeklyMenu.getMenuStatus(),
-            
+
             weeklyMenu.getPublishedAt()
         );
     }
