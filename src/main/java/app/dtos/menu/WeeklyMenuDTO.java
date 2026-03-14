@@ -13,7 +13,8 @@ public record WeeklyMenuDTO(
     MenuStatus menuStatus,
     LocalDateTime publishedAt,
     UserReferenceDTO userReferenceDTO,
-    List<WeeklyMenuSlotDTO> menuSlots
+    List<WeeklyMenuSlotDTO> menuSlots,
+    int numberOfSlots
 )
 {
 }

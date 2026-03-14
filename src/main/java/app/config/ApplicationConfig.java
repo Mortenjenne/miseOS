@@ -49,7 +49,8 @@ public class ApplicationConfig
             new StationRoute(di.getStationController()),
             new MenuInspirationRoute(di.getMenuInspirationController()),
             new DishSuggestionRoute(di.getDishSuggestionController()),
-            new DishRoute(di.getDishController())
+            new DishRoute(di.getDishController()),
+            new WeeklyMenuRoute(di.getWeeklyMenuController())
         );
     }
 }

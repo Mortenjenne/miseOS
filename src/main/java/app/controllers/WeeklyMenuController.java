@@ -27,7 +27,7 @@ public class WeeklyMenuController implements IWeeklyMenuController
         Long menuId = RequestUtil.requirePathId(ctx, "id");
 
         AddMenuSlotDTO dto = ctx.bodyValidator(AddMenuSlotDTO.class)
-            .check(Objects::isNull, "Add menu slot body cannot be null")
+            .check(Objects::nonNull, "Add menu slot body cannot be null")
             .get();
 
          WeeklyMenuDTO weeklyMenuDTO = weeklyMenuService.addMenuSlot(userId, menuId, dto);
@@ -42,7 +42,7 @@ public class WeeklyMenuController implements IWeeklyMenuController
         Long slotId = RequestUtil.requirePathId(ctx, "slotId");
 
         WeeklyMenuDTO weeklyMenuDTO = weeklyMenuService.removeSlot(userId, menuId, slotId);
-        ctx.status(204).json(weeklyMenuDTO);
+        ctx.status(200).json(weeklyMenuDTO);
     }
 
     @Override
@@ -53,7 +53,7 @@ public class WeeklyMenuController implements IWeeklyMenuController
         Long slotId = RequestUtil.requirePathId(ctx, "slotId");
 
         UpdateMenuSlotDTO dto = ctx.bodyValidator(UpdateMenuSlotDTO.class)
-            .check(Objects::isNull, "Add menu slot body cannot be null")
+            .check(Objects::nonNull, "Add menu slot body cannot be null")
             .get();
 
         WeeklyMenuDTO weeklyMenuDTO = weeklyMenuService.updateSlot(userId, menuId, slotId, dto);

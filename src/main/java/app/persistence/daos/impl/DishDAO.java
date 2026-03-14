@@ -32,6 +32,7 @@ public class DishDAO implements IDishDAO
             {
                 TypedQuery<Dish> query = em.createQuery(
                         "SELECT DISTINCT d FROM Dish d " +
+                            "LEFT JOIN FETCH d.allergens " +
                             "WHERE d.originWeek = :week AND d.originYear = :year AND d.isActive = true " +
                             "ORDER BY d.nameDA", Dish.class)
                     .setParameter("week", week)
@@ -58,6 +59,7 @@ public class DishDAO implements IDishDAO
             {
                 TypedQuery<Dish> query = em.createQuery(
                         "SELECT DISTINCT d FROM Dish d " +
+                            "LEFT JOIN FETCH d.allergens " +
                             "WHERE d.isActive = true AND (d.originYear < :year OR (d.originYear = :year AND d.originWeek < :week)) " +
                             "ORDER BY d.nameDA ASC ", Dish.class)
                     .setParameter("week", currentWeek)
@@ -83,6 +85,7 @@ public class DishDAO implements IDishDAO
             {
                 TypedQuery<Dish> query = em.createQuery(
                         "SELECT DISTINCT d FROM Dish d " +
+                            "LEFT JOIN FETCH d.allergens " +
                             "WHERE d.isActive = true AND (LOWER(d.nameDA) LIKE LOWER(:query) OR LOWER(d.nameEN) LIKE LOWER(:query)) " +
                             "ORDER BY d.nameDA ASC", Dish.class
                     )
@@ -134,6 +137,7 @@ public class DishDAO implements IDishDAO
             {
                 TypedQuery<Dish> query = em.createQuery(
                         "SELECT DISTINCT d FROM Dish d " +
+                            "LEFT JOIN FETCH d.allergens " +
                             "WHERE (:stationId IS NULL OR d.station.id = :stationId) " +
                             "AND (:active IS NULL OR d.isActive = :active) " +
                             "ORDER BY d.nameDA ASC", Dish.class)

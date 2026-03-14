@@ -22,8 +22,6 @@ public interface IDishSuggestionService
 
     DishSuggestionDTO getById(Long id);
 
-    List<DishSuggestionDTO> getAllDishSuggestions();
-
     List<DishSuggestionDTO> getByFilter(DishSuggestionFilterDTO dto);
 
     List<DishSuggestionDTO> getCurrentWeek(Status status);

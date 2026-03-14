@@ -162,15 +162,6 @@ public class DishSuggestionService implements IDishSuggestionService
     }
 
     @Override
-    public List<DishSuggestionDTO> getAllDishSuggestions()
-    {
-        return dishSuggestionDAO.getAll()
-            .stream()
-            .map(DishSuggestionMapper::toDTO)
-            .collect(Collectors.toList());
-    }
-
-    @Override
     public List<DishSuggestionDTO> getByFilter(DishSuggestionFilterDTO dto)
     {
         ValidationUtil.validateNotNull(dto, "Filter");

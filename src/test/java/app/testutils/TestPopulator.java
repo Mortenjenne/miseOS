@@ -281,6 +281,46 @@ public class TestPopulator
             2026
         );
 
+        Dish dish7 = new Dish(
+            "Grillet Kylling",
+            "Serveret med citron og timian",
+            hotStation,
+            new HashSet<>(allergens),
+            gordon,
+            10,
+            2026
+        );
+
+        Dish dish8 = new Dish(
+            "Caesar Salad",
+            "Romainesalat med parmesan og croutoner",
+            coldStation,
+            new HashSet<>(allergens),
+            gordon,
+            10,
+            2026
+        );
+
+        Dish dish9 = new Dish(
+            "Chokolademousse",
+            "Mørk chokolade med flødeskum",
+            (Station) seeded.get("station_pastry"),
+            new HashSet<>(allergens),
+            gordon,
+            10,
+            2026
+        );
+
+        Dish dish10 = new Dish(
+            "Test Slette-Ret",
+            "Kun til tests, bruges ikke i menuer",
+            hotStation,
+            new HashSet<>(allergens),
+            gordon,
+            12,
+            2026
+        );
+
         dish6.deactivate(); //For inactive test
 
         dishDAO.create(dish1);
@@ -289,6 +329,10 @@ public class TestPopulator
         dishDAO.create(dish4);
         dishDAO.create(dish5);
         dishDAO.create(dish6);
+        dishDAO.create(dish7);
+        dishDAO.create(dish8);
+        dishDAO.create(dish9);
+        dishDAO.create(dish10);
 
         seeded.put("dish_salmon", dish1);
         seeded.put("dish_boeuf", dish2);
@@ -296,6 +340,10 @@ public class TestPopulator
         seeded.put("dish_roastbeef", dish4);
         seeded.put("dish_roasted_pork", dish5);
         seeded.put("dish_old", dish6);
+        seeded.put("dish_chicken", dish7);
+        seeded.put("dish_caesar", dish8);
+        seeded.put("dish_mousse", dish9);
+        seeded.put("dish_delete", dish10);
     }
 
     private void populateIngredientRequest()
@@ -392,31 +440,67 @@ public class TestPopulator
 
     private void populateWeeklyMenus()
     {
-        Station hotStation = (Station) seeded.get("station_hot");
-        Station coldStation = (Station) seeded.get("station_cold");
+        Station hot = (Station) seeded.get("station_hot");
+        Station cold = (Station) seeded.get("station_cold");
+        Station pastry = (Station) seeded.get("station_pastry");
+
+        User gordon = (User) seeded.get("user_gordon");
 
         Dish salmon = (Dish) seeded.get("dish_salmon");
-        Dish steak = (Dish) seeded.get("dish_steak");
+        Dish steak = (Dish) seeded.get("dish_boeuf");
         Dish tartelet = (Dish) seeded.get("dish_tartelet");
         Dish roastbeef = (Dish) seeded.get("dish_roastbeef");
+        Dish pork = (Dish) seeded.get("dish_roasted_pork");
+        Dish chicken = (Dish) seeded.get("dish_chicken");
+        Dish caesar = (Dish) seeded.get("dish_caesar");
+        Dish mousse = (Dish) seeded.get("dish_mousse");
+        Dish inactive = (Dish) seeded.get("dish_old");
 
-        WeeklyMenu menu1 = new WeeklyMenu(7, 2025);
+        //Published menu
+        WeeklyMenu fullMenu = new WeeklyMenu(7, 2026);
 
-        WeeklyMenuSlot slot1 = new WeeklyMenuSlot(DayOfWeek.MONDAY, salmon, coldStation);
-        WeeklyMenuSlot slot2 = new WeeklyMenuSlot(DayOfWeek.MONDAY, steak, hotStation);
-        WeeklyMenuSlot slot3 = new WeeklyMenuSlot(DayOfWeek.MONDAY, roastbeef, coldStation);
-        WeeklyMenuSlot slot4 = new WeeklyMenuSlot(DayOfWeek.MONDAY, tartelet, hotStation);
-        WeeklyMenuSlot slot5 = new WeeklyMenuSlot(DayOfWeek.TUESDAY, null, hotStation);
+        fullMenu.addMenuSlot(new WeeklyMenuSlot(DayOfWeek.MONDAY, salmon, cold));
+        fullMenu.addMenuSlot(new WeeklyMenuSlot(DayOfWeek.MONDAY, steak, hot));
 
-        menu1.addMenuSlot(slot1);
-        menu1.addMenuSlot(slot2);
-        menu1.addMenuSlot(slot3);
-        menu1.addMenuSlot(slot4);
-        menu1.addMenuSlot(slot5);
+        fullMenu.addMenuSlot(new WeeklyMenuSlot(DayOfWeek.TUESDAY, roastbeef, cold));
+        fullMenu.addMenuSlot(new WeeklyMenuSlot(DayOfWeek.TUESDAY, pork, hot));
 
-        menuDAO.create(menu1);
+        fullMenu.addMenuSlot(new WeeklyMenuSlot(DayOfWeek.WEDNESDAY, caesar, cold));
+        fullMenu.addMenuSlot(new WeeklyMenuSlot(DayOfWeek.WEDNESDAY, chicken, hot));
 
-        seeded.put("menu_week7", menu1);
+        fullMenu.addMenuSlot(new WeeklyMenuSlot(DayOfWeek.THURSDAY, mousse, pastry));
+        fullMenu.addMenuSlot(new WeeklyMenuSlot(DayOfWeek.THURSDAY, tartelet, hot));
+
+        fullMenu.publish(gordon);
+
+        menuDAO.create(fullMenu);
+        seeded.put("menu_full", fullMenu);
+
+        //Draft menu
+        WeeklyMenu draftMenu = new WeeklyMenu(8, 2026);
+
+        draftMenu.addMenuSlot(new WeeklyMenuSlot(DayOfWeek.MONDAY, salmon, cold));
+        draftMenu.addMenuSlot(new WeeklyMenuSlot(DayOfWeek.TUESDAY, null, hot));
+
+        menuDAO.create(draftMenu);
+        seeded.put("menu_draft", draftMenu);
+
+        //Inactive menu
+        WeeklyMenu inactiveMenu = new WeeklyMenu(9, 2026);
+
+        inactiveMenu.addMenuSlot(new WeeklyMenuSlot(DayOfWeek.WEDNESDAY, inactive, hot));
+
+        menuDAO.create(inactiveMenu);
+        seeded.put("menu_inactive", inactiveMenu);
+
+        //Slot menu
+        WeeklyMenu slotMenu = new WeeklyMenu(10, 2026);
+
+        slotMenu.addMenuSlot(new WeeklyMenuSlot(DayOfWeek.MONDAY, salmon, cold));
+        slotMenu.addMenuSlot(new WeeklyMenuSlot(DayOfWeek.MONDAY, steak, hot));
+
+        menuDAO.create(slotMenu);
+        seeded.put("menu_slots", slotMenu);
     }
 
     private void populateShoppingLists()

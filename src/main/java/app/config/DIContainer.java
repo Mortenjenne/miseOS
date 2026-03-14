@@ -67,7 +67,10 @@ public final class DIContainer
 
     @Getter
     private final IDishController dishController;
-    //private final IWeeklyMenuController weeklyMenuController;
+
+    @Getter
+    private final IWeeklyMenuController weeklyMenuController;
+
     //private final IIngredientRequestController ingredientRequestController;
     //private final IShoppingListController shoppingListController;
 
@@ -111,7 +114,7 @@ public final class DIContainer
         this.menuInspirationController = new MenuInspirationController(menuInspirationService);
         this.dishSuggestionController = new DishSuggestionController(dishSuggestionService);
         this.dishController = new DishController(dishService);
-//        this.weeklyMenuController = new WeeklyMenuController(weeklyMenuService);
+        this.weeklyMenuController = new WeeklyMenuController(weeklyMenuService);
 //        this.ingredientRequestController = new IngredientRequestController(ingredientRequestService);
 //        this.shoppingListController = new ShoppingListController(shoppingListService);
     }

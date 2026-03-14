@@ -166,7 +166,7 @@ class DishControllerTest
                 .get(ENDPOINT_URL)
                 .then()
                 .statusCode(200)
-                .body("$", hasSize(6));
+                .body("$", hasSize(10));
         }
 
         @Test
@@ -179,7 +179,7 @@ class DishControllerTest
                 .get(ENDPOINT_URL)
                 .then()
                 .statusCode(200)
-                .body("$", hasSize(5))
+                .body("$", hasSize(9))
                 .body("active", everyItem(equalTo(true)));
         }
 
@@ -429,18 +429,18 @@ class DishControllerTest
         void deletesDish()
         {
             User headChef = (User) seeded.get("user_gordon");
-            Dish dishOld = (Dish) seeded.get("dish_old");
+            Dish deletable = (Dish) seeded.get("dish_delete");
 
             given()
                 .header(USER_HEADER, headChef.getId())
                 .when()
-                .delete(ENDPOINT_URL + "/" + dishOld.getId())
+                .delete(ENDPOINT_URL + "/" + deletable.getId())
                 .then()
                 .statusCode(204);
 
             given()
                 .when()
-                .get(ENDPOINT_URL + "/" + dishOld.getId())
+                .get(ENDPOINT_URL + "/" + deletable.getId())
                 .then()
                 .statusCode(404);
         }

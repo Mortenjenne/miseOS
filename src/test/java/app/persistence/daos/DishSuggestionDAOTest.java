@@ -76,7 +76,7 @@ class DishSuggestionDAOTest {
     @DisplayName("Get All - should retrieve all seeded dishes")
     void getAll()
     {
-        Set<DishSuggestion> dishes = dishSuggestionDAO.getAll();
+        Set<DishSuggestion> dishes = dishSuggestionDAO.findByFilter(null, null, null, null, null);
         assertThat(dishes, hasSize((5)));
     }
 

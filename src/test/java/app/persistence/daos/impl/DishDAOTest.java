@@ -42,7 +42,7 @@ class DishDAOTest
     {
         Set<Dish> active = dishDAO.findByFilter(null, true);
 
-        assertThat(active, hasSize(5));
+        assertThat(active, hasSize(9));
         assertTrue(active.stream().allMatch(Dish::isActive));
     }
 
@@ -54,7 +54,7 @@ class DishDAOTest
 
         Set<Dish> dishes = dishDAO.findByFilter(hot.getId(), true);
 
-        assertThat(dishes, hasSize(3));
+        assertThat(dishes, hasSize(5));
         assertTrue(dishes.stream().allMatch(Dish::isActive));
         assertTrue(dishes.stream().allMatch(d -> d.getStation().getId().equals(hot.getId())));
     }
@@ -236,8 +236,8 @@ class DishDAOTest
     @DisplayName("Get all - should return all dishes including inactive")
     void getAll()
     {
-        Set<Dish> dishes = dishDAO.getAll();
-        assertThat(dishes, hasSize(6));
+        Set<Dish> dishes = dishDAO.findByFilter(null, null);
+        assertThat(dishes, hasSize(10));
     }
 
     @Test
@@ -344,11 +344,11 @@ class DishDAOTest
     @Test
     void delete()
     {
-        Dish seed = (Dish) seeded.get("dish_old");
-        boolean deleted = dishDAO.delete(seed.getId());
+        Dish deletable = (Dish) seeded.get("dish_delete");
+        boolean deleted = dishDAO.delete(deletable.getId());
 
         assertTrue(deleted);
-        assertThrows(EntityNotFoundException.class, () -> dishDAO.getByID(seed.getId()));
+        assertThrows(EntityNotFoundException.class, () -> dishDAO.getByID(deletable.getId()));
     }
 
     @Test
@@ -380,7 +380,7 @@ class DishDAOTest
     @DisplayName("Is used in menu - should return false when dish is not in any menu")
     void isUsedInAnyMenu_ReturnsFalseWhenNotInMenu()
     {
-        Dish notInMenu = (Dish) seeded.get("dish_old");
+        Dish notInMenu = (Dish) seeded.get("dish_delete");
 
         boolean used = dishDAO.isUsedInAnyMenu(notInMenu.getId());
 

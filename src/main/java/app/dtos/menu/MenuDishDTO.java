@@ -10,5 +10,6 @@ public record MenuDishDTO(
     String nameEN,
     String descriptionDA,
     String descriptionEN,
+    Boolean hasTranslation,
     List<AllergenDTO> allergens
 ) {}

@@ -190,19 +190,19 @@ public class WeeklyMenuService implements IWeeklyMenuService
 
     public WeeklyMenuDTO publishMenu(Long publisherId, Long menuId)
     {
-       ValidationUtil.validateId(publisherId);
-       ValidationUtil.validateId(menuId);
+        ValidationUtil.validateId(publisherId);
+        ValidationUtil.validateId(menuId);
 
-       User publisher = userReader.getByID(publisherId);
-       requireHeadOrSousChef(publisher);
+        User publisher = userReader.getByID(publisherId);
+        requireHeadOrSousChef(publisher);
 
-       WeeklyMenu menu = menuDAO.getByID(menuId);
-       requireNotEmpty(menu);
-       validateAllDishesIsTranslated(menu);
+        WeeklyMenu menu = menuDAO.getByID(menuId);
+        requireNotEmpty(menu);
+        validateAllDishesIsTranslated(menu);
 
-       menu.publish(publisher);
-       WeeklyMenu updated = menuDAO.update(menu);
-       return WeeklyMenuMapper.toDTO(updated);
+        menu.publish(publisher);
+        WeeklyMenu updated = menuDAO.update(menu);
+        return WeeklyMenuMapper.toDTO(updated);
     }
 
     @Override
@@ -277,8 +277,8 @@ public class WeeklyMenuService implements IWeeklyMenuService
     {
         return menu.getWeeklyMenuSlots()
             .stream()
-            .filter(Objects::nonNull)
             .map(WeeklyMenuSlot::getDish)
+            .filter(Objects::nonNull)
             .collect(Collectors.toSet());
     }
 

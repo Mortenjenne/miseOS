@@ -7,6 +7,7 @@ import app.dtos.user.UserReferenceDTO;
 import app.persistence.entities.WeeklyMenu;
 import app.persistence.entities.WeeklyMenuSlot;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,6 +21,7 @@ public class WeeklyMenuMapper
 
         List<WeeklyMenuSlotDTO> slots = menu.getWeeklyMenuSlots()
             .stream()
+            .sorted(Comparator.comparing(WeeklyMenuSlot::getDayOfWeek))
             .map(WeeklyMenuMapper::toSlotDTO)
             .toList();
 
@@ -30,7 +32,8 @@ public class WeeklyMenuMapper
             menu.getMenuStatus(),
             menu.getPublishedAt(),
             publishedBy,
-            slots
+            slots,
+            slots.size()
         );
     }
 
@@ -53,7 +56,7 @@ public class WeeklyMenuMapper
             weeklyMenu.getWeekNumber(),
             weeklyMenu.getYear(),
             weeklyMenu.getMenuStatus(),
-
+            (long) weeklyMenu.getWeeklyMenuSlots().size(),
             weeklyMenu.getPublishedAt()
         );
     }

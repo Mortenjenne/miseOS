@@ -48,7 +48,8 @@ public class DishMapper
             dish.getId(),
             dish.getNameDA(),
             dish.getDescriptionDA(),
-            dish.getStation().getStationName()
+            dish.getStation().getStationName(),
+            dish.isActive()
         );
     }
 
@@ -64,6 +65,7 @@ public class DishMapper
             dish.getDescriptionDA(),
             dish.getNameEN(),
             dish.getDescriptionEN(),
+            dish.hasTranslation(),
             allergens
         );
     }

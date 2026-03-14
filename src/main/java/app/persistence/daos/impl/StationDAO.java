@@ -71,6 +71,10 @@ public class StationDAO implements IStationDAO
                 Station station = em.find(Station.class, id);
                 return DBValidator.validateExists(station, id, Station.class);
             }
+            catch (EntityNotFoundException e)
+            {
+                throw e;
+            }
             catch (PersistenceException e)
             {
                 throw new DatabaseException("Failed to fetch station by id: " + id, e);

@@ -31,7 +31,7 @@ public class WeeklyMenuDAO implements IWeeklyMenuDAO
                 return em.createQuery(
                         "SELECT new app.dtos.menu.WeeklyMenuOverviewDTO(" +
                             "wm.id, wm.weekNumber, wm.year, wm.menuStatus, " +
-                            "(SELECT COUNT(s) FROM WeeklyMenuSlot s WHERE s.weeklyMenu = wm), " +
+                            "CAST((SELECT COUNT(slot) FROM WeeklyMenuSlot slot WHERE slot.weeklyMenu = wm) AS long), " +
                             "wm.publishedAt) " +
                             "FROM WeeklyMenu wm " +
                             "WHERE (:status IS NULL OR wm.menuStatus = :status) " +
@@ -66,6 +66,7 @@ public class WeeklyMenuDAO implements IWeeklyMenuDAO
                             "LEFT JOIN FETCH wm.weeklyMenuSlots s " +
                             "LEFT JOIN FETCH s.station " +
                             "LEFT JOIN FETCH s.dish d " +
+                            "LEFT JOIN FETCH d.allergens " +
                             "WHERE (:status IS NULL OR wm.menuStatus = :status) " +
                             "AND   (:year   IS NULL OR wm.year = :year) " +
                             "AND   (:week   IS NULL OR wm.weekNumber = :week)", WeeklyMenu.class)
@@ -99,6 +100,7 @@ public class WeeklyMenuDAO implements IWeeklyMenuDAO
                             "LEFT JOIN FETCH wm.weeklyMenuSlots s " +
                             "LEFT JOIN FETCH s.station " +
                             "LEFT JOIN FETCH s.dish d " +
+                            "LEFT JOIN FETCH d.allergens " +
                             "WHERE wm.id = :id", WeeklyMenu.class)
                     .setParameter("id", id)
                     .getSingleResult();
@@ -119,9 +121,9 @@ public class WeeklyMenuDAO implements IWeeklyMenuDAO
     @Override
     public WeeklyMenu create(WeeklyMenu weeklyMenu)
     {
-        DBValidator.validateNotNull(weeklyMenu, "WeeklyMenu");
-        DBValidator.validateRange(weeklyMenu.getWeekNumber(), 1, 53, "WeekNumber");
-        DBValidator.validateRange(weeklyMenu.getYear(), 2000, 2100, "WeekNumber");
+        DBValidator.validateNotNull(weeklyMenu, "Weekly Menu");
+        DBValidator.validateRange(weeklyMenu.getWeekNumber(), 1, 53, "Week number");
+        DBValidator.validateRange(weeklyMenu.getYear(), 2000, 2100, "Year");
 
         try(EntityManager em = emf.createEntityManager())
         {

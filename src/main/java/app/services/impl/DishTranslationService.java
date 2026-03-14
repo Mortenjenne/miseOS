@@ -40,7 +40,7 @@ public class DishTranslationService implements IDishTranslationService
         ValidationUtil.validateNotEmpty(dishes, "Dishes");
         dishes.forEach(this::validateDishInput);
         ValidationUtil.validateNotBlank(targetLanguage, "Target language");
-        
+
         List<Dish> dishList = dishes.stream()
             .sorted(Comparator.comparing(Dish::getId))
             .toList();

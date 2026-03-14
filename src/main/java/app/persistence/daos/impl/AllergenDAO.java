@@ -190,6 +190,10 @@ public class AllergenDAO implements IAllergenDAO
                 Allergen allergen = em.find(Allergen.class, id);
                 return DBValidator.validateExists(allergen, id, Allergen.class);
             }
+            catch (EntityNotFoundException e)
+            {
+                throw e;
+            }
             catch (PersistenceException e)
             {
                 throw new DatabaseException("Failed to fetch allergen with id: " + id, e);

@@ -72,6 +72,10 @@ public class UserDAO implements IUserDAO
                 User user = em.find(User.class, id);
                 return DBValidator.validateExists(user, id, User.class);
             }
+            catch (EntityNotFoundException e)
+            {
+                throw e;
+            }
             catch (PersistenceException e)
             {
                 throw new DatabaseException("Failed to fetch user by id: " + id, e);
