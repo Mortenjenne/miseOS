@@ -2,7 +2,6 @@ package app.services.impl;
 
 import app.dtos.dish.DishTranslationDTO;
 import app.dtos.menu.*;
-import app.dtos.translation.TranslationDTO;
 import app.enums.MenuStatus;
 import app.enums.SupportedLanguage;
 import app.exceptions.UnauthorizedActionException;
@@ -49,8 +48,11 @@ public class WeeklyMenuService implements IWeeklyMenuService
         User creator = userReader.getByID(creatorId);
         requireHeadOrSousChef(creator);
 
-        Optional<WeeklyMenu> menu = menuDAO.findByWeekAndYear(dto.week(), dto.year(), null);
-        checkIfMenuExists(menu);
+        Optional<WeeklyMenu> existingMenu = menuDAO.findByWeekAndYear(dto.week(), dto.year(), null);
+        if (existingMenu.isPresent())
+        {
+            throw new IllegalStateException("Menu for week " + dto.week() + "/" + dto.year() + " already exists");
+        }
 
         WeeklyMenu weeklyMenu = new WeeklyMenu(dto.week(), dto.year());
 
@@ -317,14 +319,6 @@ public class WeeklyMenuService implements IWeeklyMenuService
         if (menu.getWeeklyMenuSlots().isEmpty())
         {
             throw new IllegalStateException("Cannot publish an empty menu");
-        }
-    }
-
-    private void checkIfMenuExists(Optional<WeeklyMenu> menu)
-    {
-        if (menu.isPresent())
-        {
-            throw new IllegalStateException("Menu for week " + menu.get().getWeekNumber() + "/" + menu.get().getYear() + " already exists");
         }
     }
 

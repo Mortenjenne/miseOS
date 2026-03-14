@@ -32,7 +32,6 @@ public class DishDAO implements IDishDAO
             {
                 TypedQuery<Dish> query = em.createQuery(
                         "SELECT DISTINCT d FROM Dish d " +
-                            "LEFT JOIN FETCH d.allergens " +
                             "WHERE d.originWeek = :week AND d.originYear = :year AND d.isActive = true " +
                             "ORDER BY d.nameDA", Dish.class)
                     .setParameter("week", week)
@@ -59,8 +58,7 @@ public class DishDAO implements IDishDAO
             {
                 TypedQuery<Dish> query = em.createQuery(
                         "SELECT DISTINCT d FROM Dish d " +
-                            "LEFT JOIN FETCH d.allergens" +
-                            " WHERE d.isActive = true AND (d.originYear < :year OR (d.originYear = :year AND d.originWeek < :week)) " +
+                            "WHERE d.isActive = true AND (d.originYear < :year OR (d.originYear = :year AND d.originWeek < :week)) " +
                             "ORDER BY d.nameDA ASC ", Dish.class)
                     .setParameter("week", currentWeek)
                     .setParameter("year", currentYear);
@@ -85,7 +83,6 @@ public class DishDAO implements IDishDAO
             {
                 TypedQuery<Dish> query = em.createQuery(
                         "SELECT DISTINCT d FROM Dish d " +
-                            "LEFT JOIN FETCH d.allergens " +
                             "WHERE d.isActive = true AND (LOWER(d.nameDA) LIKE LOWER(:query) OR LOWER(d.nameEN) LIKE LOWER(:query)) " +
                             "ORDER BY d.nameDA ASC", Dish.class
                     )
@@ -137,7 +134,6 @@ public class DishDAO implements IDishDAO
             {
                 TypedQuery<Dish> query = em.createQuery(
                         "SELECT DISTINCT d FROM Dish d " +
-                            "LEFT JOIN FETCH d.allergens " +
                             "WHERE (:stationId IS NULL OR d.station.id = :stationId) " +
                             "AND (:active IS NULL OR d.isActive = :active) " +
                             "ORDER BY d.nameDA ASC", Dish.class)
@@ -206,6 +202,36 @@ public class DishDAO implements IDishDAO
             {
                 TransactionUtil.rollback(em);
                 throw new DatabaseException("Failed to update dish: " + dish.getId(), e);
+            }
+        }
+    }
+
+    public void updateAll(Set<Dish> dishes)
+    {
+        DBValidator.validateNotNull(dishes, "Dishes");
+
+        try (EntityManager em = emf.createEntityManager())
+        {
+            try
+            {
+                em.getTransaction().begin();
+
+                for (Dish dish : dishes)
+                {
+                    DBValidator.validateId(dish.getId());
+                    em.merge(dish);
+                }
+                em.getTransaction().commit();
+            }
+            catch (EntityNotFoundException e)
+            {
+                TransactionUtil.rollback(em);
+                throw e;
+            }
+            catch (PersistenceException e)
+            {
+                TransactionUtil.rollback(em);
+                throw new DatabaseException("Failed to update dishes batch", e);
             }
         }
     }

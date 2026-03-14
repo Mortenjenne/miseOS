@@ -4,6 +4,7 @@ import app.utils.ValidationUtil;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -35,7 +36,8 @@ public class Dish implements IEntity
     @JoinColumn(name = "station_id", nullable = false)
     private Station station;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
+    @BatchSize(size = 20)
     @JoinTable(name = "dish_allergen", joinColumns = @JoinColumn(name = "dish_id"), inverseJoinColumns = @JoinColumn(name = "allergen_id"))
     private Set<Allergen> allergens = new HashSet<>();
 

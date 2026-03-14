@@ -66,7 +66,6 @@ public class WeeklyMenuDAO implements IWeeklyMenuDAO
                             "LEFT JOIN FETCH wm.weeklyMenuSlots s " +
                             "LEFT JOIN FETCH s.station " +
                             "LEFT JOIN FETCH s.dish d " +
-                            "LEFT JOIN FETCH d.allergens " +
                             "WHERE (:status IS NULL OR wm.menuStatus = :status) " +
                             "AND   (:year   IS NULL OR wm.year = :year) " +
                             "AND   (:week   IS NULL OR wm.weekNumber = :week)", WeeklyMenu.class)
@@ -100,7 +99,6 @@ public class WeeklyMenuDAO implements IWeeklyMenuDAO
                             "LEFT JOIN FETCH wm.weeklyMenuSlots s " +
                             "LEFT JOIN FETCH s.station " +
                             "LEFT JOIN FETCH s.dish d " +
-                            "LEFT JOIN FETCH d.allergens " +
                             "WHERE wm.id = :id", WeeklyMenu.class)
                     .setParameter("id", id)
                     .getSingleResult();
