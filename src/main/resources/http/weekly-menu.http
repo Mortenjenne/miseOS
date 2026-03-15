@@ -23,7 +23,7 @@ GET {{url}}/weekly-menus
 X-Dev-User-Id: {{headChefId}}
 
 ### Get filtered menu overviews
-GET {{url}}/weekly-menus?status=PUBLISHED&year=2026&week=7
+GET {{url}}/weekly-menus?status=DRAFT&year=2026&week=12
 X-Dev-User-Id: {{headChefId}}
 
 ### Translate one slot

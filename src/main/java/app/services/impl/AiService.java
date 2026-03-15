@@ -90,7 +90,7 @@ public class AiService implements IAiService
                     try
                     {
                         String json = cleanResponseBody(fullResponse.toString());
-                        List<AiDishSuggestionDTO> dishes = Arrays.asList(objectMapper.readValue(json, AiDishSuggestionDTO[].class));
+                        AiDishSuggestionDTO[] dishes = objectMapper.readValue(json, AiDishSuggestionDTO[].class);
                         for (AiDishSuggestionDTO dish : dishes)
                         {
                             dishConsumer.accept(dish);

@@ -3,6 +3,7 @@ package app.persistence.daos;
 import app.config.HibernateTestConfig;
 import app.enums.ShoppingListStatus;
 import app.enums.Unit;
+import app.exceptions.ConflictException;
 import app.persistence.daos.impl.ShoppingListDAO;
 import app.persistence.entities.IEntity;
 import app.persistence.entities.ShoppingList;
@@ -15,9 +16,9 @@ import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.*;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -88,38 +89,27 @@ class ShoppingListDAOTest
     }
 
     @Test
-    @DisplayName("GetAll - should return all shopping lists")
-    void getAll()
-    {
-        Set<ShoppingList> allLists = shoppingListDAO.getAll();
-
-        assertThat(allLists, hasSize(greaterThanOrEqualTo(1)));
-    }
-
-    @Test
-    @DisplayName("GetAll - should return empty set when database is empty")
-    void getAll_EmptyDatabase()
-    {
-        TestCleanDB.truncateTables(emf);
-
-        Set<ShoppingList> allLists = shoppingListDAO.getAll();
-
-        assertThat(allLists, notNullValue());
-        assertThat(allLists, empty());
-    }
-
-    @Test
     @DisplayName("Update - should change status and save")
     void update()
     {
         ShoppingList seed = (ShoppingList) seeded.get("shopping_list_1");
 
+        seed.getShoppingListItems().forEach(ShoppingListItem::markAsOrdered);
         seed.finalizeShoppingList();
 
         ShoppingList updated = shoppingListDAO.update(seed);
 
         assertThat(updated.getShoppingListStatus(), is(ShoppingListStatus.FINALIZED));
         assertThat(updated.getFinalizedAt(), notNullValue());
+    }
+
+    @Test
+    @DisplayName("Update - should throw ConflictException when finalizing with unordered items")
+    void finalizeWithUnorderedItemsThrows()
+    {
+        ShoppingList seed = (ShoppingList) seeded.get("shopping_list_1");
+
+        assertThrows(ConflictException.class, seed::finalizeShoppingList);
     }
 
     @Test
@@ -146,18 +136,47 @@ class ShoppingListDAOTest
     }
 
     @Test
-    @DisplayName("Find - should filter by ShoppingListStatus")
-    void findByStatus()
+    @DisplayName("Delete - should throw EntityNotFoundException for unknown id")
+    void deleteUnknownIdThrows()
     {
-        Set<ShoppingList> draftLists = shoppingListDAO.findByStatus(ShoppingListStatus.DRAFT);
-        assertThat(draftLists, hasSize(greaterThanOrEqualTo(1)));
+        assertThrows(EntityNotFoundException.class, () -> shoppingListDAO.delete(9999L));
     }
 
     @Test
-    @DisplayName("Find - should throw exception for null status")
-    void findByStatusNullThrowsException()
+    @DisplayName("Delete - should throw IllegalArgumentException for negative id")
+    void deleteNegativeIdThrows()
     {
-        assertThrows(IllegalArgumentException.class, () -> shoppingListDAO.findByStatus(null));
+        assertThrows(IllegalArgumentException.class, () -> shoppingListDAO.delete(-1L));
+    }
+
+    @Test
+    @DisplayName("Find by filter - Should only find by status draft")
+    void findByStatus()
+    {
+        List<ShoppingList> draftLists = shoppingListDAO.findByFilter(ShoppingListStatus.DRAFT, null);
+        assertThat(draftLists, hasSize(greaterThanOrEqualTo(1)));
+    }
+
+
+    @Test
+    @DisplayName("Find by filter - should return all shopping lists")
+    void getAll()
+    {
+        List<ShoppingList> allLists = shoppingListDAO.findByFilter(null, null);
+
+        assertThat(allLists, hasSize(greaterThanOrEqualTo(1)));
+    }
+
+    @Test
+    @DisplayName("Find by filter - should return empty set when database is empty")
+    void getAll_EmptyDatabase()
+    {
+        TestCleanDB.truncateTables(emf);
+
+        List<ShoppingList> allLists = shoppingListDAO.findByFilter(null, null);
+
+        assertThat(allLists, notNullValue());
+        assertThat(allLists, empty());
     }
 
     @Test
@@ -178,6 +197,46 @@ class ShoppingListDAOTest
     {
         Optional<ShoppingList> list = shoppingListDAO.findByDeliveryDate(LocalDate.now().plusYears(10));
         assertTrue(list.isEmpty());
+    }
+
+    @Test
+    @DisplayName("Find by filter - filter by delivery date returns correct list")
+    void findByDeliveryDateFilter()
+    {
+        ShoppingList seed = (ShoppingList) seeded.get("shopping_list_1");
+
+        List<ShoppingList> result = shoppingListDAO.findByFilter(null, seed.getDeliveryDate());
+
+        assertThat(result, hasSize(1));
+        assertThat(result.get(0).getId(), is(seed.getId()));
+    }
+
+    @Test
+    @DisplayName("Find by filter - status FINALIZED returns finalized seed")
+    void findByFinalizedStatusReturnsEmpty()
+    {
+        ShoppingList seed = (ShoppingList) seeded.get("shopping_list_1");
+
+        seed.getShoppingListItems().forEach(ShoppingListItem::markAsOrdered);
+        seed.finalizeShoppingList();
+
+        shoppingListDAO.update(seed);
+
+        List<ShoppingList> result = shoppingListDAO.findByFilter(ShoppingListStatus.FINALIZED, null);
+
+        assertThat(result, hasSize(1));
+    }
+
+    @Test
+    @DisplayName("Find by filter - combined status and date returns match")
+    void findByStatusAndDate()
+    {
+        ShoppingList seed = (ShoppingList) seeded.get("shopping_list_1");
+
+        List<ShoppingList> result = shoppingListDAO.findByFilter(ShoppingListStatus.DRAFT, seed.getDeliveryDate());
+
+        assertThat(result, hasSize(1));
+        assertThat(result.get(0).getShoppingListStatus(), is(ShoppingListStatus.DRAFT));
     }
 
     @Test

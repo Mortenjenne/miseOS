@@ -1,9 +1,6 @@
 package app.utils;
 
-import app.enums.MenuStatus;
-import app.enums.RequestType;
-import app.enums.Status;
-import app.enums.SupportedLanguage;
+import app.enums.*;
 import io.javalin.http.Context;
 
 import java.time.LocalDate;
@@ -90,6 +87,20 @@ public final class RequestUtil
         catch (IllegalArgumentException e)
         {
             throw new IllegalArgumentException("Invalid request type: " + ctx.queryParam(param));
+        }
+    }
+
+    public static ShoppingListStatus getQueryShoppingListStatus(Context ctx, String param)
+    {
+        if (!isPresent(ctx, param)) return null;
+
+        try
+        {
+            return ShoppingListStatus.valueOf(ctx.queryParam(param).trim().toUpperCase());
+        }
+        catch (IllegalArgumentException e)
+        {
+            throw new IllegalArgumentException("Invalid shopping list status: " + ctx.queryParam(param));
         }
     }
 
