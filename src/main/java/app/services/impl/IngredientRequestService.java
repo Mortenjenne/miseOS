@@ -18,8 +18,7 @@ import app.services.IIngredientRequestService;
 import app.utils.ValidationUtil;
 
 import java.time.LocalDate;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.List;
 
 public class IngredientRequestService implements IIngredientRequestService
 {
@@ -60,7 +59,6 @@ public class IngredientRequestService implements IIngredientRequestService
         );
 
         IngredientRequest saved = ingredientRequestDAO.create(ingredientRequest);
-
         return IngredientRequestMapper.toDTO(saved);
     }
 
@@ -95,35 +93,18 @@ public class IngredientRequestService implements IIngredientRequestService
     }
 
     @Override
-    public Set<IngredientRequestDTO> getAllPendingRequests()
+    public List<IngredientRequestDTO> getRequests(Long userId, Status status, LocalDate deliveryDate, RequestType requestType)
     {
-        return ingredientRequestDAO.getAll()
-            .stream()
+        ValidationUtil.validateId(userId);
+
+        User user = userReader.getByID(userId);
+        Long creatorId = user.isHeadChef() || user.isSousChef() ? null : userId;
+
+        List<IngredientRequest> ingredientRequests = ingredientRequestDAO.findByFilter(status, deliveryDate, creatorId, requestType);
+
+        return ingredientRequests.stream()
             .map(IngredientRequestMapper::toDTO)
-            .collect(Collectors.toSet());
-    }
-
-    @Override
-    public Set<IngredientRequestDTO> getRequestByStatus(Status status)
-    {
-        ValidationUtil.validateNotNull(status, "Status");
-
-        return ingredientRequestDAO.findByStatus(status)
-            .stream()
-            .map(IngredientRequestMapper::toDTO)
-            .collect(Collectors.toSet());
-    }
-
-    @Override
-    public Set<IngredientRequestDTO> getRequestByStatusAndDate(Status status, LocalDate deliveryDate)
-    {
-        ValidationUtil.validateNotNull(status, "Status");
-        ValidationUtil.validateNotNull(deliveryDate, "Delivery date");
-
-        return ingredientRequestDAO.findByStatusAndDeliveryDate(status, deliveryDate)
-            .stream()
-            .map(IngredientRequestMapper::toDTO)
-            .collect(Collectors.toSet());
+            .toList();
     }
 
     @Override
@@ -172,8 +153,9 @@ public class IngredientRequestService implements IIngredientRequestService
         ValidationUtil.validateId(ingredientRequestId);
 
         User requester = userReader.getByID(requesterId);
-        validateIsHeadChef(requester);
+        IngredientRequest ingredientRequest = ingredientRequestDAO.getByID(ingredientRequestId);
 
+        ingredientRequest.delete(requester);
         return ingredientRequestDAO.delete(ingredientRequestId);
     }
 
@@ -193,13 +175,6 @@ public class IngredientRequestService implements IIngredientRequestService
         if (!user.isLineCook() && !user.isHeadChef())
         {
             throw new UnauthorizedActionException("Only kitchen staff can manage requests");
-        }
-    }
-
-    private void validateIsHeadChef(User user)
-    {
-        if (!user.isHeadChef()) {
-            throw new UnauthorizedActionException("Only head chefs can approve/reject requests");
         }
     }
 
@@ -240,6 +215,5 @@ public class IngredientRequestService implements IIngredientRequestService
         ValidationUtil.validateNotNull(dto.requestType(), "Request type");
         ValidationUtil.validateNotNull(dto.deliveryDate(), "Delivery date");
         ValidationUtil.validateFutureDate(dto.deliveryDate(), "Delivery date");
-        ValidationUtil.validateId(dto.dishId());
     }
 }

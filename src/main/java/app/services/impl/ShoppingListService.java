@@ -49,7 +49,7 @@ public class ShoppingListService implements IShoppingListService
         User creator = userReader.getByID(userId);
         requireChef(creator);
 
-        Set<IngredientRequest> approvedRequests = ingredientRequestDAO.findByStatusAndDeliveryDate(Status.APPROVED, dto.deliveryDate());
+        List<IngredientRequest> approvedRequests = ingredientRequestDAO.findByFilter(Status.APPROVED, dto.deliveryDate(),null,null);
         checkRequestNotEmpty(approvedRequests, dto.deliveryDate());
 
         List<String> uniqueIngredientNames = getUniqueIngredientNames(approvedRequests);
@@ -261,7 +261,7 @@ public class ShoppingListService implements IShoppingListService
             .orElse(DEFAULT_SUPPLIER);
     }
 
-    private Map<AggregationKey, List<IngredientRequest>> getIngredientsGrouped(Set<IngredientRequest> approved, Map<String, String> normalizedNames)
+    private Map<AggregationKey, List<IngredientRequest>> getIngredientsGrouped(List<IngredientRequest> approved, Map<String, String> normalizedNames)
     {
         return approved.stream()
             .collect(Collectors.groupingBy(req -> new AggregationKey(
@@ -269,7 +269,7 @@ public class ShoppingListService implements IShoppingListService
                 ));
     }
 
-    private List<String> getUniqueIngredientNames(Set<IngredientRequest> ingredientRequests)
+    private List<String> getUniqueIngredientNames(List<IngredientRequest> ingredientRequests)
     {
         return ingredientRequests.stream()
             .map(IngredientRequest::getName)
@@ -286,7 +286,7 @@ public class ShoppingListService implements IShoppingListService
         }
     }
 
-    private void checkRequestNotEmpty(Set<IngredientRequest> requests, LocalDate deliveryDate)
+    private void checkRequestNotEmpty(List<IngredientRequest> requests, LocalDate deliveryDate)
     {
         if (requests == null || requests.isEmpty())
         {

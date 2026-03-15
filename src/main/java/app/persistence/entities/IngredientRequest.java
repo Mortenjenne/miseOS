@@ -116,6 +116,22 @@ public class IngredientRequest implements IEntity
         this.updatedAt = LocalDateTime.now();
     }
 
+    public void delete(User user)
+    {
+        boolean isOwner = this.createdBy.getId().equals(user.getId());
+        boolean isHeadChef = user.isHeadChef();
+
+        if (!isOwner && !isHeadChef)
+        {
+            throw new UnauthorizedActionException("Can only delete your own requests");
+        }
+
+        if (!isPending())
+        {
+            throw new IllegalStateException("Cannot delete a non-pending request");
+        }
+    }
+
     public boolean isPending() {
         return this.requestStatus == Status.PENDING;
     }

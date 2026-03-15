@@ -3,9 +3,11 @@ package app.services;
 import app.dtos.ingredient.CreateIngredientRequestDTO;
 import app.dtos.ingredient.IngredientRequestDTO;
 import app.dtos.ingredient.UpdateIngredientRequestDTO;
+import app.enums.RequestType;
 import app.enums.Status;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 
 public interface IIngredientRequestService
@@ -16,11 +18,7 @@ public interface IIngredientRequestService
 
     IngredientRequestDTO rejectIngredientRequest(Long headChefId, Long requestId);
 
-    Set<IngredientRequestDTO> getAllPendingRequests();
-
-    Set<IngredientRequestDTO> getRequestByStatus(Status status);
-
-    Set<IngredientRequestDTO> getRequestByStatusAndDate(Status status, LocalDate deliveryDate);
+    List<IngredientRequestDTO> getRequests(Long userId, Status status, LocalDate deliveryDate, RequestType requestType);
 
     IngredientRequestDTO getById(Long id);
 
