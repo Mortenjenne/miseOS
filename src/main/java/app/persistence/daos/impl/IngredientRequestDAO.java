@@ -22,7 +22,7 @@ public class IngredientRequestDAO implements IIngredientRequestDAO
     }
 
     @Override
-    public List<IngredientRequest> findByFilter(Status status, LocalDate deliveryDate, Long creatorId, RequestType requestType)
+    public List<IngredientRequest> findByFilter(Status status, LocalDate deliveryDate, Long creatorId, RequestType requestType, Long stationId)
     {
         try (EntityManager em = emf.createEntityManager())
         {
@@ -30,12 +30,14 @@ public class IngredientRequestDAO implements IIngredientRequestDAO
             {
                 TypedQuery<IngredientRequest> query = em.createQuery(
                         "SELECT DISTINCT ir FROM IngredientRequest ir " +
-                            "LEFT JOIN ir.dish d " +
-                            "LEFT JOIN ir.createdBy u " +
+                            "LEFT JOIN FETCH ir.dish d " +
+                            "LEFT JOIN FETCH ir.createdBy u " +
+                            "LEFT JOIN FETCH d.station st " +
                             "WHERE (:status IS NULL OR ir.requestStatus  = :status) " +
                             "AND (:deliverDate IS NULL OR ir.deliveryDate  = :deliverDate) " +
                             "AND   (:creatorId IS NULL OR u.id = :creatorId) " +
                             "AND   (:requestType IS NULL OR ir.requestType = :requestType) " +
+                            "AND   (:stationId IS NULL OR st.id = :stationId) " +
                             "ORDER BY ir.name ASC, ir.createdAt ASC",
                         IngredientRequest.class)
                     .setParameter("status", status)
@@ -47,7 +49,7 @@ public class IngredientRequestDAO implements IIngredientRequestDAO
             }
             catch (PersistenceException e)
             {
-                throw new DatabaseException("Failed to fetch dish suggestions", e);
+                throw new DatabaseException("Failed to fetch ingredient requests", e);
             }
         }
     }

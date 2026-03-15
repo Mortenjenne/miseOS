@@ -1,5 +1,6 @@
 package app.controllers;
 
+import app.dtos.ingredient.ApproveIngredientRequestDTO;
 import app.dtos.ingredient.CreateIngredientRequestDTO;
 import app.dtos.ingredient.IngredientRequestDTO;
 import app.dtos.ingredient.UpdateIngredientRequestDTO;
@@ -29,7 +30,14 @@ public class IngredientRequestController implements IIngredientRequestController
         Long userId = SecurityUtil.requireUserId(ctx);
         Long requestId = RequestUtil.requirePathId(ctx, "id");
 
-        IngredientRequestDTO ingredientRequestDTO = ingredientRequestService.approveIngredientRequest(userId, requestId);
+        ApproveIngredientRequestDTO dto = null;
+
+        if (!ctx.body().isBlank())
+        {
+            dto = ctx.bodyAsClass(ApproveIngredientRequestDTO.class);
+        }
+
+        IngredientRequestDTO ingredientRequestDTO = ingredientRequestService.approveIngredientRequest(userId, requestId, dto);
         ctx.status(200).json(ingredientRequestDTO);
     }
 
@@ -46,9 +54,10 @@ public class IngredientRequestController implements IIngredientRequestController
     @Override
     public void getById(Context ctx)
     {
+        Long userId = SecurityUtil.requireUserId(ctx);
         Long requestId = RequestUtil.requirePathId(ctx, "id");
 
-        IngredientRequestDTO ingredientRequestDTO = ingredientRequestService.getById(requestId);
+        IngredientRequestDTO ingredientRequestDTO = ingredientRequestService.getById(userId, requestId);
         ctx.status(200).json(ingredientRequestDTO);
     }
 
@@ -59,8 +68,9 @@ public class IngredientRequestController implements IIngredientRequestController
         Status status = RequestUtil.getQueryStatus(ctx, "status");
         LocalDate deliveryDate = RequestUtil.getQueryDate(ctx, "deliveryDate");
         RequestType requestType = RequestUtil.getQueryRequestType(ctx, "requestType");
+        Long stationId = RequestUtil.getQueryLong(ctx, "stationId");
 
-        List<IngredientRequestDTO> ingredientRequests = ingredientRequestService.getRequests(userId, status, deliveryDate, requestType);
+        List<IngredientRequestDTO> ingredientRequests = ingredientRequestService.getRequests(userId, status, deliveryDate, requestType, stationId);
         ctx.status(200).json(ingredientRequests);
     }
 

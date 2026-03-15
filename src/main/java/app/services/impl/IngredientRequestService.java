@@ -1,5 +1,6 @@
 package app.services.impl;
 
+import app.dtos.ingredient.ApproveIngredientRequestDTO;
 import app.dtos.ingredient.CreateIngredientRequestDTO;
 import app.dtos.ingredient.IngredientRequestDTO;
 import app.dtos.ingredient.UpdateIngredientRequestDTO;
@@ -44,7 +45,7 @@ public class IngredientRequestService implements IIngredientRequestService
         requireKitchenStaff(creator);
         validateDeliveryDateRange(dto.deliveryDate());
 
-        Dish dish = validateAndGetDishForRequest(dto.requestType(), dto.dishId());
+        Dish dish = validateAndGetDishForRequest(dto.requestType(), dto.dishId(), creator);
 
         IngredientRequest ingredientRequest = new IngredientRequest(
             dto.name(),
@@ -63,13 +64,18 @@ public class IngredientRequestService implements IIngredientRequestService
     }
 
     @Override
-    public IngredientRequestDTO approveIngredientRequest(Long requesterId, Long ingredientRequestId)
+    public IngredientRequestDTO approveIngredientRequest(Long requesterId, Long ingredientRequestId, ApproveIngredientRequestDTO dto)
     {
         ValidationUtil.validateId(requesterId);
         ValidationUtil.validateId(ingredientRequestId);
 
         User requester = userReader.getByID(requesterId);
         IngredientRequest request = ingredientRequestDAO.getByID(ingredientRequestId);
+
+        if (dto != null)
+        {
+            request.adjustQuantityForApproval(dto.quantity(), dto.note());
+        }
 
         request.approve(requester);
 
@@ -93,14 +99,18 @@ public class IngredientRequestService implements IIngredientRequestService
     }
 
     @Override
-    public List<IngredientRequestDTO> getRequests(Long userId, Status status, LocalDate deliveryDate, RequestType requestType)
+    public List<IngredientRequestDTO> getRequests(Long userId, Status status, LocalDate deliveryDate, RequestType requestType, Long stationId)
     {
         ValidationUtil.validateId(userId);
+        if (stationId != null)
+        {
+            ValidationUtil.validateId(stationId);
+        }
 
         User user = userReader.getByID(userId);
         Long creatorId = user.isHeadChef() || user.isSousChef() ? null : userId;
 
-        List<IngredientRequest> ingredientRequests = ingredientRequestDAO.findByFilter(status, deliveryDate, creatorId, requestType);
+        List<IngredientRequest> ingredientRequests = ingredientRequestDAO.findByFilter(status, deliveryDate, creatorId, requestType, stationId);
 
         return ingredientRequests.stream()
             .map(IngredientRequestMapper::toDTO)
@@ -108,11 +118,21 @@ public class IngredientRequestService implements IIngredientRequestService
     }
 
     @Override
-    public IngredientRequestDTO getById(Long id)
+    public IngredientRequestDTO getById(Long requesterId, Long id)
     {
+        ValidationUtil.validateId(requesterId);
         ValidationUtil.validateId(id);
 
+        User user = userReader.getByID(requesterId);
         IngredientRequest request = ingredientRequestDAO.getByID(id);
+
+        boolean isOwner = request.getCreatedBy() != null && request.getCreatedBy().getId().equals(requesterId);
+
+        if (!isOwner && !user.isHeadChef() && !user.isSousChef())
+        {
+            throw new UnauthorizedActionException("Not allowed to view this ingredient request");
+        }
+
         return IngredientRequestMapper.toDTO(request);
     }
 
@@ -128,7 +148,7 @@ public class IngredientRequestService implements IIngredientRequestService
 
         validateDeliveryDateRange(dto.deliveryDate());
 
-        Dish dish = validateAndGetDishForRequest(dto.requestType(), dto.dishId());
+        Dish dish = validateAndGetDishForRequest(dto.requestType(), dto.dishId(), editor);
         IngredientRequest existing = ingredientRequestDAO.getByID(ingredientRequestId);
 
         existing.update(
@@ -142,7 +162,6 @@ public class IngredientRequestService implements IIngredientRequestService
         );
 
         IngredientRequest updated = ingredientRequestDAO.update(existing);
-
         return IngredientRequestMapper.toDTO(updated);
     }
 
@@ -159,13 +178,13 @@ public class IngredientRequestService implements IIngredientRequestService
         return ingredientRequestDAO.delete(ingredientRequestId);
     }
 
-    private Dish validateAndGetDishForRequest(RequestType requestType, Long dishId)
+    private Dish validateAndGetDishForRequest(RequestType requestType, Long dishId, User creator)
     {
         Dish dish = null;
 
         if(requestType == RequestType.DISH_SPECIFIC)
         {
-            dish = validateDishForIngredientRequest(dishId);
+            dish = validateDishForIngredientRequest(dishId, creator);
         }
         return dish;
     }
@@ -187,13 +206,25 @@ public class IngredientRequestService implements IIngredientRequestService
         }
     }
 
-    private Dish validateDishForIngredientRequest(Long dishId) {
+    private Dish validateDishForIngredientRequest(Long dishId, User creator) {
         if (dishId == null)
         {
             throw new ValidationException("Dish ID is required for dish-specific requests");
         }
 
-        return dishReader.getByID(dishId);
+        Dish dish = dishReader.getByID(dishId);
+
+        if(!dish.isActive())
+        {
+            throw new ValidationException("Dish must be active");
+        }
+
+        if (!creator.getStation().getId().equals(dish.getStation().getId()))
+        {
+            throw new UnauthorizedActionException("Dish does not belong to your station");
+        }
+
+        return dish;
     }
 
     private void validateCreateInput(CreateIngredientRequestDTO dto)

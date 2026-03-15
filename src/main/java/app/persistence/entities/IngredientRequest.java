@@ -132,6 +132,24 @@ public class IngredientRequest implements IEntity
         }
     }
 
+    public void adjustQuantityForApproval(Double quantity, String note)
+    {
+        requirePendingStatus();
+
+        if (quantity != null)
+        {
+            ValidationUtil.validatePositive(quantity, "Quantity");
+            this.quantity = quantity;
+        }
+
+        if (note != null)
+        {
+            this.note = note.trim();
+        }
+
+        this.updatedAt = LocalDateTime.now();
+    }
+
     public boolean isPending() {
         return this.requestStatus == Status.PENDING;
     }

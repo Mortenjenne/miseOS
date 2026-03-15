@@ -50,7 +50,8 @@ public class ApplicationConfig
             new MenuInspirationRoute(di.getMenuInspirationController()),
             new DishSuggestionRoute(di.getDishSuggestionController()),
             new DishRoute(di.getDishController()),
-            new WeeklyMenuRoute(di.getWeeklyMenuController())
+            new WeeklyMenuRoute(di.getWeeklyMenuController()),
+            new IngredientRequestRoute(di.getIngredientRequestController())
         );
     }
 }
