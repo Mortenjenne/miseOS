@@ -221,9 +221,17 @@ public class IngredientRequestService implements IIngredientRequestService
 
         boolean isHeadChefOrSousChef = creator.isHeadChef() || creator.isSousChef();
 
-        if (!isHeadChefOrSousChef && !creator.getStation().getId().equals(dish.getStation().getId()))
+        if (!isHeadChefOrSousChef)
         {
-            throw new UnauthorizedActionException("Dish does not belong to your station");
+            if (creator.getStation() == null)
+            {
+                throw new ValidationException("You are not assigned to a station — contact your head chef");
+            }
+
+            if (!creator.getStation().getId().equals(dish.getStation().getId()))
+            {
+                throw new UnauthorizedActionException("Dish does not belong to your station");
+            }
         }
 
         return dish;

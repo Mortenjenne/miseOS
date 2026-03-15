@@ -60,7 +60,7 @@ Content-Type: application/json
 "SOUS_CHEF"
 
 ### PATCH Assign User(Anna) To Station
-PATCH {{local}}/users/2/station/1
+PATCH {{url}}/users/3/station/1
 
 
 ### DELETE Delete User
