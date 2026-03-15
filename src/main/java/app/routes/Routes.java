@@ -31,7 +31,6 @@ public class Routes
     {
         return () ->
         {
-            get("/", ctx -> ctx.render("index.html"));
             allergenRoute.getRoutes().addEndpoints();
             userRoute.getRoutes().addEndpoints();
             stationRoute.getRoutes().addEndpoints();

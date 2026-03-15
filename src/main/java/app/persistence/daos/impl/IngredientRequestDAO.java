@@ -32,7 +32,7 @@ public class IngredientRequestDAO implements IIngredientRequestDAO
                         "SELECT DISTINCT ir FROM IngredientRequest ir " +
                             "LEFT JOIN FETCH ir.dish d " +
                             "LEFT JOIN FETCH ir.createdBy u " +
-                            "LEFT JOIN FETCH d.station st " +
+                            "LEFT JOIN d.station st " +
                             "WHERE (:status IS NULL OR ir.requestStatus  = :status) " +
                             "AND (:deliverDate IS NULL OR ir.deliveryDate  = :deliverDate) " +
                             "AND   (:creatorId IS NULL OR u.id = :creatorId) " +
@@ -43,7 +43,8 @@ public class IngredientRequestDAO implements IIngredientRequestDAO
                     .setParameter("status", status)
                     .setParameter("deliverDate", deliveryDate)
                     .setParameter("creatorId", creatorId)
-                    .setParameter("requestType", requestType);
+                    .setParameter("requestType", requestType)
+                    .setParameter("stationId", stationId);
 
                 return query.getResultList();
             }

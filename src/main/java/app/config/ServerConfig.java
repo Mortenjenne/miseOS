@@ -33,10 +33,7 @@ public class ServerConfig
         return Javalin.create(config ->
         {
             config.startup.showJavalinBanner = false;
-            //REMOVE THYMELEAF AND STATICFILES
-            config.fileRenderer(new JavalinThymeleaf());
             config.router.contextPath = "/api/v1";
-            config.staticFiles.add("/public");
             config.bundledPlugins.enableRouteOverview("/routes");
             config.routes.apiBuilder(routes.getRoutes());
             configureMiddleWare(config);

@@ -17,7 +17,6 @@ import io.restassured.RestAssured;
 import jakarta.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.*;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -166,7 +165,7 @@ class WeeklyMenuControllerTest
             assertEquals(response.numberOfSlots(), response.menuSlots().size());
 
             Set<String> dishNames = response.menuSlots().stream()
-                .map(WeeklyMenuSlotDTO::menuDishDTO)
+                .map(WeeklyMenuSlotDTO::menuDish)
                 .filter(java.util.Objects::nonNull)
                 .map(MenuDishDTO::nameDA)
                 .collect(Collectors.toSet());
@@ -327,10 +326,10 @@ class WeeklyMenuControllerTest
 
             assertTrue(response.menuSlots().stream().anyMatch(s ->
                 s.dayOfWeek() == DayOfWeek.FRIDAY &&
-                    s.stationReferenceDTO() != null &&
-                    s.stationReferenceDTO().id().equals(hotStationId) &&
-                    s.menuDishDTO() != null &&
-                    s.menuDishDTO().id().equals(boeufDishId)
+                    s.station() != null &&
+                    s.station().id().equals(hotStationId) &&
+                    s.menuDish() != null &&
+                    s.menuDish().id().equals(boeufDishId)
             ));
         }
 
@@ -388,9 +387,9 @@ class WeeklyMenuControllerTest
                 .findFirst()
                 .orElseThrow();
 
-            assertNotNull(updatedSlot.menuDishDTO());
-            assertEquals(salmonDishId, updatedSlot.menuDishDTO().id());
-            assertNotNull(updatedSlot.menuDishDTO().nameDA());
+            assertNotNull(updatedSlot.menuDish());
+            assertEquals(salmonDishId, updatedSlot.menuDish().id());
+            assertNotNull(updatedSlot.menuDish().nameDA());
         }
     }
 

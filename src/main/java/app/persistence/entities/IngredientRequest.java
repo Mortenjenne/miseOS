@@ -3,6 +3,7 @@ package app.persistence.entities;
 import app.enums.RequestType;
 import app.enums.Status;
 import app.enums.Unit;
+import app.exceptions.ConflictException;
 import app.exceptions.UnauthorizedActionException;
 import app.utils.ValidationUtil;
 import jakarta.persistence.*;
@@ -128,7 +129,7 @@ public class IngredientRequest implements IEntity
 
         if (!isPending())
         {
-            throw new IllegalStateException("Cannot delete a non-pending request");
+            throw new ConflictException("Cannot delete a non-pending request");
         }
     }
 
@@ -164,7 +165,7 @@ public class IngredientRequest implements IEntity
     {
         if (this.requestStatus != Status.PENDING)
         {
-            throw new IllegalStateException("Only pending suggestions allowed here");
+            throw new ConflictException("Only pending suggestions allowed here");
         }
     }
 
@@ -172,7 +173,7 @@ public class IngredientRequest implements IEntity
     {
         if (this.requestStatus != Status.PENDING)
         {
-            throw new IllegalStateException("Can only modify pending requests. Current: " + requestStatus);
+            throw new ConflictException("Can only modify pending requests. Current: " + requestStatus);
         }
     }
 

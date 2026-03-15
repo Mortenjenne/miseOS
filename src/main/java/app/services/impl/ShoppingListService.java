@@ -49,7 +49,7 @@ public class ShoppingListService implements IShoppingListService
         User creator = userReader.getByID(userId);
         requireChef(creator);
 
-        List<IngredientRequest> approvedRequests = ingredientRequestDAO.findByFilter(Status.APPROVED, dto.deliveryDate(),null,null);
+        List<IngredientRequest> approvedRequests = ingredientRequestDAO.findByFilter(Status.APPROVED, dto.deliveryDate(),null,null, null);
         checkRequestNotEmpty(approvedRequests, dto.deliveryDate());
 
         List<String> uniqueIngredientNames = getUniqueIngredientNames(approvedRequests);

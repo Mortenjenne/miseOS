@@ -75,7 +75,7 @@ class IngredientRequestDAOTest
     @DisplayName("Retrieve - should return all seeded requests")
     void getAll()
     {
-        List<IngredientRequest> requests = ingredientRequestDAO.findByFilter(null, null, null, null);
+        List<IngredientRequest> requests = ingredientRequestDAO.findByFilter(null, null, null, null, null);
         assertThat(requests, hasSize(11));
     }
 
@@ -136,7 +136,7 @@ class IngredientRequestDAOTest
     @DisplayName("Find - should filter by status PENDING")
     void findByStatus()
     {
-        List<IngredientRequest> pending = ingredientRequestDAO.findByFilter(Status.PENDING, null, null, null);
+        List<IngredientRequest> pending = ingredientRequestDAO.findByFilter(Status.PENDING, null, null, null, null);
 
         assertThat(pending, hasSize(greaterThanOrEqualTo(2)));
         pending.forEach(r -> assertThat(r.getRequestStatus(), is(Status.PENDING)));
@@ -146,7 +146,7 @@ class IngredientRequestDAOTest
     @DisplayName("Find - should return empty set for status with no matches")
     void findByStatus_EmptyResults()
     {
-        List<IngredientRequest> rejected = ingredientRequestDAO.findByFilter(Status.REJECTED, null, null, null);
+        List<IngredientRequest> rejected = ingredientRequestDAO.findByFilter(Status.REJECTED, null, null, null, null);
         assertThat(rejected, is(empty()));
     }
 
@@ -156,7 +156,7 @@ class IngredientRequestDAOTest
     {
         IngredientRequest seed = (IngredientRequest) seeded.get("req_dill");
 
-        List<IngredientRequest> results = ingredientRequestDAO.findByFilter(Status.PENDING, seed.getDeliveryDate(), null, null);
+        List<IngredientRequest> results = ingredientRequestDAO.findByFilter(Status.PENDING, seed.getDeliveryDate(), null, null, null);
 
         assertThat(results, hasSize(1));
         assertThat(results.iterator().next().getName(), is("Frisk Dild"));
