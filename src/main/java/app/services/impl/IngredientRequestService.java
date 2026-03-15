@@ -36,7 +36,7 @@ public class IngredientRequestService implements IIngredientRequestService
     }
 
     @Override
-    public IngredientRequestDTO createRequest(Long creatorId, CreateIngredientRequestDTO dto)
+    public IngredientRequestDTO createIngredientRequest(Long creatorId, CreateIngredientRequestDTO dto)
     {
         ValidationUtil.validateId(creatorId);
         validateCreateInput(dto);

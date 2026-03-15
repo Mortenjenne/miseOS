@@ -23,38 +23,30 @@ public class IngredientRequest implements IEntity
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Setter
-    @Column(name = "name", nullable = false)
+    @Column(name = "name", nullable = false, length = 100)
     private String name;
 
-    @Setter
     @Column(name = "quantity", nullable = false)
     private double quantity;
 
-    @Setter
     @Enumerated(EnumType.STRING)
     @Column(name = "unit", nullable = false)
     private Unit unit;
 
-    @Setter
     @Column(name = "preferred_supplier")
     private String preferredSupplier;
 
-    @Setter
     @Column(name = "note")
     private String note;
 
-    @Setter
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private Status requestStatus;
 
-    @Setter
     @Enumerated(EnumType.STRING)
     @Column(name = "request_type", nullable = false)
     private RequestType requestType;
 
-    @Setter
     @Column(name = "delivery_date", nullable = false)
     private LocalDate deliveryDate;
 
@@ -64,6 +56,10 @@ public class IngredientRequest implements IEntity
     @Column(name = "reviewed_at")
     private LocalDateTime reviewedAt;
 
+    @Column
+    private LocalDateTime updatedAt;
+
+    @Setter
     @ManyToOne
     @JoinColumn(name = "created_by_user_id")
     private User createdBy;
@@ -117,6 +113,7 @@ public class IngredientRequest implements IEntity
         this.note = note;
         this.deliveryDate = deliveryDate;
         this.dish = dish;
+        this.updatedAt = LocalDateTime.now();
     }
 
     public boolean isPending() {
@@ -128,7 +125,6 @@ public class IngredientRequest implements IEntity
     {
         this.createdAt = LocalDateTime.now();
     }
-
 
     private void valideIngredientRequest()
     {
@@ -150,12 +146,12 @@ public class IngredientRequest implements IEntity
     {
         if(currentUser == null)
         {
-            throw new IllegalArgumentException("Head chef cannot be null");
+            throw new IllegalArgumentException("User cannot be null");
         }
 
         if(!currentUser.isHeadChef() && !currentUser.isSousChef())
         {
-            throw new UnauthorizedActionException("Only head or sous chefs can approve dish suggestions");
+            throw new UnauthorizedActionException("Only head or sous chefs can approve ingredient requests");
         }
     }
 

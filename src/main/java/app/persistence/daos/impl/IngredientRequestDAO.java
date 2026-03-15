@@ -1,5 +1,6 @@
 package app.persistence.daos.impl;
 
+import app.enums.RequestType;
 import app.enums.Status;
 import app.exceptions.DatabaseException;
 import app.persistence.daos.interfaces.IIngredientRequestDAO;
@@ -9,8 +10,7 @@ import app.utils.TransactionUtil;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 public class IngredientRequestDAO implements IIngredientRequestDAO
 {
@@ -22,30 +22,33 @@ public class IngredientRequestDAO implements IIngredientRequestDAO
     }
 
     @Override
-    public Set<IngredientRequest> findByStatus(Status status)
+    public List<IngredientRequest> findByFilter(Status status, LocalDate deliveryDate, Long creatorId, RequestType requestType)
     {
-        DBValidator.validateNotNull(status, "Status");
-
-        try(EntityManager em = emf.createEntityManager())
+        try (EntityManager em = emf.createEntityManager())
         {
-            TypedQuery<IngredientRequest> query = em.createQuery("SELECT ir FROM IngredientRequest ir WHERE ir.requestStatus = :status", IngredientRequest.class)
-                .setParameter("status", status);
-            return new HashSet<>(query.getResultList());
-        }
-    }
+            try
+            {
+                TypedQuery<IngredientRequest> query = em.createQuery(
+                        "SELECT DISTINCT ir FROM IngredientRequest ir " +
+                            "LEFT JOIN ir.dish d " +
+                            "LEFT JOIN ir.createdBy u " +
+                            "WHERE (:status IS NULL OR ir.requestStatus  = :status) " +
+                            "AND (:deliverDate IS NULL OR ir.deliveryDate  = :deliverDate) " +
+                            "AND   (:creatorId IS NULL OR u.id = :creatorId) " +
+                            "AND   (:requestType IS NULL OR ir.requestType = :requestType) " +
+                            "ORDER BY ir.name ASC, ir.createdAt ASC",
+                        IngredientRequest.class)
+                    .setParameter("status", status)
+                    .setParameter("deliverDate", deliveryDate)
+                    .setParameter("creatorId", creatorId)
+                    .setParameter("requestType", requestType);
 
-    @Override
-    public Set<IngredientRequest> findByStatusAndDeliveryDate(Status status, LocalDate deliveryDate)
-    {
-        DBValidator.validateNotNull(status, "Status");
-        DBValidator.validateNotNull(deliveryDate, "Delivery date");
-
-        try(EntityManager em = emf.createEntityManager())
-        {
-            TypedQuery<IngredientRequest> query = em.createQuery("SELECT ir FROM IngredientRequest ir WHERE ir.requestStatus = :status AND ir.deliveryDate = :deliveryDate", IngredientRequest.class)
-                .setParameter("status", status)
-                .setParameter("deliveryDate", deliveryDate);
-            return new HashSet<>(query.getResultList());
+                return query.getResultList();
+            }
+            catch (PersistenceException e)
+            {
+                throw new DatabaseException("Failed to fetch dish suggestions", e);
+            }
         }
     }
 
@@ -72,24 +75,25 @@ public class IngredientRequestDAO implements IIngredientRequestDAO
     }
 
     @Override
-    public Set<IngredientRequest> getAll()
-    {
-        try(EntityManager em = emf.createEntityManager())
-        {
-            TypedQuery<IngredientRequest> query = em.createQuery("SELECT ir FROM IngredientRequest ir", IngredientRequest.class);
-            return new HashSet<>(query.getResultList());
-        }
-    }
-
-    @Override
     public IngredientRequest getByID(Long id)
     {
         DBValidator.validateId(id);
 
         try(EntityManager em = emf.createEntityManager())
         {
-            IngredientRequest ingredientRequest = em.find(IngredientRequest.class, id);
-            return DBValidator.validateExists(ingredientRequest, id, IngredientRequest.class);
+            try
+            {
+                IngredientRequest ingredientRequest = em.find(IngredientRequest.class, id);
+                return DBValidator.validateExists(ingredientRequest, id, IngredientRequest.class);
+            }
+            catch (EntityNotFoundException e)
+            {
+                throw e;
+            }
+            catch (PersistenceException e)
+            {
+                throw new DatabaseException("Couldn't fetch ingredient request with id: " + id, e);
+            }
         }
     }
 

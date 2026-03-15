@@ -4,14 +4,13 @@ import app.dtos.ingredient.CreateIngredientRequestDTO;
 import app.dtos.ingredient.IngredientRequestDTO;
 import app.dtos.ingredient.UpdateIngredientRequestDTO;
 import app.enums.Status;
-import app.persistence.entities.User;
 
 import java.time.LocalDate;
 import java.util.Set;
 
 public interface IIngredientRequestService
 {
-    IngredientRequestDTO createRequest(Long creatorId, CreateIngredientRequestDTO requestDTO);
+    IngredientRequestDTO createIngredientRequest(Long creatorId, CreateIngredientRequestDTO requestDTO);
 
     IngredientRequestDTO approveIngredientRequest(Long headChefId, Long ingredientRequestId);
 

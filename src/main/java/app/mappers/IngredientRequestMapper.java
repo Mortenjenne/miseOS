@@ -1,6 +1,8 @@
 package app.mappers;
 
+import app.dtos.dish.DishReferenceDTO;
 import app.dtos.ingredient.IngredientRequestDTO;
+import app.dtos.user.UserReferenceDTO;
 import app.persistence.entities.IngredientRequest;
 
 public class IngredientRequestMapper
@@ -9,6 +11,9 @@ public class IngredientRequestMapper
 
     public static IngredientRequestDTO toDTO(IngredientRequest request)
     {
+        DishReferenceDTO dish = DishMapper.toDishReferenceDTO(request.getDish());
+        UserReferenceDTO requestedBy = UserMapper.toReferenceDTO(request.getCreatedBy());
+
         return new IngredientRequestDTO(
             request.getId(),
             request.getName(),
@@ -19,10 +24,11 @@ public class IngredientRequestMapper
             request.getRequestStatus(),
             request.getRequestType(),
             request.getDeliveryDate(),
-            request.getCreatedAt(),
+            requestedBy,
+            dish,
             request.getReviewedAt(),
-            request.getCreatedBy().getId(),
-            request.getDish() != null ? request.getDish().getId() : null
+            request.getCreatedAt(),
+            request.getUpdatedAt()
         );
     }
 }

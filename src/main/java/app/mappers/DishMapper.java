@@ -3,6 +3,7 @@ package app.mappers;
 import app.dtos.allergen.AllergenDTO;
 import app.dtos.dish.DishDTO;
 import app.dtos.dish.DishOptionDTO;
+import app.dtos.dish.DishReferenceDTO;
 import app.dtos.menu.MenuDishDTO;
 import app.dtos.station.StationReferenceDTO;
 import app.dtos.user.UserReferenceDTO;
@@ -67,6 +68,17 @@ public class DishMapper
             dish.getDescriptionEN(),
             dish.hasTranslation(),
             allergens
+        );
+    }
+
+    public static DishReferenceDTO toDishReferenceDTO(Dish dish)
+    {
+        if (dish == null) return null;
+
+        return new DishReferenceDTO(
+            dish.getId(),
+            dish.getNameDA(),
+            dish.getNameEN()
         );
     }
 

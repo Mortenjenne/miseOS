@@ -13,8 +13,8 @@ import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.*;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -75,7 +75,7 @@ class IngredientRequestDAOTest
     @DisplayName("Retrieve - should return all seeded requests")
     void getAll()
     {
-        Set<IngredientRequest> requests = ingredientRequestDAO.getAll();
+        List<IngredientRequest> requests = ingredientRequestDAO.findByFilter(null, null, null, null);
         assertThat(requests, hasSize(11));
     }
 
@@ -102,8 +102,16 @@ class IngredientRequestDAOTest
     void update()
     {
         IngredientRequest seed = (IngredientRequest) seeded.get("req_flour");
-        seed.setQuantity(100.0);
-        seed.setNote("Updated Note");
+
+        seed.update(
+            seed.getName(),
+            100.0,
+            seed.getUnit(),
+            seed.getPreferredSupplier(),
+            "Updated note",
+            seed.getDeliveryDate(),
+            seed.getDish()
+        );
 
         IngredientRequest updated = ingredientRequestDAO.update(seed);
 
@@ -128,7 +136,7 @@ class IngredientRequestDAOTest
     @DisplayName("Find - should filter by status PENDING")
     void findByStatus()
     {
-        Set<IngredientRequest> pending = ingredientRequestDAO.findByStatus(Status.PENDING);
+        List<IngredientRequest> pending = ingredientRequestDAO.findByFilter(Status.PENDING, null, null, null);
 
         assertThat(pending, hasSize(greaterThanOrEqualTo(2)));
         pending.forEach(r -> assertThat(r.getRequestStatus(), is(Status.PENDING)));
@@ -138,7 +146,7 @@ class IngredientRequestDAOTest
     @DisplayName("Find - should return empty set for status with no matches")
     void findByStatus_EmptyResults()
     {
-        Set<IngredientRequest> rejected = ingredientRequestDAO.findByStatus(Status.REJECTED);
+        List<IngredientRequest> rejected = ingredientRequestDAO.findByFilter(Status.REJECTED, null, null, null);
         assertThat(rejected, is(empty()));
     }
 
@@ -148,10 +156,7 @@ class IngredientRequestDAOTest
     {
         IngredientRequest seed = (IngredientRequest) seeded.get("req_dill");
 
-        Set<IngredientRequest> results = ingredientRequestDAO.findByStatusAndDeliveryDate(
-            Status.PENDING,
-            seed.getDeliveryDate()
-        );
+        List<IngredientRequest> results = ingredientRequestDAO.findByFilter(Status.PENDING, seed.getDeliveryDate(), null, null);
 
         assertThat(results, hasSize(1));
         assertThat(results.iterator().next().getName(), is("Frisk Dild"));

@@ -1,5 +1,7 @@
 package app.dtos.ingredient;
 
+import app.dtos.dish.DishReferenceDTO;
+import app.dtos.user.UserReferenceDTO;
 import app.enums.RequestType;
 import app.enums.Status;
 import app.enums.Unit;
@@ -17,8 +19,9 @@ public record IngredientRequestDTO(
     Status status,
     RequestType requestType,
     LocalDate deliveryDate,
-    LocalDateTime createdAt,
+    UserReferenceDTO requestedBy,
+    DishReferenceDTO dish,
     LocalDateTime reviewedAt,
-    Long createdByUserId,
-    Long dishSuggestionId
+    LocalDateTime createdAt,
+    LocalDateTime updatedAt
 ) {}
