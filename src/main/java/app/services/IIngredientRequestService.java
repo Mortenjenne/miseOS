@@ -14,11 +14,11 @@ public interface IIngredientRequestService
 {
     IngredientRequestDTO createIngredientRequest(Long creatorId, CreateIngredientRequestDTO requestDTO);
 
-    IngredientRequestDTO approveIngredientRequest(Long headChefId, Long ingredientRequestId);
+    IngredientRequestDTO approveIngredientRequest(Long requesterId, Long ingredientRequestId);
 
-    IngredientRequestDTO rejectIngredientRequest(Long headChefId, Long requestId);
+    IngredientRequestDTO rejectIngredientRequest(Long requesterId, Long requestId);
 
-    List<IngredientRequestDTO> getRequests(Long userId, Status status, LocalDate deliveryDate, RequestType requestType);
+    List<IngredientRequestDTO> getRequests(Long requesterId, Status status, LocalDate deliveryDate, RequestType requestType);
 
     IngredientRequestDTO getById(Long id);
 

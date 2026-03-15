@@ -1,9 +1,12 @@
 package app.utils;
 
 import app.enums.MenuStatus;
+import app.enums.RequestType;
 import app.enums.Status;
 import app.enums.SupportedLanguage;
 import io.javalin.http.Context;
+
+import java.time.LocalDate;
 
 
 public final class RequestUtil
@@ -75,6 +78,34 @@ public final class RequestUtil
         }
     }
 
+    public static RequestType getQueryRequestType(Context ctx, String param)
+    {
+        if (!isPresent(ctx, param)) return null;
+
+        try
+        {
+            return RequestType.valueOf(ctx.queryParam(param).trim().toUpperCase());
+        }
+        catch (IllegalArgumentException e)
+        {
+            throw new IllegalArgumentException("Invalid request type: " + ctx.queryParam(param));
+        }
+    }
+
+    public static LocalDate getQueryDate(Context ctx, String param)
+    {
+        if (!isPresent(ctx, param)) return null;
+
+        try
+        {
+            return LocalDate.parse(ctx.queryParam(param).trim());
+        }
+        catch (IllegalArgumentException e)
+        {
+            throw new IllegalArgumentException("Invalid date format: " + ctx.queryParam(param));
+        }
+    }
+
     public static SupportedLanguage getQueryLanguage(Context ctx, String param)
     {
         String value = getQueryString(ctx, param);
@@ -122,4 +153,6 @@ public final class RequestUtil
         String value = ctx.queryParam(param);
         return value != null && !value.isBlank();
     }
+
+
 }
