@@ -1,11 +1,14 @@
 package app.persistence.entities;
 
 import app.enums.Unit;
+import app.exceptions.ConflictException;
 import app.exceptions.ValidationException;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.time.LocalDateTime;
 
 @NoArgsConstructor
 @Getter
@@ -17,30 +20,30 @@ public class ShoppingListItem implements IEntity
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Setter
     @Column(name = "ingredient_name", nullable = false)
     private String ingredientName;
 
-    @Setter
     @Column(name = "total_quantity", nullable = false)
     private double quantity;
 
-    @Setter
     @Enumerated(EnumType.STRING)
     @Column(name = "unit", nullable = false)
     private Unit unit;
 
-    @Setter
     @Column(name = "supplier")
     private String supplier;
 
-    @Setter
     @Column(name = "is_ordered")
     private boolean isOrdered;
 
-    @Setter
     @Column(name = "notes", columnDefinition = "TEXT")
     private String notes;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
     @Setter
     @ManyToOne
@@ -61,11 +64,17 @@ public class ShoppingListItem implements IEntity
         this.isOrdered = false;
     }
 
+    @PrePersist
+    void createdAt()
+    {
+        this.createdAt = LocalDateTime.now();
+    }
+
     public void markAsOrdered()
     {
         if (this.isOrdered)
         {
-            throw new IllegalStateException("Item is already marked as ordered");
+            throw new ConflictException("Item is already marked as ordered");
         }
         this.isOrdered = true;
     }
@@ -74,7 +83,7 @@ public class ShoppingListItem implements IEntity
     {
         if (!this.isOrdered)
         {
-            throw new IllegalStateException("Item is not marked as ordered");
+            throw new ConflictException("Item is not marked as ordered");
         }
         this.isOrdered = false;
     }
@@ -94,6 +103,7 @@ public class ShoppingListItem implements IEntity
         if (supplier != null && !supplier.isBlank()) {
             this.supplier = supplier;
         }
+        this.updatedAt = LocalDateTime.now();
     }
 
     private void requireNotBlank(String value)
@@ -124,7 +134,7 @@ public class ShoppingListItem implements IEntity
     {
         if (shoppingList != null && !shoppingList.isDraft())
         {
-            throw new IllegalStateException("Cannot modify items in finalized list");
+            throw new ConflictException("Cannot modify items in finalized list");
         }
     }
 

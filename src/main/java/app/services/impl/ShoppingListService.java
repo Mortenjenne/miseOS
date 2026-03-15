@@ -3,6 +3,7 @@ package app.services.impl;
 import app.dtos.shopping.*;
 import app.enums.ShoppingListStatus;
 import app.enums.Status;
+import app.exceptions.ConflictException;
 import app.exceptions.UnauthorizedActionException;
 import app.mappers.ShoppingListMapper;
 import app.persistence.daos.interfaces.IIngredientRequestDAO;
@@ -79,7 +80,8 @@ public class ShoppingListService implements IShoppingListService
         });
 
         ShoppingList saved = shoppingListDAO.create(shoppingList);
-        return ShoppingListMapper.toDTO(saved);
+        ShoppingList fetchedWithItems = shoppingListDAO.getByID(saved.getId());
+        return ShoppingListMapper.toDTO(fetchedWithItems);
     }
 
     @Override
@@ -110,26 +112,18 @@ public class ShoppingListService implements IShoppingListService
         ShoppingList list = shoppingListDAO.getByID(shoppingListId);
 
         requireChef(approver);
+        list.delete(approver);
 
         return shoppingListDAO.delete(list.getId());
     }
 
     @Override
-    public Set<ShoppingListDTO> getAll()
+    public List<ShoppingListDTO> getShoppingLists(ShoppingListStatus status, LocalDate deliveryDate)
     {
-        return shoppingListDAO.getAll().stream()
+        return shoppingListDAO.findByFilter(status, deliveryDate)
+            .stream()
             .map(ShoppingListMapper::toDTO)
-            .collect(Collectors.toSet());
-    }
-
-    @Override
-    public Set<ShoppingListDTO> findByStatus(ShoppingListStatus status)
-    {
-        ValidationUtil.validateNotNull(status, "Status");
-
-        return shoppingListDAO.findByStatus(status).stream()
-            .map(ShoppingListMapper::toDTO)
-            .collect(Collectors.toSet());
+            .toList();
     }
 
     @Override
@@ -151,7 +145,7 @@ public class ShoppingListService implements IShoppingListService
     }
 
     @Override
-    public ShoppingListDTO markAllItemsOrdered(Long shoppingListId, Long userId)
+    public ShoppingListDTO markAllItemsOrdered(Long userId, Long shoppingListId)
     {
         ValidationUtil.validateId(shoppingListId);
         ValidationUtil.validateId(userId);
@@ -290,7 +284,7 @@ public class ShoppingListService implements IShoppingListService
     {
         if (requests == null || requests.isEmpty())
         {
-            throw new IllegalStateException("No approved requests for date: " + deliveryDate);
+            throw new ConflictException("No approved requests for date: " + deliveryDate);
         }
     }
 
@@ -300,7 +294,7 @@ public class ShoppingListService implements IShoppingListService
 
         if (existing.isPresent())
         {
-            throw new IllegalStateException("Shopping list already exists for date: " + dto.deliveryDate());
+            throw new ConflictException("Shopping list already exists for date: " + dto.deliveryDate());
         }
     }
 
@@ -316,7 +310,7 @@ public class ShoppingListService implements IShoppingListService
     {
         ValidationUtil.validateNotNull(dto, "Shopping list");
         ValidationUtil.validateNotNull(dto.deliveryDate(), "Delivery date");
-        ValidationUtil.validateNotBlank(dto.targetLanguage(), "Target language");
+        ValidationUtil.validateNotNull(dto.targetLanguage(), "Target language");
     }
 
     private void validateItemUpdateInput(UpdateShoppingListItemDTO dto)

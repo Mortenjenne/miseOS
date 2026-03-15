@@ -1,9 +1,12 @@
 package app.enums;
 
+import lombok.Getter;
+
 import java.util.Arrays;
 
 public enum SupportedLanguage
 {
+    DK("DA", "Danish"),
     EN("EN", "English"),
     ES("ES", "Spanish"),
     IT("IT", "Italian"),
@@ -13,7 +16,10 @@ public enum SupportedLanguage
     PL("PL", "Polish"),
     NL("NL", "Dutch");
 
+    @Getter
     private final String code;
+
+    @Getter
     private final String displayName;
 
     SupportedLanguage(String code, String displayName)
@@ -21,8 +27,6 @@ public enum SupportedLanguage
         this.code = code;
         this.displayName = displayName;
     }
-
-    public String getCode() { return code; }
 
     public static SupportedLanguage fromCode(String code)
     {

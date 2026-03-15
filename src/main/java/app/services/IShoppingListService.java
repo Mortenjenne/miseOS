@@ -7,6 +7,7 @@ import app.dtos.shopping.UpdateShoppingListItemDTO;
 import app.enums.ShoppingListStatus;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 
 public interface IShoppingListService
@@ -17,9 +18,7 @@ public interface IShoppingListService
 
     boolean deleteShoppingList(Long userId, Long shoppingListId);
 
-    Set<ShoppingListDTO> getAll();
-
-    Set<ShoppingListDTO> findByStatus(ShoppingListStatus status);
+    List<ShoppingListDTO> getShoppingLists(ShoppingListStatus status, LocalDate deliveryDate);
 
     ShoppingListDTO markItemOrdered(Long userId, Long shoppingListId, Long itemId);
 

@@ -3,6 +3,7 @@ package app.services.impl;
 import app.dtos.gemini.AiDishSuggestionDTO;
 import app.dtos.station.StationDTO;
 import app.dtos.weather.WeatherForecastDTO;
+import app.enums.SupportedLanguage;
 import app.exceptions.AIIntegrationException;
 import app.integrations.ai.IAiClient;
 import app.services.IAiService;
@@ -30,9 +31,9 @@ public class AiService implements IAiService
     }
 
     @Override
-    public Map<String, String> normalizeIngredientList(List<String> ingredients, String targetLanguage)
+    public Map<String, String> normalizeIngredientList(List<String> ingredients, SupportedLanguage targetLanguage)
     {
-        String languageName = targetLanguage.equals("da") ? "Danish" : "English";
+        String languageName = targetLanguage.getDisplayName();
         try
         {
             String ingredientsJson = objectMapper.writeValueAsString(ingredients);
