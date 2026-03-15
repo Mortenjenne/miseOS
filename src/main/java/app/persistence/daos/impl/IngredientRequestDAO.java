@@ -28,23 +28,31 @@ public class IngredientRequestDAO implements IIngredientRequestDAO
         {
             try
             {
-                TypedQuery<IngredientRequest> query = em.createQuery(
-                        "SELECT DISTINCT ir FROM IngredientRequest ir " +
-                            "LEFT JOIN FETCH ir.dish d " +
-                            "LEFT JOIN FETCH ir.createdBy u " +
-                            "LEFT JOIN d.station st " +
-                            "WHERE (:status IS NULL OR ir.requestStatus  = :status) " +
-                            "AND (:deliverDate IS NULL OR ir.deliveryDate  = :deliverDate) " +
-                            "AND   (:creatorId IS NULL OR u.id = :creatorId) " +
-                            "AND   (:requestType IS NULL OR ir.requestType = :requestType) " +
-                            "AND   (:stationId IS NULL OR st.id = :stationId) " +
-                            "ORDER BY ir.name ASC, ir.createdAt ASC",
-                        IngredientRequest.class)
-                    .setParameter("status", status)
-                    .setParameter("deliverDate", deliveryDate)
-                    .setParameter("creatorId", creatorId)
-                    .setParameter("requestType", requestType)
-                    .setParameter("stationId", stationId);
+                StringBuilder jpql = new StringBuilder(
+                    """
+                    SELECT DISTINCT ir FROM IngredientRequest ir
+                    LEFT JOIN FETCH ir.dish d
+                    LEFT JOIN FETCH d.station st
+                    LEFT JOIN FETCH ir.createdBy u
+                    WHERE 1=1
+                    """
+                );
+
+                if (status != null) jpql.append(" AND ir.requestStatus = :status");
+                if (deliveryDate != null)jpql.append(" AND ir.deliveryDate = :deliveryDate");
+                if (creatorId != null) jpql.append(" AND u.id = :creatorId");
+                if (requestType != null) jpql.append(" AND ir.requestType = :requestType");
+                if (stationId != null) jpql.append(" AND st.id = :stationId");
+
+                jpql.append(" ORDER BY ir.name ASC, ir.createdAt ASC");
+
+                TypedQuery<IngredientRequest> query = em.createQuery(jpql.toString(), IngredientRequest.class);
+
+                if (status != null) query.setParameter("status", status);
+                if (deliveryDate != null) query.setParameter("deliveryDate", deliveryDate);
+                if (creatorId != null) query.setParameter("creatorId", creatorId);
+                if (requestType != null) query.setParameter("requestType", requestType);
+                if (stationId != null) query.setParameter("stationId", stationId);
 
                 return query.getResultList();
             }

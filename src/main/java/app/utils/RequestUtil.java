@@ -7,6 +7,7 @@ import app.enums.SupportedLanguage;
 import io.javalin.http.Context;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 
 
 public final class RequestUtil
@@ -100,7 +101,7 @@ public final class RequestUtil
         {
             return LocalDate.parse(ctx.queryParam(param).trim());
         }
-        catch (IllegalArgumentException e)
+        catch (DateTimeParseException e)
         {
             throw new IllegalArgumentException("Invalid date format: " + ctx.queryParam(param));
         }

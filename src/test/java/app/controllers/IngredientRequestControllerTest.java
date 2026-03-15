@@ -37,7 +37,6 @@ class IngredientRequestControllerTest
     private long lineCookId;
     private long reqDillId;
     private long reqTruffleId;
-    private long dishBoeufId;
 
     @BeforeAll
     static void startServer()
@@ -61,7 +60,6 @@ class IngredientRequestControllerTest
         lineCookId = seeded.get("user_claire").getId();
         reqDillId = seeded.get("req_dill").getId();
         reqTruffleId = seeded.get("req_truffle").getId();
-        dishBoeufId = seeded.get("dish_boeuf").getId();
     }
 
     @AfterAll
@@ -275,6 +273,55 @@ class IngredientRequestControllerTest
             assertThat(result.dish(), is(notNullValue()));
             assertThat(result.requestedBy(), is(notNullValue()));
         }
+
+        @Test
+        @DisplayName("Invalid status returns 400")
+        void invalidStatusReturns400()
+        {
+            given()
+                .header(USER_HEADER, headChefId)
+                .queryParam("status", "PEN")
+                .when()
+                .get(ENDPOINT_URL)
+                .then()
+                .statusCode(400);
+        }
+
+        @Test
+        @DisplayName("Invalid deliveryDate format returns 400")
+        void invalidDateFormatReturns400()
+        {
+            given()
+                .header(USER_HEADER, headChefId)
+                .queryParam("deliveryDate", "not-a-date")
+                .when()
+                .get(ENDPOINT_URL)
+                .then()
+                .statusCode(400);
+        }
+
+        @Test
+        @DisplayName("Head chef sees all requests")
+        void headChefSeesAllRequests()
+        {
+            List<IngredientRequestDTO> response = given()
+                .header(USER_HEADER, headChefId)
+                .when()
+                .get(ENDPOINT_URL)
+                .then()
+                .statusCode(200)
+                .extract()
+                .jsonPath()
+                .getList(".", IngredientRequestDTO.class);
+
+            Long distinctUsers = response.stream()
+                .map(r -> r.requestedBy().id())
+                .distinct()
+                .count();
+
+            assertThat(response, is(not(empty())));
+            assertThat(distinctUsers, greaterThan(1L));
+        }
     }
 
     @Nested
@@ -283,7 +330,7 @@ class IngredientRequestControllerTest
     {
         @Test
         @DisplayName("create ok")
-        void createOk()
+        void create()
         {
             Dish boeuf = (Dish) seeded.get("dish_boeuf");
 

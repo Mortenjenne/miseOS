@@ -6,7 +6,6 @@ import app.dtos.ingredient.IngredientRequestDTO;
 import app.dtos.ingredient.UpdateIngredientRequestDTO;
 import app.enums.RequestType;
 import app.enums.Status;
-import app.exceptions.ConflictException;
 import app.exceptions.UnauthorizedActionException;
 import app.exceptions.ValidationException;
 import app.mappers.IngredientRequestMapper;
@@ -220,7 +219,9 @@ public class IngredientRequestService implements IIngredientRequestService
             throw new ValidationException("Dish must be active");
         }
 
-        if (!creator.isHeadChef() || !creator.isSousChef() && !creator.getStation().getId().equals(dish.getStation().getId()))
+        boolean isHeadChefOrSousChef = creator.isHeadChef() || creator.isSousChef();
+
+        if (!isHeadChefOrSousChef && !creator.getStation().getId().equals(dish.getStation().getId()))
         {
             throw new UnauthorizedActionException("Dish does not belong to your station");
         }
