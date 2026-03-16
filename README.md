@@ -50,7 +50,7 @@ MiseOS solves this by providing one digital workspace where data is entered once
 | AI | Google Gemini (suggestions + normalization) |
 | Translation | DeepL API |
 | Weather | OpenMeteo API |
-| Testing | JUnit 5, REST-assured, Testcontainers |
+| Testing | JUnit 6, REST-assured, Testcontainers |
 
 ---
 
