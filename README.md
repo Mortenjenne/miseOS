@@ -1,45 +1,86 @@
 # miseOS
+**Kitchen Management System**
 
-Kitchen Management System
+MiseOS is a backend platform for professional kitchens — digitizing the workflow from a line cook's first dish proposal to a published guest menu, ingredient orders, and shopping lists.
 
-## Vision
+The name references *mise en place* — the culinary principle of having everything in its place before service begins.
 
-MiseOS is a digital management platform designed for professional kitchens. It streamlines the workflow from a cook's initial dish proposal to the final guest menu. By digitizing the planning phase, the system replaces manual paper trails and static documents with a dynamic, multilingual hub for kitchen operations.
-
-The name references "mise en place" — the culinary principle of having everything in its place before service.
+---
 
 ## Problem Statement
 
-- Currently, menu planning in many canteens relies on fragmented, analog processes. This creates several operational challenges:
+Menu planning in many professional kitchens relies on fragmented, analog processes:
 
-- Manual Documentation: Chefs spend significant time manually typing handwritten notes into Word templates to create printable menus.
+- Dish proposals from each station (Hot, Cold, Salad, Bakery) arrive verbally or on loose notes with no overview
+- Head chefs manually type handwritten notes into Word templates to produce printable menus
+- Printed menus cannot be updated quickly and require manual translation for international guests
+- Ingredient ordering is disconnected from the menu — no direct link between what is on the menu and what needs to be ordered
 
-- Communication Gaps: Dish proposals from various sections (Hot, Cold, Salad, Bakery) are often communicated verbally or via loose notes, leading to a lack of overview.
+MiseOS solves this by providing one digital workspace where data is entered once and flows through the entire process.
 
-- Static Information: Printed menus are difficult to update and provide a poor experience for international guests due to the manual effort required for translation.
-
-MiseOS solves these issues by providing a centralized digital workspace where data is entered once and used throughout the entire workflow.
+---
 
 ## Core Features
 
-- Section-Based Planning: Line cooks can submit weekly proposals for their specific stations (Hot, Cold, Salad, Bakery).
+**Dish Suggestion Flow** — Line cooks submit weekly proposals for their station. The head chef reviews, approves, or rejects them from a single dashboard.
 
-- Management Dashboard: The Head Chef can review, edit, and approve all proposals in a single matrix view, eliminating the need for external document editors.
+**Weekly Menu Builder** — Approved dishes are placed into a Monday–Friday grid by station. The head chef publishes the final menu when all slots are filled and translated.
 
-- Ingredient Request System: A built-in flow where ingredient needs are linked directly to approved dishes and aggregated into a shopping list.
+**Automated Translation** — Batch translation via DeepL (Danish → English) so international guests see their language without manual effort from kitchen staff.
 
-- Automated Translation: Batch translation of the weekly menu via an external API (Danish to English) to support international environments.
+**Ingredient Request System** — Line cooks link ingredient orders directly to approved dishes. The head chef approves pending requests before they flow through to the shopping list.
 
-- Public Menu Access: A digital guest view that displays the current menu, including allergen information and language toggles.
+**AI-Powered Shopping List** — Approved ingredient requests are normalized using Gemini AI — merging multilingual and variant names (e.g. "onions", "løg", "onio" → "Løg") and aggregating quantities before generating the final order list.
+
+**Menu Inspiration (SSE)** — Streams AI-generated dish suggestions based on current weather forecast and station equipment, delivered in real-time to the dashboard.
+
+**Public Guest View** — Displays the current week's published menu with allergen information and language toggle (Danish/English).
+
+---
 
 ## Technology
 
-Java 17, Maven, PostgreSQL, JPA, REST API, JWT authentication
+| Layer | Technology |
+|---|---|
+| Language | Java 17 |
+| Build | Maven |
+| Framework | Javalin 7 |
+| Persistence | Hibernate 7 / JPA, PostgreSQL |
+| Auth | JWT (in progress) |
+| AI | Google Gemini (suggestions + normalization) |
+| Translation | DeepL API |
+| Weather | OpenMeteo API |
+| Testing | JUnit 5, REST-assured, Testcontainers |
 
-## Portfolio log
+---
 
-Weekly reflections on progress and decisions.
+## API Documentation
+
+Full endpoint reference will be available at:
+**[https://mortenjenne.github.io/portfolio/projects/miseos/](https://mortenjenne.github.io/portfolio/projects/miseos/)**
+
+Covers all REST endpoints across:
+`/dishes` · `/dish-suggestions` · `/weekly-menus` · `/ingredient-requests` · `/shopping-lists` · `/users` · `/stations` · `/allergens` · `/menu-inspirations`
+
+---
+
+## Development Log
+
+Weekly reflections on architecture decisions, challenges, and what was learned.
+Follow along at **[https://mortenjenne.github.io/portfolio/posts/](https://mortenjenne.github.io/portfolio/posts/)**
+
+| Week | Topic |
+|---|---|
+| 1 | Project setup and domain modeling |
+| 2 | Entity design and persistence layer |
+| 3 | Service layer and business rules |
+| 4 | AI integration — Gemini and DeepL |
+| 5 | DAO patterns and query filtering |
+| 6 | Controllers, routes, and exception handling |
+| 7 | REST-assured integration tests and WebSocket notifications *(in progress)* |
+
+---
 
 ## Status
 
-Week 1: Project setup and initial planning
+**In active development** — Core API complete and tested. JWT authentication in progress. WebSocket notifications planned.
