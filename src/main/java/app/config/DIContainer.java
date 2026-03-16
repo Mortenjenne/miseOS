@@ -1,77 +1,139 @@
 package app.config;
 
+import app.controllers.*;
 import app.integrations.ai.GeminiClient;
 import app.integrations.ai.IAiClient;
 import app.integrations.translation.DeepLTranslationClient;
 import app.integrations.translation.ITranslationClient;
 import app.integrations.weather.WeatherClient;
-import app.persistence.daos.impl.AllergenDAO;
-import app.persistence.daos.impl.DishDAO;
-import app.persistence.daos.interfaces.IAllergenDAO;
-import app.persistence.daos.interfaces.IDishDAO;
-import app.persistence.daos.interfaces.IDishSuggestionDAO;
-import app.services.IAiService;
-import app.services.IDishTranslationService;
-import app.services.impl.AiService;
-import app.services.impl.DishTranslationService;
-;
+import app.persistence.daos.impl.*;
+import app.persistence.daos.interfaces.*;
+import app.services.*;
+import app.services.impl.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManagerFactory;
+import lombok.Getter;
 
 import java.net.http.HttpClient;
+import java.time.Duration;
 
-
-public class DIContainer
+public final class DIContainer
 {
-    private static final EntityManagerFactory emf = HibernateConfig.getEntityManagerFactory();
+    private static DIContainer instance;
+    private final EntityManagerFactory emf;
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
+    private final ApiConfig apiConfig;
+
     private final ITranslationClient translationClient;
     private final IAiClient aiClient;
     private final WeatherClient weatherClient;
+
+    private final IAllergenDAO allergenDAO;
+    private final IUserDAO userDAO;
+    private final IDishDAO dishDAO;
+    private final IDishSuggestionDAO dishSuggestionDAO;
+    private final IWeeklyMenuDAO weeklyMenuDAO;
+    private final IIngredientRequestDAO ingredientRequestDAO;
+    private final IShoppingListDAO shoppingListDAO;
+    private final IStationDAO stationDAO;
+
+    private final IAllergenService allergenService;
+    private final IDishService dishService;
+    private final IDishSuggestionService dishSuggestionService;
+    private final IUserService userService;
+    private final IWeeklyMenuService weeklyMenuService;
+    private final IIngredientRequestService ingredientRequestService;
+    private final IShoppingListService shoppingListService;
+    private final IStationService stationService;
     private final IAiService aiService;
     private final IDishTranslationService dishTranslationService;
+    private final IMenuInspirationService menuInspirationService;
 
-    private static IAllergenDAO allergenDAO;
-    private static IDishDAO dishDAO;
-    private static IDishSuggestionDAO dishSuggestionDAO;
+    @Getter
+    private final IAllergenController allergenController;
 
-    public DIContainer()
+    @Getter
+    private final IStationController stationController;
+
+    @Getter
+    private final IUserController userController;
+
+    @Getter
+    private final IMenuInspirationController menuInspirationController;
+
+    @Getter
+    private final IDishSuggestionController dishSuggestionController;
+
+    @Getter
+    private final IDishController dishController;
+
+    @Getter
+    private final IWeeklyMenuController weeklyMenuController;
+
+    @Getter
+    private final IIngredientRequestController ingredientRequestController;
+
+    @Getter
+    private final IShoppingListController shoppingListController;
+
+
+    private DIContainer(EntityManagerFactory emf)
     {
+        this.emf = emf;
+        this.httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
 
-        this.httpClient = HttpClient.newHttpClient();
         this.objectMapper = ObjectMapperConfig.create();
+        this.apiConfig = new ApiConfig();
 
-        String deeplUrl = AppProperties.get("DEEPL_URL");
-        String geminiUrl = AppProperties.get("GEMINI_URL");
-        String openMeteoUrl = AppProperties.get("OPEN_METEO_URL");
+        this.translationClient = new DeepLTranslationClient(httpClient, objectMapper, apiConfig.getDeepLUrl(), apiConfig.getDeepLApiKey());
+        this.aiClient = new GeminiClient(httpClient, objectMapper, apiConfig.getGeminiApiKey(), apiConfig.getGeminiUrl());
+        this.weatherClient = new WeatherClient(httpClient, objectMapper, apiConfig.getOpenMeteoUrl());
 
-        String deepLApiKey = System.getenv("DEEPL_APIKEY");
-        String geminiApiKey = System.getenv("GEMINI_API_KEY");
+        this.allergenDAO = new AllergenDAO(emf);
+        this.userDAO = new UserDAO(emf);
+        this.dishDAO = new DishDAO(emf);
+        this.dishSuggestionDAO = new DishSuggestionDAO(emf);
+        this.weeklyMenuDAO = new WeeklyMenuDAO(emf);
+        this.ingredientRequestDAO = new IngredientRequestDAO(emf);
+        this.shoppingListDAO = new ShoppingListDAO(emf);
+        this.stationDAO = new StationDAO(emf);
 
-        this.translationClient = new DeepLTranslationClient(httpClient, objectMapper, deeplUrl, deepLApiKey);
-        this.aiClient = new GeminiClient(httpClient, objectMapper, geminiApiKey, geminiUrl);
+        this.dishTranslationService = new DishTranslationService(translationClient);
         this.aiService = new AiService(objectMapper, aiClient);
-        this.weatherClient = new WeatherClient(httpClient, objectMapper, openMeteoUrl);
-        dishTranslationService = new DishTranslationService(translationClient);
+        this.allergenService = new AllergenService(allergenDAO, userDAO);
+        this.stationService = new StationService(stationDAO, userDAO);
+        this.dishService = new DishService(dishDAO, allergenDAO, stationDAO, userDAO);
+        this.dishSuggestionService = new DishSuggestionService(dishSuggestionDAO, dishDAO, userDAO, stationDAO, allergenDAO);
+        this.userService = new UserService(userDAO, stationDAO);
+        this.weeklyMenuService = new WeeklyMenuService(weeklyMenuDAO, dishDAO, userDAO, stationDAO, dishTranslationService);
+        this.ingredientRequestService = new IngredientRequestService(ingredientRequestDAO, dishDAO, userDAO);
+        this.shoppingListService = new ShoppingListService(shoppingListDAO, ingredientRequestDAO, userDAO, aiService);
+        this.menuInspirationService = new MenuInspirationService(aiService, userDAO, weatherClient);
 
+        this.allergenController = new AllergenController(allergenService);
+        this.stationController = new StationController(stationService);
+        this.userController = new UserController(userService);
+        this.menuInspirationController = new MenuInspirationController(menuInspirationService);
+        this.dishSuggestionController = new DishSuggestionController(dishSuggestionService);
+        this.dishController = new DishController(dishService);
+        this.weeklyMenuController = new WeeklyMenuController(weeklyMenuService);
+        this.ingredientRequestController = new IngredientRequestController(ingredientRequestService);
+        this.shoppingListController = new ShoppingListController(shoppingListService);
     }
 
-    private static synchronized IAllergenDAO getAllergenDAO()
+    public static DIContainer getInstance()
     {
-        if(allergenDAO == null)
+        if (instance == null)
         {
-            allergenDAO = new AllergenDAO(emf);
+            instance = new DIContainer(HibernateConfig.getEntityManagerFactory());
         }
-        return allergenDAO;
+        return instance;
     }
 
-    private static synchronized IDishDAO getDishDAO()
+    public static DIContainer getTestInstance(EntityManagerFactory emf)
     {
-        if(dishDAO == null)
-        {
-            dishDAO = new DishDAO(emf);
-        }
-        return dishDAO;
+        instance = new DIContainer(emf);
+        return instance;
     }
 }

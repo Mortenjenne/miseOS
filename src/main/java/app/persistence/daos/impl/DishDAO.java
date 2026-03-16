@@ -7,8 +7,7 @@ import app.utils.DBValidator;
 import app.utils.TransactionUtil;
 import jakarta.persistence.*;
 
-import java.util.HashSet;
-import java.util.Optional;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 public class DishDAO implements IDishDAO
@@ -22,31 +21,6 @@ public class DishDAO implements IDishDAO
     }
 
     @Override
-    public Set<Dish> findAllActive()
-    {
-        try (EntityManager em = emf.createEntityManager())
-        {
-            TypedQuery<Dish> query = em.createQuery("SELECT d FROM Dish d WHERE d.isActive = true", Dish.class);
-
-            return new HashSet<>(query.getResultList());
-        }
-    }
-
-    @Override
-    public Set<Dish> findByStationAndActive(Long stationId)
-    {
-        DBValidator.validateId(stationId);
-
-        try (EntityManager em = emf.createEntityManager())
-        {
-            TypedQuery<Dish> query = em.createQuery("SELECT d FROM Dish d WHERE d.station.id = :stationId AND d.isActive = true", Dish.class)
-                .setParameter("stationId", stationId);
-
-            return new HashSet<>(query.getResultList());
-        }
-    }
-
-    @Override
     public Set<Dish> findByOriginWeekAndYear(int week, int year)
     {
         DBValidator.validateRange(week, 1, 53, "Week");
@@ -54,12 +28,22 @@ public class DishDAO implements IDishDAO
 
         try (EntityManager em = emf.createEntityManager())
         {
-            TypedQuery<Dish> query = em.createQuery(
-                "SELECT d FROM Dish d WHERE d.originWeek = :week AND d.originYear = :year AND d.isActive = true", Dish.class)
-                .setParameter("week", week)
-                .setParameter("year", year);
+            try
+            {
+                TypedQuery<Dish> query = em.createQuery(
+                        "SELECT DISTINCT d FROM Dish d " +
+                            "LEFT JOIN FETCH d.allergens " +
+                            "WHERE d.originWeek = :week AND d.originYear = :year AND d.isActive = true " +
+                            "ORDER BY d.nameDA", Dish.class)
+                    .setParameter("week", week)
+                    .setParameter("year", year);
 
-            return new HashSet<>(query.getResultList());
+                return new LinkedHashSet<>(query.getResultList());
+            }
+            catch (PersistenceException e)
+            {
+                throw new DatabaseException("Failed to fetch dishes by origin week and year", e);
+            }
         }
     }
 
@@ -71,12 +55,22 @@ public class DishDAO implements IDishDAO
 
         try (EntityManager em = emf.createEntityManager())
         {
-            TypedQuery<Dish> query = em.createQuery(
-                "SELECT d FROM Dish d WHERE d.isActive = true AND (d.originYear < :year OR (d.originYear = :year AND d.originWeek < :week))", Dish.class)
-                .setParameter("week", currentWeek)
-                .setParameter("year", currentYear);
+            try
+            {
+                TypedQuery<Dish> query = em.createQuery(
+                        "SELECT DISTINCT d FROM Dish d " +
+                            "LEFT JOIN FETCH d.allergens " +
+                            "WHERE d.isActive = true AND (d.originYear < :year OR (d.originYear = :year AND d.originWeek < :week)) " +
+                            "ORDER BY d.nameDA ASC ", Dish.class)
+                    .setParameter("week", currentWeek)
+                    .setParameter("year", currentYear);
 
-            return new HashSet<>(query.getResultList());
+                return new LinkedHashSet<>(query.getResultList());
+            }
+            catch (PersistenceException e)
+            {
+                throw new DatabaseException("Failed to fetch dishes from previous weeks", e);
+            }
         }
     }
 
@@ -87,38 +81,25 @@ public class DishDAO implements IDishDAO
 
         try (EntityManager em = emf.createEntityManager())
         {
-            TypedQuery<Dish> query = em.createQuery(
-                "SELECT d FROM Dish d WHERE d.isActive = true AND (LOWER(d.nameDA) LIKE LOWER(:query) OR LOWER(d.nameEN) LIKE LOWER(:query))", Dish.class
-                )
-                .setParameter("query", "%" + nameQuery.trim() + "%");
-
-            return new HashSet<>(query.getResultList());
-        }
-    }
-
-    @Override
-    public Optional<Dish> getByIdWithAllergens(Long id)
-    {
-        DBValidator.validateId(id);
-
-        try (EntityManager em = emf.createEntityManager())
-        {
             try
             {
-                Dish dish = em.createQuery(
-                    "SELECT d FROM Dish d LEFT JOIN FETCH d.allergens WHERE d.id = :id", Dish.class
+                TypedQuery<Dish> query = em.createQuery(
+                        "SELECT DISTINCT d FROM Dish d " +
+                            "LEFT JOIN FETCH d.allergens " +
+                            "WHERE d.isActive = true AND (LOWER(d.nameDA) LIKE LOWER(:query) OR LOWER(d.nameEN) LIKE LOWER(:query)) " +
+                            "ORDER BY d.nameDA ASC", Dish.class
                     )
-                    .setParameter("id", id)
-                    .getSingleResult();
+                    .setParameter("query", "%" + nameQuery.trim() + "%");
 
-                return Optional.of(dish);
+                return new LinkedHashSet<>(query.getResultList());
             }
-            catch (NoResultException e)
+            catch (PersistenceException e)
             {
-                return Optional.empty();
+                throw new DatabaseException("Failed to search dishes by name", e);
             }
         }
     }
+
 
     @Override
     public Dish create(Dish dish)
@@ -132,7 +113,7 @@ public class DishDAO implements IDishDAO
                 em.getTransaction().begin();
                 em.persist(dish);
                 em.getTransaction().commit();
-                return dish;
+                return getByID(dish.getId());
             }
             catch (PersistenceException e)
             {
@@ -143,13 +124,32 @@ public class DishDAO implements IDishDAO
     }
 
     @Override
-    public Set<Dish> getAll()
+    public Set<Dish> findByFilter(Long stationId, Boolean active)
     {
+        if (stationId != null)
+        {
+            DBValidator.validateId(stationId);
+        }
+
         try (EntityManager em = emf.createEntityManager())
         {
-            TypedQuery<Dish> query = em.createQuery("SELECT d FROM Dish d", Dish.class);
+            try
+            {
+                TypedQuery<Dish> query = em.createQuery(
+                        "SELECT DISTINCT d FROM Dish d " +
+                            "LEFT JOIN FETCH d.allergens " +
+                            "WHERE (:stationId IS NULL OR d.station.id = :stationId) " +
+                            "AND (:active IS NULL OR d.isActive = :active) " +
+                            "ORDER BY d.nameDA ASC", Dish.class)
+                    .setParameter("stationId", stationId)
+                    .setParameter("active", active);
 
-            return new HashSet<>(query.getResultList());
+                return new LinkedHashSet<>(query.getResultList());
+            }
+            catch (PersistenceException e)
+            {
+                throw new DatabaseException("Failed to fetch dishes by filter", e);
+            }
         }
     }
 
@@ -160,8 +160,21 @@ public class DishDAO implements IDishDAO
 
         try (EntityManager em = emf.createEntityManager())
         {
-            Dish dish = em.find(Dish.class, id);
-            return DBValidator.validateExists(dish, id, Dish.class);
+            try
+            {
+                return em.createQuery(
+                        "SELECT d FROM Dish d " +
+                            "LEFT JOIN FETCH d.allergens " +
+                            "WHERE d.id = :id", Dish.class)
+                    .setParameter("id", id)
+                    .getSingleResult();
+            } catch (NoResultException e)
+            {
+                throw new EntityNotFoundException("Dish with id: " + id + " not found");
+            } catch (PersistenceException e)
+            {
+                throw new DatabaseException("Failed to fetch dish by id", e);
+            }
         }
     }
 
@@ -182,7 +195,7 @@ public class DishDAO implements IDishDAO
 
                 Dish merged = em.merge(dish);
                 em.getTransaction().commit();
-                return merged;
+                return getByID(merged.getId());
             }
             catch (EntityNotFoundException e)
             {
@@ -193,6 +206,36 @@ public class DishDAO implements IDishDAO
             {
                 TransactionUtil.rollback(em);
                 throw new DatabaseException("Failed to update dish: " + dish.getId(), e);
+            }
+        }
+    }
+
+    public void updateAll(Set<Dish> dishes)
+    {
+        DBValidator.validateNotNull(dishes, "Dishes");
+
+        try (EntityManager em = emf.createEntityManager())
+        {
+            try
+            {
+                em.getTransaction().begin();
+
+                for (Dish dish : dishes)
+                {
+                    DBValidator.validateId(dish.getId());
+                    em.merge(dish);
+                }
+                em.getTransaction().commit();
+            }
+            catch (EntityNotFoundException e)
+            {
+                TransactionUtil.rollback(em);
+                throw e;
+            }
+            catch (PersistenceException e)
+            {
+                TransactionUtil.rollback(em);
+                throw new DatabaseException("Failed to update dishes batch", e);
             }
         }
     }
@@ -233,16 +276,20 @@ public class DishDAO implements IDishDAO
     {
         try (EntityManager em = emf.createEntityManager())
         {
-            Long count = em.createQuery(
-                    "SELECT COUNT(s) FROM WeeklyMenuSlot s WHERE s.dish.id = :dishId",
-                    Long.class
-                )
-                .setParameter("dishId", dishId)
-                .getSingleResult();
+            try
+            {
+                Long count = em.createQuery(
+                        "SELECT COUNT(s) FROM WeeklyMenuSlot s " +
+                            "WHERE s.dish.id = :dishId", Long.class)
+                    .setParameter("dishId", dishId)
+                    .getSingleResult();
 
-            return count > 0;
+                return count > 0;
+            }
+            catch (PersistenceException e)
+            {
+                throw new DatabaseException("Failed to check menu usage for dish: " + dishId, e);
+            }
         }
     }
-
-
 }

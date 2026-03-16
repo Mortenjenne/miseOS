@@ -4,7 +4,7 @@ import app.enums.Unit;
 
 public record CreateShoppingListItemDTO(
     String ingredientName,
-    Double quantity,
+    double quantity,
     Unit unit,
     String supplier
 )

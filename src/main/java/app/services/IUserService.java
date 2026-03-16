@@ -19,6 +19,8 @@ public interface IUserService
 
     boolean delete(Long requesterId, Long targetUserId);
 
+    UserDTO assignToStation(Long requesterId, Long targetUserId, Long stationId);
+
     UserDTO changeRole(Long requesterId, Long targetUserId, UserRole newRole);
 
     UserDTO changeEmail(Long userId, String newEmail);

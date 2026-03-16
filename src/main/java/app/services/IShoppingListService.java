@@ -1,13 +1,10 @@
 package app.services;
 
-import app.dtos.shopping.CreateShoppingListDTO;
-import app.dtos.shopping.CreateShoppingListItemDTO;
-import app.dtos.shopping.ShoppingListDTO;
-import app.dtos.shopping.UpdateShoppingListItemDTO;
+import app.dtos.shopping.*;
 import app.enums.ShoppingListStatus;
 
 import java.time.LocalDate;
-import java.util.Set;
+import java.util.List;
 
 public interface IShoppingListService
 {
@@ -17,9 +14,7 @@ public interface IShoppingListService
 
     boolean deleteShoppingList(Long userId, Long shoppingListId);
 
-    Set<ShoppingListDTO> getAll();
-
-    Set<ShoppingListDTO> findByStatus(ShoppingListStatus status);
+    List<ShoppingListDTO> getShoppingLists(Long userId, ShoppingListStatus status, LocalDate deliveryDate);
 
     ShoppingListDTO markItemOrdered(Long userId, Long shoppingListId, Long itemId);
 
@@ -33,5 +28,5 @@ public interface IShoppingListService
 
     ShoppingListDTO getById(Long shoppingListId);
 
-    ShoppingListDTO findByDeliveryDate(LocalDate deliveryDate);
+    ShoppingListDTO updateDeliveryDate(Long userId, Long shoppingListId, UpdateShoppingListDTO dto);
 }

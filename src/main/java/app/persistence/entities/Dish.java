@@ -4,6 +4,7 @@ import app.utils.ValidationUtil;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -35,7 +36,8 @@ public class Dish implements IEntity
     @JoinColumn(name = "station_id", nullable = false)
     private Station station;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
+    @BatchSize(size = 20)
     @JoinTable(name = "dish_allergen", joinColumns = @JoinColumn(name = "dish_id"), inverseJoinColumns = @JoinColumn(name = "allergen_id"))
     private Set<Allergen> allergens = new HashSet<>();
 
@@ -54,6 +56,9 @@ public class Dish implements IEntity
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
     public Dish(String nameDA, String descriptionDA, Station station, Set<Allergen> allergens, User createdBy, int originWeek, int originYear)
     {
@@ -81,12 +86,23 @@ public class Dish implements IEntity
         this.descriptionDA = descriptionDA.trim();
         this.nameEN = nameEN != null ? nameEN.trim() : null;
         this.descriptionEN = descriptionEN != null ? descriptionEN.trim() : null;
+        this.updatedAt = LocalDateTime.now();
 
         if (allergens != null)
         {
             this.allergens.clear();
             this.allergens.addAll(allergens);
         }
+    }
+
+    public void applyTranslation(String nameEN, String descriptionEN)
+    {
+        ValidationUtil.validateNotBlank(nameEN, "Name EN");
+        ValidationUtil.validateNotBlank(descriptionEN, "Description EN");
+
+        this.nameEN = nameEN.trim();
+        this.descriptionEN = descriptionEN.trim();
+        this.updatedAt = LocalDateTime.now();
     }
 
     public boolean hasTranslation()

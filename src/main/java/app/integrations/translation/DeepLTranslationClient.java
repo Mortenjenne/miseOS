@@ -30,9 +30,18 @@ public class DeepLTranslationClient implements ITranslationClient
     }
 
     @Override
-    public String translate(String text, String language)
+    public String translate(String text, String targetLanguage)
     {
-        DeepLRequestDTO translationRequest = new DeepLRequestDTO(List.of(text), language);
+        List<String> translations = translateBatch(List.of(text), targetLanguage);
+        return translations.stream()
+            .findFirst()
+            .orElseThrow(() -> new TranslationException("No translation found"));
+    }
+
+    @Override
+    public List<String> translateBatch(List<String> texts, String language)
+    {
+        DeepLRequestDTO translationRequest = new DeepLRequestDTO(texts, language);
         try
         {
             String jsonBody = objectMapper.writeValueAsString(translationRequest);
@@ -51,7 +60,7 @@ public class DeepLTranslationClient implements ITranslationClient
         }
     }
 
-    private String handleResponse(HttpResponse<String> response) throws Exception
+    private List<String> handleResponse(HttpResponse<String> response) throws Exception
     {
         if (response.statusCode() != 200)
         {
@@ -62,13 +71,13 @@ public class DeepLTranslationClient implements ITranslationClient
 
         if (responseDTO.translations() == null || responseDTO.translations().isEmpty())
         {
-            throw new TranslationException("DeepL translation failed response was empty");
+            throw new TranslationException("DeepL returned empty response");
         }
 
-        return responseDTO.translations().stream()
-            .findFirst()
+        return responseDTO.translations()
+            .stream()
             .map(TranslationDTO::text)
-            .orElseThrow(() -> new TranslationException("No translation found"));
+            .toList();
     }
 
     private HttpRequest buildHttpRequest(String jsonBody)

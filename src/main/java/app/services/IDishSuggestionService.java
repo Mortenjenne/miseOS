@@ -2,34 +2,27 @@ package app.services;
 
 import app.dtos.dishsuggestion.DishSuggestionCreateDTO;
 import app.dtos.dishsuggestion.DishSuggestionDTO;
+import app.dtos.dishsuggestion.DishSuggestionFilterDTO;
 import app.dtos.dishsuggestion.DishSuggestionUpdateDTO;
 import app.enums.Status;
 
-import java.util.Set;
+import java.util.List;
 
 public interface IDishSuggestionService
 {
-    DishSuggestionDTO submitSuggestion(Long creatorId, DishSuggestionCreateDTO dto);
+    DishSuggestionDTO createSuggestion(Long creatorId, DishSuggestionCreateDTO dto);
 
-    DishSuggestionDTO approveDish(Long dishId, Long approverId);
+    DishSuggestionDTO approveSuggestion(Long dishId, Long approverId);
 
-    DishSuggestionDTO rejectDish(Long dishId, Long approverId, String feedback);
+    DishSuggestionDTO rejectSuggestion(Long dishId, Long approverId, String feedback);
 
-    DishSuggestionDTO updateDish(Long editorId, Long suggestionId, DishSuggestionUpdateDTO dto);
+    DishSuggestionDTO updateSuggestion(Long editorId, Long suggestionId, DishSuggestionUpdateDTO dto);
 
-    boolean deleteDish(Long dishId, Long userId);
+    boolean deleteSuggestion(Long dishId, Long userId);
 
     DishSuggestionDTO getById(Long id);
 
-    DishSuggestionDTO getByIdWithAllergens(Long id);
+    List<DishSuggestionDTO> getByFilter(DishSuggestionFilterDTO dto);
 
-    Set<DishSuggestionDTO> getAllDishSuggestions();
-
-    Set<DishSuggestionDTO> getPendingSuggestions();
-
-    Set<DishSuggestionDTO> getPendingForWeek(int week, int year);
-
-    Set<DishSuggestionDTO> getApprovedForWeek(int week, int year);
-
-    Set<DishSuggestionDTO> getByStatus(Status status);
+    List<DishSuggestionDTO> getCurrentWeek(Status status);
 }

@@ -6,7 +6,7 @@ import java.time.LocalDate;
 
 public class ValidationUtil
 {
-    private static final String SAFE_TEXT_PATTERN = "^[\\p{L}0-9\\s&,\\-.( )]*$";
+    private static final String SAFE_TEXT_PATTERN = "^[\\p{L}0-9\\s&,\\-.( ):]*$";
     private static final int NAME_MIN = 2;
     private static final int NAME_MAX = 100;
     private static final int DESCRIPTION_MIN = 5;
@@ -30,7 +30,6 @@ public class ValidationUtil
         {
             throw new IllegalArgumentException(fieldName + " cannot be blank");
         }
-
     }
 
     public static void validateText(String value, String fieldName, int min, int max)

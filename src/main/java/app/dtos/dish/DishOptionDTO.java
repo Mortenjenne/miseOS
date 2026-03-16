@@ -4,7 +4,8 @@ public record DishOptionDTO(
     Long dishId,
     String dishName,
     String dishDescription,
-    String stationName
+    String stationName,
+    Boolean isActive
 )
 {
 }

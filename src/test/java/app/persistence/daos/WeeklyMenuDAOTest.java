@@ -1,6 +1,7 @@
 package app.persistence.daos;
 
 import app.config.HibernateTestConfig;
+import app.dtos.menu.WeeklyMenuOverviewDTO;
 import app.enums.MenuStatus;
 import app.persistence.daos.impl.WeeklyMenuDAO;
 import app.persistence.entities.*;
@@ -10,9 +11,9 @@ import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.*;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -22,7 +23,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class WeeklyMenuDAOTest
 {
-
     private final EntityManagerFactory emf = HibernateTestConfig.getEntityManagerFactory();
     private WeeklyMenuDAO weeklyMenuDAO;
     private Map<String, IEntity> seeded;
@@ -40,7 +40,7 @@ class WeeklyMenuDAOTest
     @Test
     @DisplayName("Create - should persist weekly menu and its slots")
     void create() {
-        WeeklyMenu menu = new WeeklyMenu(12, 2025);
+        WeeklyMenu menu = new WeeklyMenu(12, 2026);
         Station hot = (Station) seeded.get("station_hot");
         Dish dishSuggestion = (Dish) seeded.get("dish_salmon");
 
@@ -51,6 +51,7 @@ class WeeklyMenuDAOTest
 
         assertThat(result.getId(), notNullValue());
         assertThat(result.getWeekNumber(), is(12));
+        assertThat(result.getYear(), is(2026));
         assertThat(result.getMenuStatus(), is(MenuStatus.DRAFT));
         assertThat(result.getWeeklyMenuSlots(), hasSize(1));
     }
@@ -74,19 +75,41 @@ class WeeklyMenuDAOTest
     @DisplayName("Get by ID - should retrieve menu and slots")
     void getByID()
     {
-        WeeklyMenu seed = (WeeklyMenu) seeded.get("menu_week7");
-        WeeklyMenu fetched = weeklyMenuDAO.getByIdWithSlots(seed.getId());
+        WeeklyMenu seed = (WeeklyMenu) seeded.get("menu_full");
+        WeeklyMenu fetched = weeklyMenuDAO.getByID(seed.getId());
 
         assertThat(fetched.getId(), is(seed.getId()));
-        assertThat(fetched.getWeeklyMenuSlots(), hasSize(greaterThan(0)));
-    }
+        assertThat(fetched.getWeekNumber(), is(7));
+        assertThat(fetched.getYear(), is(2026));
+        assertThat(fetched.getMenuStatus(), is(MenuStatus.PUBLISHED));
+        assertThat(fetched.getWeeklyMenuSlots(), hasSize(8));
 
-    @Test
-    @DisplayName("Get by ID with slots - should throw EntityNotFoundException and IllegalArgumentException")
-    void getByIdWithSlotsNotFoundThrowsException() {
+        List<String> fetchedDishNames = fetched.getWeeklyMenuSlots()
+            .stream()
+            .map(WeeklyMenuSlot::getDish)
+            .filter(java.util.Objects::nonNull)
+            .map(Dish::getNameDA)
+            .toList();
 
-        assertThrows(EntityNotFoundException.class, () -> weeklyMenuDAO.getByIdWithSlots(9999L));
-        assertThrows(IllegalArgumentException.class, () -> weeklyMenuDAO.getByIdWithSlots(-1L));
+        assertThat(fetchedDishNames, containsInAnyOrder(
+            "Røget Laks",
+            "Bøf Bearnaise",
+            "Roastbeef",
+            "Stegt Flæsk",
+            "Caesar Salad",
+            "Grillet Kylling",
+            "Chokolademousse",
+            "Tarteletter"
+        ));
+
+        List<String> fetchedStationNames = fetched.getWeeklyMenuSlots()
+            .stream()
+            .map(WeeklyMenuSlot::getStation)
+            .filter(java.util.Objects::nonNull)
+            .map(Station::getStationName)
+            .toList();
+
+        assertThat(fetchedStationNames, hasItems("Cold Kitchen", "Hot Kitchen", "Pastry"));
     }
 
     @Test
@@ -101,7 +124,7 @@ class WeeklyMenuDAOTest
     @DisplayName("Update - should change status and save")
     void update()
     {
-        WeeklyMenu seed = (WeeklyMenu) seeded.get("menu_week7");
+        WeeklyMenu seed = (WeeklyMenu) seeded.get("menu_draft");
         seed.setMenuStatus(MenuStatus.PUBLISHED);
 
         WeeklyMenu updated = weeklyMenuDAO.update(seed);
@@ -112,7 +135,7 @@ class WeeklyMenuDAOTest
     @DisplayName("Update - should throw exception when updating non-persisted menu")
     void update_NoId_ThrowsException()
     {
-        WeeklyMenu transientMenu = new WeeklyMenu(1, 2025);
+        WeeklyMenu transientMenu = new WeeklyMenu(1, 2026);
         assertThrows(IllegalArgumentException.class, () -> weeklyMenuDAO.update(transientMenu));
     }
 
@@ -120,7 +143,7 @@ class WeeklyMenuDAOTest
     @DisplayName("Delete - should remove menu and return true")
     void delete()
     {
-        WeeklyMenu seed = (WeeklyMenu) seeded.get("menu_week7");
+        WeeklyMenu seed = (WeeklyMenu) seeded.get("menu_draft");
         boolean deleted = weeklyMenuDAO.delete(seed.getId());
 
         assertTrue(deleted);
@@ -128,42 +151,70 @@ class WeeklyMenuDAOTest
     }
 
     @Test
-    @DisplayName("Find - should filter by MenuStatus")
+    @DisplayName("Find by filter - should filter by MenuStatus")
     void findByStatus()
     {
-        Set<WeeklyMenu> draftMenus = weeklyMenuDAO.findByStatus(MenuStatus.DRAFT);
-        assertThat(draftMenus, hasSize(1));
+        List<WeeklyMenuOverviewDTO> publishedMenus = weeklyMenuDAO.findByFilter(MenuStatus.PUBLISHED, null, null);
+
+        assertThat(publishedMenus, is(not(empty())));
+        assertThat(publishedMenus.stream().allMatch(m -> m.menuStatus() == MenuStatus.PUBLISHED), is(true));
     }
 
     @Test
-    @DisplayName("Find - should throw exception for null status")
-    void findByStatus_Null_ThrowsException()
+    @DisplayName("Find by filter - null filter should return all menus")
+    void findByFilterAll()
     {
-        assertThrows(IllegalArgumentException.class, () -> weeklyMenuDAO.findByStatus(null));
+        List<WeeklyMenuOverviewDTO> allMenus = weeklyMenuDAO.findByFilter(null, null, null);
+
+        assertThat(allMenus, hasSize(greaterThanOrEqualTo(4)));
     }
 
     @Test
-    @DisplayName("Find by Week and Year - should return correct menu")
+    @DisplayName("Find by filter - should filter by week and year")
+    void findByFilterWeekAndYear()
+    {
+        List<WeeklyMenuOverviewDTO> menus = weeklyMenuDAO.findByFilter(null, 2026, 7);
+
+        assertThat(menus, hasSize(1));
+        assertThat(menus.get(0).weekNumber(), is(7));
+        assertThat(menus.get(0).year(), is(2026));
+    }
+
+    @Test
+    @DisplayName("Find by week and year - should return correct menu")
     void findByWeekAndYear()
     {
-        Optional<WeeklyMenu> menu = weeklyMenuDAO.findByWeekAndYear(7, 2025);
+        Optional<WeeklyMenu> menu = weeklyMenuDAO.findByWeekAndYear(7, 2026, null);
+
         assertTrue(menu.isPresent());
         assertThat(menu.get().getWeekNumber(), is(7));
+        assertThat(menu.get().getYear(), is(2026));
     }
 
     @Test
-    @DisplayName("Find by Week and Year - should return empty Optional if not found")
-    void findByWeekAndYear_NotFound()
+    @DisplayName("Find by week and year - should return empty Optional if not found")
+    void findByWeekAndYearNotFound()
     {
-        Optional<WeeklyMenu> menu = weeklyMenuDAO.findByWeekAndYear(52, 2025);
+        Optional<WeeklyMenu> menu = weeklyMenuDAO.findByWeekAndYear(52, 2026, null);
         assertTrue(menu.isEmpty());
     }
 
     @Test
-    @DisplayName("Find by Week and Year - should throw exception for invalid ranges")
-    void findByWeekAndYear_InvalidRange_ThrowsException()
+    @DisplayName("Find by week and year - should apply status filter")
+    void findByWeekAndYearWithStatus()
     {
-        assertThrows(IllegalArgumentException.class, () -> weeklyMenuDAO.findByWeekAndYear(60, 2025));
-        assertThrows(IllegalArgumentException.class, () -> weeklyMenuDAO.findByWeekAndYear(10, 1990));
+        Optional<WeeklyMenu> published = weeklyMenuDAO.findByWeekAndYear(7, 2026, MenuStatus.PUBLISHED);
+        Optional<WeeklyMenu> draft = weeklyMenuDAO.findByWeekAndYear(7, 2026, MenuStatus.DRAFT);
+
+        assertTrue(published.isPresent());
+        assertTrue(draft.isEmpty());
+    }
+
+    @Test
+    @DisplayName("Find by week and year - should throw for invalid ranges")
+    void findByWeekAndYearInvalidRangeThrowsException()
+    {
+        assertThrows(IllegalArgumentException.class, () -> weeklyMenuDAO.findByWeekAndYear(60, 2026, null));
+        assertThrows(IllegalArgumentException.class, () -> weeklyMenuDAO.findByWeekAndYear(10, 1990, null));
     }
 }

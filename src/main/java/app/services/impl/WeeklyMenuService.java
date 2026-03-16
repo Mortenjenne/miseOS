@@ -1,14 +1,15 @@
 package app.services.impl;
 
-import app.dtos.menu.AddMenuSlotDTO;
-import app.dtos.menu.CreateWeeklyMenuDTO;
-import app.dtos.menu.UpdateMenuSlotDTO;
-import app.dtos.menu.WeeklyMenuDTO;
+import app.dtos.dish.DishTranslationDTO;
+import app.dtos.menu.*;
 import app.enums.MenuStatus;
+import app.enums.SupportedLanguage;
 import app.exceptions.UnauthorizedActionException;
 import app.exceptions.ValidationException;
 import app.mappers.WeeklyMenuMapper;
 import app.persistence.daos.interfaces.*;
+import app.persistence.daos.interfaces.readers.IStationReader;
+import app.persistence.daos.interfaces.readers.IUserReader;
 import app.persistence.entities.*;
 import app.services.IDishTranslationService;
 import app.services.IWeeklyMenuService;
@@ -17,22 +18,22 @@ import jakarta.persistence.EntityNotFoundException;
 
 import java.time.LocalDate;
 import java.time.temporal.IsoFields;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
+
 
 public class WeeklyMenuService implements IWeeklyMenuService
 {
     private final IWeeklyMenuDAO menuDAO;
-    private final IDishReader dishReader;
+    private final IDishDAO dishDAO;
     private final IUserReader userReader;
     private final IStationReader stationReader;
     private final IDishTranslationService dishTranslationService;
 
-    public WeeklyMenuService(IWeeklyMenuDAO menuDAO, IDishReader dishReader, IUserReader userReader, IStationReader stationReader, IDishTranslationService dishTranslationService)
+    public WeeklyMenuService(IWeeklyMenuDAO menuDAO, IDishDAO dishDAO, IUserReader userReader, IStationReader stationReader, IDishTranslationService dishTranslationService)
     {
         this.menuDAO = menuDAO;
-        this.dishReader = dishReader;
+        this.dishDAO = dishDAO;
         this.userReader = userReader;
         this.stationReader = stationReader;
         this.dishTranslationService = dishTranslationService;
@@ -47,8 +48,11 @@ public class WeeklyMenuService implements IWeeklyMenuService
         User creator = userReader.getByID(creatorId);
         requireHeadOrSousChef(creator);
 
-        Optional<WeeklyMenu> menu = menuDAO.findByWeekAndYear(dto.week(), dto.year());
-        checkIfMenuExists(menu);
+        Optional<WeeklyMenu> existingMenu = menuDAO.findByWeekAndYear(dto.week(), dto.year(), null);
+        if (existingMenu.isPresent())
+        {
+            throw new IllegalStateException("Menu for week " + dto.week() + "/" + dto.year() + " already exists");
+        }
 
         WeeklyMenu weeklyMenu = new WeeklyMenu(dto.week(), dto.year());
 
@@ -72,7 +76,7 @@ public class WeeklyMenuService implements IWeeklyMenuService
         Dish dish = null;
         if(dto.dishId() != null)
         {
-            dish = dishReader.getByID(dto.dishId());
+            dish = dishDAO.getByID(dto.dishId());
             validateDishForStation(dish, station);
         }
 
@@ -95,7 +99,7 @@ public class WeeklyMenuService implements IWeeklyMenuService
         User editor = userReader.getByID(editorId);
         requireHeadOrSousChef(editor);
 
-        WeeklyMenu menu = menuDAO.getByIdWithSlots(menuId);
+        WeeklyMenu menu = menuDAO.getByID(menuId);
 
         WeeklyMenuSlot slot = findSlot(menu, slotId);
         menu.removeMenuSlot(slot);
@@ -112,12 +116,12 @@ public class WeeklyMenuService implements IWeeklyMenuService
         User editor = userReader.getByID(editorId);
         requireHeadOrSousChef(editor);
 
-        WeeklyMenu menu = menuDAO.getByIdWithSlots(menuId);
+        WeeklyMenu menu = menuDAO.getByID(menuId);
         WeeklyMenuSlot slot = findSlot(menu, slotId);
 
         if (dto.dishId() != null)
         {
-            Dish dish = dishReader.getByID(dto.dishId());
+            Dish dish = dishDAO.getByID(dto.dishId());
             validateDishForStation(dish, slot.getStation());
             slot.setDish(dish);
             slot.setEmpty(false);
@@ -133,45 +137,84 @@ public class WeeklyMenuService implements IWeeklyMenuService
     }
 
     @Override
-    public WeeklyMenuDTO translateMenu(Long editorId, Long menuId)
+    public WeeklyMenuDTO translateSlot(Long editorId, Long menuId, Long slotId, SupportedLanguage language)
     {
-        ValidationUtil.validateId(editorId);
-        ValidationUtil.validateId(menuId);
+        validateSlotRelatedIds(editorId, menuId, slotId);
+        ValidationUtil.validateNotNull(language, "Target language");
 
         User editor = userReader.getByID(editorId);
         requireHeadOrSousChef(editor);
 
-        WeeklyMenu menu = menuDAO.getByIdWithSlots(menuId);
+        WeeklyMenu menu = menuDAO.getByID(menuId);
+        WeeklyMenuSlot slot = findSlot(menu, slotId);
 
-        //TODO add stream of translations in to pass to translation service
+        Dish dish = slot.getDish();
 
-        WeeklyMenu updated = menuDAO.getByIdWithSlots(menuId);
+        if (dish == null)
+        {
+            throw new IllegalStateException("Slot " + slotId + " has no dish to translate");
+        }
+
+        DishTranslationDTO translation = dishTranslationService.translateDish(dish, language.getCode());
+        dish.applyTranslation(
+            translation.translatedName(),
+            translation.translatedDescription()
+        );
+        dishDAO.update(dish);
+
+        WeeklyMenu updated = menuDAO.getByID(menuId);
         return WeeklyMenuMapper.toDTO(updated);
     }
 
     @Override
-    public WeeklyMenuDTO publishMenu(Long publisherId, Long menuId)
+    public WeeklyMenuDTO translateMenu(Long editorId, Long menuId, SupportedLanguage language)
     {
-       ValidationUtil.validateId(publisherId);
-       ValidationUtil.validateId(menuId);
+        ValidationUtil.validateId(editorId);
+        ValidationUtil.validateId(menuId);
+        ValidationUtil.validateNotNull(language, "Target language");
 
-       User publisher = userReader.getByID(publisherId);
+        User editor = userReader.getByID(editorId);
+        requireHeadOrSousChef(editor);
 
-       WeeklyMenu menu = menuDAO.getByIdWithSlots(menuId);
-       requireNotEmpty(menu);
-       validateAllDishesIsTranslated(menu);
+        WeeklyMenu menu = menuDAO.getByID(menuId);
+        Set<Dish> dishes = getDishesFromMenu(menu);
 
-       menu.publish(publisher);
-       WeeklyMenu updated = menuDAO.update(menu);
-       return WeeklyMenuMapper.toDTO(updated);
+        Map<Long, DishTranslationDTO> dishTranslations = dishTranslationService.translateDishes(dishes, language.getCode());
+        updateDishesWithTranslations(dishes, dishTranslations);
+
+        WeeklyMenu updated = menuDAO.getByID(menuId);
+        return WeeklyMenuMapper.toDTO(updated);
     }
 
     @Override
-    public WeeklyMenuDTO getByWeekAndYear(int week, int year)
+
+    public WeeklyMenuDTO publishMenu(Long publisherId, Long menuId)
+    {
+        ValidationUtil.validateId(publisherId);
+        ValidationUtil.validateId(menuId);
+
+        User publisher = userReader.getByID(publisherId);
+        requireHeadOrSousChef(publisher);
+
+        WeeklyMenu menu = menuDAO.getByID(menuId);
+        requireNotEmpty(menu);
+        validateAllDishesIsTranslated(menu);
+
+        menu.publish(publisher);
+        WeeklyMenu updated = menuDAO.update(menu);
+        return WeeklyMenuMapper.toDTO(updated);
+    }
+
+    @Override
+    public WeeklyMenuDTO getByWeekAndYear(Long userId, int week, int year)
     {
         validateWeekAndYear(week, year);
+        ValidationUtil.validateId(userId);
 
-        return menuDAO.findByWeekAndYear(week, year)
+        User user = userReader.getByID(userId);
+        MenuStatus menuStatus = getMenuStatusPermission(user);
+
+        return menuDAO.findByWeekAndYear(week, year, menuStatus)
             .map(WeeklyMenuMapper::toDTO)
             .orElseThrow(() -> new EntityNotFoundException("No menu for week " + week + "/" + year)
             );
@@ -184,38 +227,40 @@ public class WeeklyMenuService implements IWeeklyMenuService
         int week = today.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR);
         int year = today.get(IsoFields.WEEK_BASED_YEAR);
 
-        return menuDAO.findByWeekAndYear(week, year)
+        return menuDAO.findByWeekAndYear(week, year, MenuStatus.PUBLISHED)
             .map(WeeklyMenuMapper::toDTO)
-            .orElseThrow(() -> new EntityNotFoundException("No menu published for current week " + week + "/" + year)
-            );
+            .orElseThrow(() -> new EntityNotFoundException("No menu published for current week " + week + "/" + year));
     }
 
     @Override
     public WeeklyMenuDTO getById(Long id)
     {
         ValidationUtil.validateId(id);
-        WeeklyMenu menu = menuDAO.getByIdWithSlots(id);
+        WeeklyMenu menu = menuDAO.getByID(id);
         return WeeklyMenuMapper.toDTO(menu);
     }
 
     @Override
-    public Set<WeeklyMenuDTO> getAllMenus()
+    public List<WeeklyMenuOverviewDTO> getOverview(Long userId, MenuStatus menuStatus, Integer year, Integer week)
     {
-        return menuDAO.getAll()
-            .stream()
-            .map(WeeklyMenuMapper::toDTO)
-            .collect(Collectors.toSet());
+        ValidationUtil.validateId(userId);
+        User user = userReader.getByID(userId);
+        requireHeadOrSousChef(user);
+
+        return menuDAO.findByFilter(menuStatus, year, week);
     }
 
     @Override
-    public Set<WeeklyMenuDTO> getPublishedMenusByStatus(MenuStatus status)
+    public boolean deleteMenu(Long userId, Long menuId)
     {
-        ValidationUtil.validateNotNull(status, "Menu status");
+        ValidationUtil.validateId(userId);
+        ValidationUtil.validateId(menuId);
 
-        return menuDAO.findByStatus(status)
-            .stream()
-            .map(WeeklyMenuMapper::toDTO)
-            .collect(Collectors.toSet());
+        User user = userReader.getByID(userId);
+        WeeklyMenu menu = menuDAO.getByID(menuId);
+
+        menu.delete(user);
+        return menuDAO.delete(menuId);
     }
 
     private WeeklyMenuSlot findSlot(WeeklyMenu menu, Long menuSlotId)
@@ -226,6 +271,28 @@ public class WeeklyMenuService implements IWeeklyMenuService
             .findFirst()
             .orElseThrow(() -> new EntityNotFoundException("Slot " + menuSlotId + " not found in menu " + menu.getId()
             ));
+    }
+
+    private static Set<Dish> getDishesFromMenu(WeeklyMenu menu)
+    {
+        return menu.getWeeklyMenuSlots()
+            .stream()
+            .map(WeeklyMenuSlot::getDish)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet());
+    }
+
+    private void updateDishesWithTranslations(Set<Dish> dishes, Map<Long, DishTranslationDTO> dishTranslations)
+    {
+        dishes.forEach(dish ->
+        {
+            DishTranslationDTO translation = dishTranslations.get(dish.getId());
+            dish.applyTranslation(
+                translation.translatedName(),
+                translation.translatedDescription()
+            );
+        });
+        dishDAO.updateAll(dishes);
     }
 
     private void validateWeekAndYear(int week, int year)
@@ -252,14 +319,6 @@ public class WeeklyMenuService implements IWeeklyMenuService
         if (menu.getWeeklyMenuSlots().isEmpty())
         {
             throw new IllegalStateException("Cannot publish an empty menu");
-        }
-    }
-
-    private void checkIfMenuExists(Optional<WeeklyMenu> menu)
-    {
-        if (menu.isPresent())
-        {
-            throw new IllegalStateException("Menu for week " + menu.get().getWeekNumber() + "/" + menu.get().getYear() + " already exists");
         }
     }
 
@@ -304,5 +363,14 @@ public class WeeklyMenuService implements IWeeklyMenuService
         ValidationUtil.validateId(editorId);
         ValidationUtil.validateId(menuId);
         ValidationUtil.validateId(slotId);
+    }
+
+    private MenuStatus getMenuStatusPermission(User user)
+    {
+        if (!user.isKitchenStaff())
+        {
+            return MenuStatus.PUBLISHED;
+        }
+        return null;
     }
 }

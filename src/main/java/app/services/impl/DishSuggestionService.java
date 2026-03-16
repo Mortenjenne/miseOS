@@ -2,17 +2,21 @@ package app.services.impl;
 
 import app.dtos.dishsuggestion.DishSuggestionCreateDTO;
 import app.dtos.dishsuggestion.DishSuggestionDTO;
+import app.dtos.dishsuggestion.DishSuggestionFilterDTO;
 import app.dtos.dishsuggestion.DishSuggestionUpdateDTO;
 import app.enums.Status;
 import app.exceptions.UnauthorizedActionException;
 import app.mappers.DishSuggestionMapper;
 import app.persistence.daos.interfaces.*;
+import app.persistence.daos.interfaces.readers.IStationReader;
+import app.persistence.daos.interfaces.readers.IUserReader;
 import app.persistence.entities.*;
 import app.services.IDishSuggestionService;
 import app.utils.ValidationUtil;
-import jakarta.persistence.EntityNotFoundException;
 
 import java.time.LocalDate;
+import java.time.temporal.IsoFields;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -34,7 +38,7 @@ public class DishSuggestionService implements IDishSuggestionService
     }
 
     @Override
-    public DishSuggestionDTO submitSuggestion(Long creatorId, DishSuggestionCreateDTO dto)
+    public DishSuggestionDTO createSuggestion(Long creatorId, DishSuggestionCreateDTO dto)
     {
         ValidationUtil.validateId(creatorId);
         validateCreateInput(dto);
@@ -62,7 +66,7 @@ public class DishSuggestionService implements IDishSuggestionService
     }
 
     @Override
-    public DishSuggestionDTO approveDish(Long dishId, Long approverId)
+    public DishSuggestionDTO approveSuggestion(Long dishId, Long approverId)
     {
         ValidationUtil.validateId(dishId);
         ValidationUtil.validateId(approverId);
@@ -70,17 +74,19 @@ public class DishSuggestionService implements IDishSuggestionService
         DishSuggestion suggestion = dishSuggestionDAO.getByID(dishId);
         User approver = userReader.getByID(approverId);
 
+        requireHeadOrSousChef(approver);
         suggestion.approve(approver);
+
         DishSuggestion updated = dishSuggestionDAO.update(suggestion);
 
         Dish dish = new Dish(
-            suggestion.getNameDA(),
-            suggestion.getDescriptionDA(),
-            suggestion.getStation(),
-            suggestion.getAllergens(),
-            suggestion.getCreatedBy(),
-            suggestion.getTargetWeek(),
-            suggestion.getTargetYear()
+            updated.getNameDA(),
+            updated.getDescriptionDA(),
+            updated.getStation(),
+            updated.getAllergens(),
+            updated.getCreatedBy(),
+            updated.getTargetWeek(),
+            updated.getTargetYear()
         );
 
         dishDAO.create(dish);
@@ -89,7 +95,7 @@ public class DishSuggestionService implements IDishSuggestionService
     }
 
     @Override
-    public DishSuggestionDTO rejectDish(Long dishId, Long approverId, String feedback)
+    public DishSuggestionDTO rejectSuggestion(Long dishId, Long approverId, String feedback)
     {
         ValidationUtil.validateId(dishId);
         ValidationUtil.validateId(approverId);
@@ -106,7 +112,7 @@ public class DishSuggestionService implements IDishSuggestionService
     }
 
     @Override
-    public DishSuggestionDTO updateDish(Long editorId, Long suggestionId, DishSuggestionUpdateDTO dto)
+    public DishSuggestionDTO updateSuggestion(Long editorId, Long suggestionId, DishSuggestionUpdateDTO dto)
     {
         ValidationUtil.validateId(editorId);
         ValidationUtil.validateId(suggestionId);
@@ -129,7 +135,7 @@ public class DishSuggestionService implements IDishSuggestionService
     }
 
     @Override
-    public boolean deleteDish(Long dishId, Long userId)
+    public boolean deleteSuggestion(Long dishId, Long userId)
     {
         ValidationUtil.validateId(dishId);
         ValidationUtil.validateId(userId);
@@ -156,76 +162,43 @@ public class DishSuggestionService implements IDishSuggestionService
     }
 
     @Override
-    public DishSuggestionDTO getByIdWithAllergens(Long id) {
-        ValidationUtil.validateId(id);
-
-        return dishSuggestionDAO.getByIdWithAllergens(id)
-            .map(DishSuggestionMapper::toDTO)
-            .orElseThrow(() -> new EntityNotFoundException("DishSuggestion with ID " + id + " not found"));
-    }
-
-    @Override
-    public Set<DishSuggestionDTO> getAllDishSuggestions()
+    public List<DishSuggestionDTO> getByFilter(DishSuggestionFilterDTO dto)
     {
-        return dishSuggestionDAO.getAll()
+        ValidationUtil.validateNotNull(dto, "Filter");
+
+        if (dto.week() != null || dto.year() != null)
+        {
+            if (dto.week() == null || dto.year() == null)
+            {
+                throw new IllegalArgumentException("Week and year must both be provided together");
+            }
+            validateWeekAndYear(dto.week(), dto.year());
+        }
+
+        return dishSuggestionDAO.findByFilter(dto.status(), dto.week(), dto.year(), dto.stationId(), dto.orderBy())
             .stream()
             .map(DishSuggestionMapper::toDTO)
-            .collect(Collectors.toSet());
+            .collect(Collectors.toList());
     }
 
     @Override
-    public Set<DishSuggestionDTO> getPendingSuggestions()
+    public List<DishSuggestionDTO> getCurrentWeek(Status status)
     {
-        Set<DishSuggestion> dishes = dishSuggestionDAO.findByStatus(Status.PENDING);
+        int week = LocalDate.now().get(IsoFields.WEEK_OF_WEEK_BASED_YEAR);
+        int year = LocalDate.now().get(IsoFields.WEEK_BASED_YEAR);
 
-        return dishes.stream()
+
+        return dishSuggestionDAO.findByFilter(status, week, year, null, null)
+            .stream()
             .map(DishSuggestionMapper::toDTO)
-            .collect(Collectors.toSet());
-    }
-
-    @Override
-    public Set<DishSuggestionDTO> getPendingForWeek(int week, int year)
-    {
-        validateWeekAndYear(week,year);
-
-        Set<DishSuggestion> dishes = dishSuggestionDAO.findByWeekYearAndStatus(week, year, Status.PENDING);
-
-        return dishes.stream()
-            .map(DishSuggestionMapper::toDTO)
-            .collect(Collectors.toSet());
-    }
-
-    @Override
-    public Set<DishSuggestionDTO> getApprovedForWeek(int week, int year)
-    {
-        validateWeekAndYear(week,year);
-
-        Set<DishSuggestion> dishes = dishSuggestionDAO.findByWeekYearAndStatus(week, year, Status.APPROVED);
-
-        return dishes.stream()
-            .map(DishSuggestionMapper::toDTO)
-            .collect(Collectors.toSet());
-    }
-
-    @Override
-    public Set<DishSuggestionDTO> getByStatus(Status status)
-    {
-        ValidationUtil.validateNotNull(status, "Dish status");
-
-        Set<DishSuggestion> dishes = dishSuggestionDAO.findByStatus(status);
-
-        return dishes.stream()
-            .map(DishSuggestionMapper::toDTO)
-            .collect(Collectors.toSet());
+            .collect(Collectors.toList());
     }
 
     private void ensureIsKitchenStaff(User user)
     {
         if(!user.isKitchenStaff())
         {
-            throw new UnauthorizedActionException(
-                "Only kitchen staff can create dish suggestions"
-            );
+            throw new UnauthorizedActionException("Only kitchen staff can create dish suggestions");
         }
     }
 
@@ -238,6 +211,14 @@ public class DishSuggestionService implements IDishSuggestionService
         return allergenIds.stream()
             .map(allergenDAO::getByID)
             .collect(Collectors.toSet());
+    }
+
+    private void requireHeadOrSousChef(User user)
+    {
+        if (!user.isHeadChef() && !user.isSousChef())
+        {
+            throw new UnauthorizedActionException("Only head chef or sous chef can approve or reject suggestions");
+        }
     }
 
     private void validateWeekAndYear(int week, int year)

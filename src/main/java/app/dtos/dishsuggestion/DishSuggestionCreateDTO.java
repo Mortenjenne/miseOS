@@ -2,10 +2,11 @@ package app.dtos.dishsuggestion;
 
 import java.util.Set;
 
-public record DishSuggestionCreateDTO(String nameDA,
-                                      String descriptionDA,
-                                      Long stationId,
-                                      Set<Long> allergenIds,
-                                      Integer targetWeek,
-                                      Integer targetYear)
+public record DishSuggestionCreateDTO(
+    String nameDA,
+    String descriptionDA,
+    Long stationId,
+    Set<Long> allergenIds,
+    Integer targetWeek,
+    Integer targetYear)
 {}

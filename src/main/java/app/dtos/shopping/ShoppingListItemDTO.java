@@ -1,6 +1,9 @@
 package app.dtos.shopping;
 
 import app.enums.Unit;
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+import java.time.LocalDateTime;
 
 public record ShoppingListItemDTO(
     Long id,
@@ -9,7 +12,11 @@ public record ShoppingListItemDTO(
     Unit unit,
     String supplier,
     String notes,
-    boolean isOrdered
+    boolean ordered,
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
+    LocalDateTime createdAt,
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
+    LocalDateTime updatedAt
 )
 {
 }

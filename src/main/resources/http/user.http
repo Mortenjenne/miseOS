@@ -1,0 +1,69 @@
+
+### GET by ID
+GET {{url}}/users/2
+
+### GET all users
+GET {{url}}/users/
+
+### POST Create User
+POST {{url}}/users/
+Content-Type: application/json
+
+{
+"firstName": "Morten",
+"lastName": "Jensen",
+"password": "Morten123.",
+"email": "test@email.com"
+}
+
+### POST Create Another User
+POST {{url}}/users/
+Content-Type: application/json
+
+{
+    "firstName": "Anna",
+    "lastName": "Hansen",
+    "email": "anna@email.com",
+    "password": "Anna123."
+}
+
+### PUT Update User
+PUT {{url}}/users/1
+Content-Type: application/json
+
+{
+    "firstName": "Morten",
+    "lastName": "Jensen Updated",
+    "stationId": 1
+}
+
+
+### PATCH Change Email
+PATCH {{url}}/users/1/email
+Content-Type: application/json
+
+"newemail@email.com"
+
+### PATCH Change Password
+PATCH {{url}}/users/1/password
+Content-Type: application/json
+
+{
+    "currentPassword": "Morten123.",
+    "newPassword": "NewSecure123."
+}
+
+### PATCH Change Role
+PATCH {{url}}/users/2/role
+Content-Type: application/json
+
+"SOUS_CHEF"
+
+### PATCH Assign User(Anna) To Station
+PATCH {{url}}/users/3/station/1
+
+
+### DELETE Delete User
+DELETE {{url}}/users/2
+
+###

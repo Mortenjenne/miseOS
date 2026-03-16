@@ -1,5 +1,6 @@
 package app.persistence.daos.impl;
 
+import app.dtos.menu.WeeklyMenuOverviewDTO;
 import app.enums.MenuStatus;
 import app.exceptions.DatabaseException;
 import app.persistence.daos.interfaces.IWeeklyMenuDAO;
@@ -8,9 +9,8 @@ import app.utils.DBValidator;
 import app.utils.TransactionUtil;
 import jakarta.persistence.*;
 
-import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 public class WeeklyMenuDAO implements IWeeklyMenuDAO
 {
@@ -22,98 +22,67 @@ public class WeeklyMenuDAO implements IWeeklyMenuDAO
     }
 
     @Override
-    public Set<WeeklyMenu> findByStatus(MenuStatus status)
+    public List<WeeklyMenuOverviewDTO> findByFilter(MenuStatus status, Integer year, Integer week)
     {
-        DBValidator.validateNotNull(status, "Status");
-
-        try(EntityManager em = emf.createEntityManager())
+        try (EntityManager em = emf.createEntityManager())
         {
-            TypedQuery<WeeklyMenu> query = em.createQuery("SELECT wm FROM WeeklyMenu wm WHERE wm.menuStatus = :status", WeeklyMenu.class)
-                .setParameter("status", status);
-
-            return new HashSet<>(query.getResultList());
+            try
+            {
+                return em.createQuery(
+                        "SELECT new app.dtos.menu.WeeklyMenuOverviewDTO(" +
+                            "wm.id, wm.weekNumber, wm.year, wm.menuStatus, " +
+                            "CAST((SELECT COUNT(slot) FROM WeeklyMenuSlot slot WHERE slot.weeklyMenu = wm) AS long), " +
+                            "wm.publishedAt) " +
+                            "FROM WeeklyMenu wm " +
+                            "WHERE (:status IS NULL OR wm.menuStatus = :status) " +
+                            "AND   (:year   IS NULL OR wm.year = :year) " +
+                            "AND   (:week   IS NULL OR wm.weekNumber = :week) " +
+                            "ORDER BY wm.year DESC, wm.weekNumber ASC",
+                        WeeklyMenuOverviewDTO.class)
+                    .setParameter("status", status)
+                    .setParameter("year", year)
+                    .setParameter("week", week)
+                    .getResultList();
+            }
+            catch (PersistenceException e)
+            {
+                throw new DatabaseException("Failed to fetch menu overviews", e);
+            }
         }
     }
 
     @Override
-    public Optional<WeeklyMenu> findByWeekAndYear(int weekNumber, int year)
+    public Optional<WeeklyMenu> findByWeekAndYear(int weekNumber, int year, MenuStatus status)
     {
         DBValidator.validateRange(weekNumber, 1, 53, "Week number");
         DBValidator.validateRange(year, 2000, 2100, "Year");
 
         try(EntityManager em = emf.createEntityManager())
         {
-            WeeklyMenu weeklyMenu = em.createQuery("SELECT wm FROM WeeklyMenu wm WHERE wm.weekNumber = :weekNumber AND wm.year = :year", WeeklyMenu.class)
-                .setParameter("weekNumber", weekNumber)
-                .setParameter("year", year)
-                .getResultStream()
-                .findFirst()
-                .orElse(null);
-
-            return Optional.ofNullable(weeklyMenu);
-        }
-    }
-
-    @Override
-    public WeeklyMenu getByIdWithSlots(Long id)
-    {
-        DBValidator.validateId(id);
-
-        try (EntityManager em = emf.createEntityManager())
-        {
             try
             {
-                WeeklyMenu menu = em.createQuery(
-                        "SELECT wm FROM WeeklyMenu wm " +
-                            "LEFT JOIN FETCH wm.weeklyMenuSlots " +
-                            "WHERE wm.id = :id",
-                        WeeklyMenu.class)
-                    .setParameter("id", id)
-                    .getSingleResult();
+                WeeklyMenu weeklyMenu = em.createQuery(
+                        "SELECT DISTINCT wm FROM WeeklyMenu wm " +
+                            "LEFT JOIN FETCH wm.weeklyMenuSlots s " +
+                            "LEFT JOIN FETCH s.station " +
+                            "LEFT JOIN FETCH s.dish d " +
+                            "LEFT JOIN FETCH d.allergens " +
+                            "WHERE (:status IS NULL OR wm.menuStatus = :status) " +
+                            "AND   (:year   IS NULL OR wm.year = :year) " +
+                            "AND   (:week   IS NULL OR wm.weekNumber = :week)", WeeklyMenu.class)
+                    .setParameter("status", status)
+                    .setParameter("year", year)
+                    .setParameter("week", weekNumber)
+                    .getResultStream()
+                    .findFirst()
+                    .orElse(null);
 
-                return DBValidator.validateExists(menu, id, WeeklyMenu.class);
+                return Optional.ofNullable(weeklyMenu);
             }
-            catch (NoResultException e)
+            catch (PersistenceException e)
             {
-                throw new EntityNotFoundException(
-                    "WeeklyMenu with id " + id + " not found"
-                );
+                throw new DatabaseException("Failed to fetch menu with week: " + weekNumber + " and year: " + year, e);
             }
-        }
-    }
-
-    @Override
-    public WeeklyMenu create(WeeklyMenu weeklyMenu)
-    {
-        DBValidator.validateNotNull(weeklyMenu, "WeeklyMenu");
-        DBValidator.validateRange(weeklyMenu.getWeekNumber(), 1, 53, "WeekNumber");
-        DBValidator.validateRange(weeklyMenu.getYear(), 2000, 2100, "WeekNumber");
-
-        try(EntityManager em = emf.createEntityManager())
-        {
-            try
-            {
-            em.getTransaction().begin();
-            em.persist(weeklyMenu);
-            em.getTransaction().commit();
-            return weeklyMenu;
-            }
-            catch
-            (PersistenceException e)
-            {
-                TransactionUtil.rollback(em);
-                throw new DatabaseException("Failed to create week menu", e);
-            }
-        }
-    }
-
-    @Override
-    public Set<WeeklyMenu> getAll()
-    {
-        try(EntityManager em = emf.createEntityManager())
-        {
-            TypedQuery<WeeklyMenu> query = em.createQuery("SELECT wm FROM WeeklyMenu wm", WeeklyMenu.class);
-            return new HashSet<>(query.getResultList());
         }
     }
 
@@ -122,10 +91,55 @@ public class WeeklyMenuDAO implements IWeeklyMenuDAO
     {
         DBValidator.validateId(id);
 
+        try (EntityManager em = emf.createEntityManager())
+        {
+            try
+            {
+                WeeklyMenu menu = em.createQuery(
+                        "SELECT DISTINCT wm FROM WeeklyMenu wm " +
+                            "LEFT JOIN FETCH wm.weeklyMenuSlots s " +
+                            "LEFT JOIN FETCH s.station " +
+                            "LEFT JOIN FETCH s.dish d " +
+                            "LEFT JOIN FETCH d.allergens " +
+                            "WHERE wm.id = :id", WeeklyMenu.class)
+                    .setParameter("id", id)
+                    .getSingleResult();
+
+                return DBValidator.validateExists(menu, id, WeeklyMenu.class);
+            }
+            catch (NoResultException e)
+            {
+                throw new EntityNotFoundException("WeeklyMenu with id " + id + " not found");
+            }
+            catch (PersistenceException e)
+            {
+                throw new DatabaseException("Failed to fetch menu with id " + id, e);
+            }
+        }
+    }
+
+    @Override
+    public WeeklyMenu create(WeeklyMenu weeklyMenu)
+    {
+        DBValidator.validateNotNull(weeklyMenu, "Weekly Menu");
+        DBValidator.validateRange(weeklyMenu.getWeekNumber(), 1, 53, "Week number");
+        DBValidator.validateRange(weeklyMenu.getYear(), 2000, 2100, "Year");
+
         try(EntityManager em = emf.createEntityManager())
         {
-            WeeklyMenu weeklyMenu = em.find(WeeklyMenu.class, id);
-            return DBValidator.validateExists(weeklyMenu, id, WeeklyMenu.class);
+            try
+            {
+                em.getTransaction().begin();
+                em.persist(weeklyMenu);
+                em.getTransaction().commit();
+                return getByID(weeklyMenu.getId());
+            }
+            catch
+            (PersistenceException e)
+            {
+                TransactionUtil.rollback(em);
+                throw new DatabaseException("Failed to create week menu", e);
+            }
         }
     }
 
@@ -144,7 +158,7 @@ public class WeeklyMenuDAO implements IWeeklyMenuDAO
                 DBValidator.validateExists(exist, weeklyMenu.getId(), WeeklyMenu.class);
                 WeeklyMenu merged = em.merge(weeklyMenu);
                 em.getTransaction().commit();
-                return merged;
+                return getByID(merged.getId());
             }
             catch (EntityNotFoundException e)
             {
@@ -174,7 +188,6 @@ public class WeeklyMenuDAO implements IWeeklyMenuDAO
                 em.remove(managed);
                 em.getTransaction().commit();
                 return true;
-
             }
             catch (EntityNotFoundException e)
             {

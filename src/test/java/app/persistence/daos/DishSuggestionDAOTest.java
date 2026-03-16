@@ -12,10 +12,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.*;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -46,18 +43,18 @@ class DishSuggestionDAOTest {
         User gordon = (User) seeded.get("user_gordon");
 
         Allergen gluten = (Allergen) seeded.get("allergen_gluten");
-        Allergen dairy = (Allergen) seeded.get("allergen_dairy");
+        Allergen milk = (Allergen) seeded.get("allergen_milk");
         Allergen eggs = (Allergen) seeded.get("allergen_eggs");
 
         Set<Allergen> allergens = new HashSet<>();
         allergens.add(gluten);
-        allergens.add(dairy);
+        allergens.add(milk);
         allergens.add(eggs);
 
         DishSuggestion dish = new DishSuggestion("Pasta Carbonara", "Classic pasta", 7, 2026, station, gordon, allergens);
 
-        Allergen lactose = (Allergen) seeded.get("allergen_milk");
-        dish.addAllergen(lactose);
+        Allergen fish = (Allergen) seeded.get("allergen_fish");
+        dish.addAllergen(fish);
 
         DishSuggestion result = dishSuggestionDAO.create(dish);
 
@@ -79,7 +76,7 @@ class DishSuggestionDAOTest {
     @DisplayName("Get All - should retrieve all seeded dishes")
     void getAll()
     {
-        Set<DishSuggestion> dishes = dishSuggestionDAO.getAll();
+        Set<DishSuggestion> dishes = dishSuggestionDAO.findByFilter(null, null, null, null, null);
         assertThat(dishes, hasSize((5)));
     }
 
@@ -95,48 +92,22 @@ class DishSuggestionDAOTest {
         assertThat(fetched.getDescriptionDA(), is(seed.getDescriptionDA()));
         assertThat(fetched.getDishStatus(), is(seed.getDishStatus()));
         assertThat(fetched.getStation(), is(seed.getStation()));
+        assertThat(fetched.getAllergens(), is(notNullValue()));
         assertNotNull(fetched.getCreatedAt());
     }
 
     @Test
     @DisplayName("Get by ID - should throw EntityNotFoundException for missing id")
-    void getByID_NotFound_ThrowsException()
+    void getByIDNotFoundThrowsException()
     {
         assertThrows(EntityNotFoundException.class, () -> dishSuggestionDAO.getByID(9999L));
     }
 
     @Test
     @DisplayName("Get by ID - should throw IllegalArgumentException for negative id")
-    void getByID_NegativeId_ThrowsException()
+    void getByIDNegativeIdThrowsException()
     {
         assertThrows(IllegalArgumentException.class, () -> dishSuggestionDAO.getByID(-1L));
-    }
-
-
-    @Test
-    @DisplayName("Get with Allergens - should fetch dish and lazy-loaded allergens")
-    void getByIdWithAllergens() {
-        DishSuggestion seed = (DishSuggestion) seeded.get("suggestion_steak");
-
-        Optional<DishSuggestion> fetched = dishSuggestionDAO.getByIdWithAllergens(seed.getId());
-
-        assertTrue(fetched.isPresent());
-        assertThat(fetched.get().getAllergens(), is(notNullValue()));
-    }
-
-    @Test
-    @DisplayName("Get with Allergens - should return empty Optional for missing id")
-    void getByIdWithAllergensNotFoundReturnsEmpty()
-    {
-        Optional<DishSuggestion> fetched = dishSuggestionDAO.getByIdWithAllergens(9999L);
-        assertTrue(fetched.isEmpty());
-    }
-
-    @Test
-    @DisplayName("Get with Allergens - should throw IllegalArgumentException for negative id")
-    void getByIdWithAllergensNegativeIdThrowsException()
-    {
-        assertThrows(IllegalArgumentException.class, () -> dishSuggestionDAO.getByIdWithAllergens(-1L));
     }
 
     @Test
@@ -188,7 +159,7 @@ class DishSuggestionDAOTest {
 
     @Test
     @DisplayName("Update - should throw exception when updating transient entity (no ID)")
-    void update_Transient_ThrowsException()
+    void updateTransientThrowsException()
     {
         Station station = (Station) seeded.get("station_hot");
         User marco = (User) seeded.get("user_marco");
@@ -210,102 +181,118 @@ class DishSuggestionDAOTest {
 
     @Test
     @DisplayName("Delete - should throw EntityNotFoundException for missing id")
-    void delete_NotFound_ThrowsException()
+    void deleteNotFoundThrowsException()
     {
         assertThrows(EntityNotFoundException.class, () -> dishSuggestionDAO.delete(9999L));
     }
 
     @Test
     @DisplayName("Delete - should throw IllegalArgumentException for negative id")
-    void delete_NegativeId_ThrowsException()
+    void deleteNegativeIdThrowsException()
     {
         assertThrows(IllegalArgumentException.class, () -> dishSuggestionDAO.delete(-1L));
     }
 
-
     @Test
-    @DisplayName("Find by Status - should return matching dishes")
-    void findByStatus()
+    @DisplayName("Filter: Status Only - should return only PENDING suggestions")
+    void filterStatusOnly()
     {
-        Set<DishSuggestion> pending = dishSuggestionDAO.findByStatus(Status.PENDING);
-        assertThat(pending, notNullValue());
-        assertThat(pending, hasSize((5)));
+        Set<DishSuggestion> result = dishSuggestionDAO.findByFilter(Status.PENDING, null, null, null, null);
+
+        assertThat(result, not(empty()));
+        result.forEach(ds -> assertThat(ds.getDishStatus(), is(Status.PENDING)));
     }
 
     @Test
-    @DisplayName("Find by Status - should throw exception for null status")
-    void findByStatusNullThrowsException()
+    @DisplayName("Filter: Week and Year - should return suggestions for specific period")
+    void filterWeekAndYear()
     {
-        assertThrows(IllegalArgumentException.class, () -> dishSuggestionDAO.findByStatus(null));
+        Set<DishSuggestion> result = dishSuggestionDAO.findByFilter(null, 7, 2026, null, null);
+
+        assertThat(result, not(empty()));
+        result.forEach(ds -> {
+            assertThat(ds.getTargetWeek(), is(7));
+            assertThat(ds.getTargetYear(), is(2026));
+        });
     }
 
     @Test
-    @DisplayName("Find by Status - should return empty set for status with no dishes")
-    void findByStatusEmptyResult()
+    @DisplayName("Filter: Station Only - should return suggestions for specific station")
+    void filterStationOnly()
     {
-        Set<DishSuggestion> rejected = dishSuggestionDAO.findByStatus(Status.REJECTED);
-        assertThat(rejected, is(empty()));
+        Station hotStation = (Station) seeded.get("station_hot");
+        Long stationId = hotStation.getId();
+
+        Set<DishSuggestion> result = dishSuggestionDAO.findByFilter(null, null, null, stationId, null);
+
+        assertThat(result, not(empty()));
+        result.forEach(ds -> assertThat(ds.getStation().getId(), is(stationId)));
     }
 
     @Test
-    @DisplayName("Find by Station and Status - should return matching dishes")
-    void findByStationAndStatus()
+    @DisplayName("Filter: Multiple choice - Status, Week, Year and Station")
+    void filterMultiple()
+    {
+        Station hotStation = (Station) seeded.get("station_hot");
+
+        Set<DishSuggestion> result = dishSuggestionDAO.findByFilter(Status.PENDING, 7, 2026, hotStation.getId(), null);
+
+        assertThat(result, hasSize(2));
+
+        List<String> names = result.stream()
+            .map(DishSuggestion::getNameDA)
+            .toList();
+
+        assertThat(names, containsInAnyOrder("Bøf Bearnaise", "Tarteletter"));
+        result.forEach(ds -> assertThat(ds.getDishStatus(), is(Status.PENDING)));
+    }
+
+    @Test
+    @DisplayName("Filter: Empty Results - should return empty set when no match exists")
+    void filterNoMatchReturnsEmpty()
+    {
+        Set<DishSuggestion> result = dishSuggestionDAO.findByFilter(Status.APPROVED, 52, 2099, null, null);
+        assertThat(result, is(empty()));
+    }
+
+    @Test
+    @DisplayName("Filter - Find suggestions for specific week (Week 8)")
+    void filterSpecificWeekReturnsOnlyWeek8()
+    {
+        Set<DishSuggestion> result = dishSuggestionDAO.findByFilter(null, 8, 2026, null, null);
+
+        assertThat(result, hasSize(1));
+        assertThat(result.iterator().next().getNameDA(), is("Sushi"));
+    }
+
+    @Test
+    @DisplayName("Filter - Combined Station and Week")
+    void filterStationAndWeekReturnsMatch()
     {
         Station hot = (Station) seeded.get("station_hot");
-        Set<DishSuggestion> results = dishSuggestionDAO.findByStationAndStatus(hot.getId(), Status.PENDING);
-        assertThat(results, notNullValue());
-        assertThat(results, hasSize(2));
+
+        Set<DishSuggestion> result = dishSuggestionDAO.findByFilter(null, 7, 2026, hot.getId(), null);
+
+        assertThat(result, hasSize(2));
+        result.forEach(ds -> assertThat(ds.getStation().getId(), is(hot.getId())));
     }
 
     @Test
-    @DisplayName("Find by Station and Status - should throw exception for null status")
-    void findByStationAndStatusNullStatusThrowsException()
+    @DisplayName("Filter - Sorting by CreatedAt (Newest first)")
+    void filterOrderByCreatedAtReturnsSorted()
     {
-        Station hot = (Station) seeded.get("station_hot");
-        assertThrows(IllegalArgumentException.class, () -> dishSuggestionDAO.findByStationAndStatus(hot.getId(), null));
+        Set<DishSuggestion> result = dishSuggestionDAO.findByFilter(null, null, null, null, "createdAt");
+
+        assertThat(result, hasSize(5));
+        List<DishSuggestion> list = new ArrayList<>(result);
+        assertFalse(list.get(0).getCreatedAt().isAfter(list.get(4).getCreatedAt()));
     }
 
     @Test
-    @DisplayName("Find by Station and Status - should throw exception for negative station id")
-    void findByStationAndStatus_NegativeId_ThrowsException()
+    @DisplayName("Filter - Search for non-existent station")
+    void filterNonExistentStationReturnsEmpty()
     {
-        assertThrows(IllegalArgumentException.class, () -> dishSuggestionDAO.findByStationAndStatus(-1L, Status.PENDING));
-    }
-
-    @Test
-    @DisplayName("Find by Week, Year and Status - should return matching dishes")
-    void findByWeekAndYear()
-    {
-        Set<DishSuggestion> dishes = dishSuggestionDAO.findByWeekYearAndStatus(7, 2026, Status.PENDING);
-        assertThat(dishes, notNullValue());
-        assertThat(dishes, hasSize(4));
-        assertThat(dishes, containsInAnyOrder(
-            seeded.get("suggestion_salmon"),
-            seeded.get("suggestion_steak"),
-            seeded.get("suggestion_tartelet"),
-            seeded.get("suggestion_roastbeef")
-        ));
-    }
-
-    @Test
-    @DisplayName("Find by Week, Year and Status - should return empty set for empty week")
-    void findByWeekAndYearNoDishesReturnsEmpty()
-    {
-        Set<DishSuggestion> dishes = dishSuggestionDAO.findByWeekYearAndStatus(52, 2025, Status.PENDING);
-        assertThat(dishes, is(empty()));
-    }
-
-    @Test
-    @DisplayName("Find by Week, Year and Status - should throw exception for invalid week")
-    void findByWeekAndYearInvalidWeekThrowsException()
-    {
-        assertThrows(IllegalArgumentException.class, () -> dishSuggestionDAO.findByWeekYearAndStatus(60, 2025, Status.PENDING));
-    }
-
-    @Test
-    @DisplayName("Find by Week, Year and status - should throw exception for invalid year")
-    void findByWeekAndYearInvalidYearThrowsException()
-    {
-        assertThrows(IllegalArgumentException.class, () -> dishSuggestionDAO.findByWeekYearAndStatus(10, 1990, Status.PENDING));
+        Set<DishSuggestion> result = dishSuggestionDAO.findByFilter(null, 7, 2026, 999L, null);
+        assertThat(result, is(empty()));
     }
 }

@@ -1,8 +1,11 @@
 package app.dtos.ingredient;
 
+import app.dtos.dish.DishReferenceDTO;
+import app.dtos.user.UserReferenceDTO;
 import app.enums.RequestType;
 import app.enums.Status;
 import app.enums.Unit;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -16,9 +19,14 @@ public record IngredientRequestDTO(
     String note,
     Status status,
     RequestType requestType,
+    @JsonFormat(pattern = "yyyy-MM-dd")
     LocalDate deliveryDate,
-    LocalDateTime createdAt,
+    UserReferenceDTO requestedBy,
+    DishReferenceDTO dish,
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     LocalDateTime reviewedAt,
-    Long createdByUserId,
-    Long dishSuggestionId
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
+    LocalDateTime createdAt,
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
+    LocalDateTime updatedAt
 ) {}

@@ -1,12 +1,10 @@
 package app.services;
 
-import app.dtos.menu.AddMenuSlotDTO;
-import app.dtos.menu.CreateWeeklyMenuDTO;
-import app.dtos.menu.UpdateMenuSlotDTO;
-import app.dtos.menu.WeeklyMenuDTO;
+import app.dtos.menu.*;
 import app.enums.MenuStatus;
+import app.enums.SupportedLanguage;
 
-import java.util.Set;
+import java.util.List;
 
 public interface IWeeklyMenuService
 {
@@ -18,17 +16,19 @@ public interface IWeeklyMenuService
 
     WeeklyMenuDTO updateSlot(Long editorId, Long menuId, Long slotId, UpdateMenuSlotDTO dto);
 
-    WeeklyMenuDTO translateMenu(Long editorId, Long menuId);
+    WeeklyMenuDTO translateSlot(Long userId, Long menuId, Long slotId, SupportedLanguage language);
+
+    WeeklyMenuDTO translateMenu(Long editorId, Long menuId, SupportedLanguage language);
 
     WeeklyMenuDTO publishMenu(Long publisherId, Long menuId);
 
-    WeeklyMenuDTO getByWeekAndYear(int week, int year);
+    WeeklyMenuDTO getByWeekAndYear(Long userId, int week, int year);
 
     WeeklyMenuDTO getCurrentWeekMenu();
 
     WeeklyMenuDTO getById(Long id);
 
-    Set<WeeklyMenuDTO> getAllMenus();
+    List<WeeklyMenuOverviewDTO> getOverview(Long userId, MenuStatus menuStatus, Integer year, Integer week);
 
-    Set<WeeklyMenuDTO> getPublishedMenusByStatus(MenuStatus status);
+    boolean deleteMenu(Long userId, Long menuId);
 }

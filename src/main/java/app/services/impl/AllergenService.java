@@ -3,11 +3,12 @@ package app.services.impl;
 import app.dtos.allergen.AllergenCreateRequestDTO;
 import app.dtos.allergen.AllergenDTO;
 import app.dtos.allergen.AllergenUpdateRequestDTO;
+import app.exceptions.ConflictException;
 import app.exceptions.UnauthorizedActionException;
 import app.exceptions.ValidationException;
 import app.mappers.AllergenMapper;
 import app.persistence.daos.interfaces.IAllergenDAO;
-import app.persistence.daos.interfaces.IUserReader;
+import app.persistence.daos.interfaces.readers.IUserReader;
 import app.persistence.entities.Allergen;
 import app.persistence.entities.User;
 import app.services.IAllergenService;
@@ -16,6 +17,7 @@ import app.utils.ValidationUtil;
 import jakarta.persistence.EntityNotFoundException;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -128,7 +130,7 @@ public class AllergenService implements IAllergenService
     {
         return allergenDAO.getAll().stream()
             .map(AllergenMapper::toDTO)
-            .collect(Collectors.toSet());
+            .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     @Override
@@ -189,7 +191,7 @@ public class AllergenService implements IAllergenService
     {
         if (allergenDAO.findByNameDA(nameDA).isPresent())
         {
-            throw new ValidationException("Allergen with Danish name '" + nameDA + "' already exists");
+            throw new ConflictException("Allergen with Danish name '" + nameDA + "' already exists");
         }
     }
 
@@ -197,7 +199,7 @@ public class AllergenService implements IAllergenService
     {
         if (allergenDAO.findByNameEN(nameEN).isPresent())
         {
-            throw new ValidationException("Allergen with English name '" + nameEN + "' already exists");
+            throw new ConflictException("Allergen with English name '" + nameEN + "' already exists");
         }
     }
 
@@ -205,7 +207,7 @@ public class AllergenService implements IAllergenService
     {
         if (allergenDAO.existsByDisplayNumber(displayNumber))
         {
-            throw new ValidationException("Display number already in use");
+            throw new ConflictException("Display number already in use");
         }
     }
 

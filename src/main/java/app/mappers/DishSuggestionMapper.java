@@ -1,11 +1,12 @@
 package app.mappers;
 
+import app.dtos.allergen.AllergenDTO;
 import app.dtos.dishsuggestion.DishSuggestionDTO;
-import app.persistence.entities.Allergen;
+import app.dtos.station.StationReferenceDTO;
+import app.dtos.user.UserReferenceDTO;
 import app.persistence.entities.DishSuggestion;
 
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.List;
 
 public class DishSuggestionMapper
 {
@@ -14,11 +15,14 @@ public class DishSuggestionMapper
 
     public static DishSuggestionDTO toDTO(DishSuggestion suggestion)
     {
-        Set<String> allergenNames = suggestion.getAllergens().stream()
-            .map(Allergen::getNameDA)
-            .collect(Collectors.toSet());
+        List<AllergenDTO> allergens = suggestion.getAllergens()
+            .stream()
+            .map(AllergenMapper::toDTO)
+            .toList();
 
-        String chefName = suggestion.getCreatedBy().getFirstName() + " " + suggestion.getCreatedBy().getLastName();
+        StationReferenceDTO station = StationMapper.toReferenceDTO(suggestion.getStation());
+        UserReferenceDTO createdBy = UserMapper.toReferenceDTO(suggestion.getCreatedBy());
+        UserReferenceDTO reviewedBy = UserMapper.toReferenceDTO(suggestion.getReviewedBy());
 
         return new DishSuggestionDTO(
             suggestion.getId(),
@@ -26,11 +30,14 @@ public class DishSuggestionMapper
             suggestion.getDescriptionDA(),
             suggestion.getDishStatus(),
             suggestion.getFeedback(),
-            suggestion.getStation().getStationName(),
-            chefName,
-            allergenNames,
+            station,
+            createdBy,
+            reviewedBy,
+            suggestion.getReviewedAt(),
+            allergens,
             suggestion.getTargetWeek(),
-            suggestion.getTargetYear()
+            suggestion.getTargetYear(),
+            suggestion.getCreatedAt()
         );
     }
 }

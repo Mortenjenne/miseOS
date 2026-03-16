@@ -2,11 +2,12 @@ package app.services.impl;
 
 import app.dtos.station.StationRequestDTO;
 import app.dtos.station.StationDTO;
+import app.exceptions.ConflictException;
 import app.exceptions.UnauthorizedActionException;
 import app.exceptions.ValidationException;
 import app.mappers.StationMapper;
 import app.persistence.daos.interfaces.IStationDAO;
-import app.persistence.daos.interfaces.IUserReader;
+import app.persistence.daos.interfaces.readers.IUserReader;
 import app.persistence.entities.Station;
 import app.persistence.entities.User;
 import app.services.IStationService;
@@ -29,13 +30,13 @@ public class StationService implements IStationService
     }
 
     @Override
-    public StationDTO registerStation(Long creatorID, StationRequestDTO dto)
+    public StationDTO createStation(Long creatorID, StationRequestDTO dto)
     {
         ValidationUtil.validateId(creatorID);
         validateInput(dto);
 
         User creator = userReader.getByID(creatorID);
-        requireChef(creator);
+        requireHeadChefOrSousChef(creator);
         validateStationNameUnique(dto.name());
 
         Station station = new Station(dto.name(), dto.description());
@@ -53,9 +54,9 @@ public class StationService implements IStationService
 
         User editor = userReader.getByID(editorId);
         Station station = stationDAO.getByID(stationId);
-        requireChef(editor);
+        requireHeadChefOrSousChef(editor);
 
-        if (!station.getStationName().equals(dto.name()))
+        if (!station.getStationName().equalsIgnoreCase(dto.name()))
         {
             validateStationNameUnique(dto.name());
         }
@@ -75,9 +76,16 @@ public class StationService implements IStationService
         ValidationUtil.validateId(stationId);
         ValidationUtil.validateId(userId);
 
+        boolean isStationUsed = stationDAO.isUsedByAnyDish(stationId);
+
+        if (isStationUsed)
+        {
+            throw new ValidationException("Cannot delete station, it is currently assigned to one or more dishes");
+        }
+
         Station station = stationDAO.getByID(stationId);
         User user = userReader.getByID(userId);
-        requireChef(user);
+        requireHeadChefOrSousChef(user);
 
         return stationDAO.delete(station.getId());
     }
@@ -111,7 +119,7 @@ public class StationService implements IStationService
             .orElseThrow(() -> new EntityNotFoundException("Station not found: " + name));
     }
 
-    private void requireChef(User user)
+    private void requireHeadChefOrSousChef(User user)
     {
         if (!user.isHeadChef() && !user.isSousChef())
         {
@@ -132,7 +140,7 @@ public class StationService implements IStationService
 
         if (existing.isPresent())
         {
-            throw new ValidationException("Station with name '" + name + "' already exists");
+            throw new ConflictException("Station with name '" + name + "' already exists");
         }
     }
 }

@@ -8,8 +8,7 @@ import app.utils.DBValidator;
 import app.utils.TransactionUtil;
 import jakarta.persistence.*;
 
-import java.util.HashSet;
-import java.util.Optional;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 public class DishSuggestionDAO implements IDishSuggestionDAO
@@ -22,62 +21,47 @@ public class DishSuggestionDAO implements IDishSuggestionDAO
     }
 
     @Override
-    public Set<DishSuggestion> findByStatus(Status status)
+    public Set<DishSuggestion> findByFilter(Status status, Integer week, Integer year, Long stationId, String orderBy)
     {
-        DBValidator.validateNotNull(status, "Status");
+        String target = orderBy != null ? orderBy : "";
 
-        try(EntityManager em = emf.createEntityManager())
+        String orderColumn = switch (target)
         {
-            TypedQuery<DishSuggestion> query = em.createQuery(
-                    "SELECT d FROM DishSuggestion d WHERE d.dishStatus = :status",
-                    DishSuggestion.class)
-                .setParameter("status", status);
-
-            return new HashSet<>(query.getResultList());
-        }
-    }
-
-    public Set<DishSuggestion> findByWeekYearAndStatus(int weekNumber, int year, Status status)
-    {
-        DBValidator.validateRange(weekNumber, 1, 53, "Week number");
-        DBValidator.validateRange(year, 2000, 2100, "Year");
-        DBValidator.validateNotNull(status, "Status");
+            case "status" -> "ds.dishStatus";
+            case "station" -> "ds.station.stationName";
+            case "createdAt" -> "ds.createdAt ASC";
+            default -> "ds.targetYear ASC, ds.targetWeek";
+        };
 
         try (EntityManager em = emf.createEntityManager())
         {
-            TypedQuery<DishSuggestion> query = em.createQuery(
-                "SELECT DISTINCT d FROM DishSuggestion d WHERE d.targetWeek = :weekNumber AND d.targetYear = :year AND d.dishStatus = :status",
-                DishSuggestion.class
-            );
+            try
+            {
+                TypedQuery<DishSuggestion> query = em.createQuery(
+                        "SELECT DISTINCT ds FROM DishSuggestion ds " +
+                            "LEFT JOIN FETCH ds.allergens " +
+                            "WHERE (:status IS NULL OR ds.dishStatus  = :status) " +
+                            "AND (:week IS NULL OR ds.targetWeek  = :week) " +
+                            "AND (:year IS NULL OR ds.targetYear  = :year) " +
+                            "AND (:stationId IS NULL OR ds.station.id = :stationId) " +
+                            "ORDER BY " + orderColumn,
+                        DishSuggestion.class)
+                    .setParameter("status", status)
+                    .setParameter("week", week)
+                    .setParameter("year", year)
+                    .setParameter("stationId", stationId);
 
-            query.setParameter("weekNumber", weekNumber);
-            query.setParameter("year", year);
-            query.setParameter("status", status);
-
-            return new HashSet<>(query.getResultList());
+                return new LinkedHashSet<>(query.getResultList());
+            }
+            catch (PersistenceException e)
+            {
+                throw new DatabaseException("Failed to fetch dish suggestions", e);
+            }
         }
     }
 
     @Override
-    public Set<DishSuggestion> findByStationAndStatus(Long stationId, Status status)
-    {
-        DBValidator.validateId(stationId);
-        DBValidator.validateNotNull(status, "Status");
-
-        try(EntityManager em = emf.createEntityManager())
-        {
-            TypedQuery<DishSuggestion> query = em.createQuery(
-                    "SELECT d FROM DishSuggestion d WHERE d.station.id = :stationId AND d.dishStatus = :status",
-                    DishSuggestion.class)
-                .setParameter("stationId", stationId)
-                .setParameter("status", status);
-
-            return new HashSet<>(query.getResultList());
-        }
-    }
-
-    @Override
-    public Optional<DishSuggestion> getByIdWithAllergens(Long id)
+    public DishSuggestion getByID(Long id)
     {
         DBValidator.validateId(id);
 
@@ -85,17 +69,20 @@ public class DishSuggestionDAO implements IDishSuggestionDAO
         {
             try
             {
-                DishSuggestion dish = em.createQuery(
+                return em.createQuery(
                         "SELECT d FROM DishSuggestion d LEFT JOIN FETCH d.allergens WHERE d.id = :id",
                         DishSuggestion.class)
                     .setParameter("id", id)
                     .getSingleResult();
 
-                return Optional.of(dish);
             }
             catch (NoResultException e)
             {
-                return Optional.empty();
+                throw new EntityNotFoundException("Dish with id: " + id + " not found");
+            }
+            catch (PersistenceException e)
+            {
+                throw new DatabaseException("Failed to fetch dish by id", e);
             }
         }
     }
@@ -109,38 +96,16 @@ public class DishSuggestionDAO implements IDishSuggestionDAO
         {
             try
             {
-            em.getTransaction().begin();
-            em.persist(dishSuggestion);
-            em.getTransaction().commit();
-            return dishSuggestion;
+                em.getTransaction().begin();
+                em.persist(dishSuggestion);
+                em.getTransaction().commit();
+                return getByID(dishSuggestion.getId());
             }
             catch (PersistenceException e)
             {
                 TransactionUtil.rollback(em);
                 throw new DatabaseException("Failed to create dish suggestion", e);
             }
-        }
-    }
-
-    @Override
-    public Set<DishSuggestion> getAll()
-    {
-        try(EntityManager em = emf.createEntityManager())
-        {
-            TypedQuery<DishSuggestion> query = em.createQuery("SELECT d FROM DishSuggestion d", DishSuggestion.class);
-            return new HashSet<>(query.getResultList());
-        }
-    }
-
-    @Override
-    public DishSuggestion getByID(Long id)
-    {
-        DBValidator.validateId(id);
-
-        try(EntityManager em = emf.createEntityManager())
-        {
-            DishSuggestion dishSuggestion = em.find(DishSuggestion.class, id);
-            return DBValidator.validateExists(dishSuggestion, id, DishSuggestion.class);
         }
     }
 
@@ -159,7 +124,7 @@ public class DishSuggestionDAO implements IDishSuggestionDAO
                 DBValidator.validateExists(exist, dishSuggestion.getId(), DishSuggestion.class);
                 DishSuggestion merged = em.merge(dishSuggestion);
                 em.getTransaction().commit();
-                return merged;
+                return getByID(merged.getId());
             }
             catch (EntityNotFoundException e)
             {

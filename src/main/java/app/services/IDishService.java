@@ -2,6 +2,7 @@ package app.services;
 
 import app.dtos.dish.*;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -13,11 +14,7 @@ public interface IDishService
 
     DishDTO getById(Long dishId);
 
-    DishDTO getByIdWithAllergens(Long dishId);
-
-    Set<DishDTO> getAllActive();
-
-    Set<DishDTO> searchByName(String query);
+    List<DishDTO> searchByName(String query);
 
     boolean deleteDish(Long dishId, Long userId);
 
@@ -27,5 +24,7 @@ public interface IDishService
 
     AvailableDishesDTO getAvailableDishesForMenu(int week, int year);
 
-    Map<String, Set<DishOptionDTO>> getAllActiveDishesGrouped();
+    List<DishDTO> getAll(Long stationId, Boolean active);
+
+    Map<String, List<DishOptionDTO>> getAllActiveDishesGrouped();
 }
