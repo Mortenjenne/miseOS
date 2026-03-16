@@ -32,8 +32,8 @@ Content-Type: application/json
 X-Dev-User-Id: {{lineCookId}}
 
 {
-    "name": "Frisk Dild",
-    "quantity": 10.0,
+    "name": "Dild",
+    "quantity": 8.0,
     "unit": "BUNCH",
     "preferredSupplier": "Grønttorvet",
     "note": "Til laks",
@@ -74,7 +74,7 @@ X-Dev-User-Id: {{lineCookId}}
 }
 
 ### Approve request (without adjustments)
-PATCH {{url}}/ingredient-requests/1/approve
+PATCH {{url}}/ingredient-requests/5/approve
 X-Dev-User-Id: {{headChefId}}
 
 ### Approve request (with adjustments)
