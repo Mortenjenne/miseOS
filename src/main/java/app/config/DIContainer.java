@@ -74,7 +74,8 @@ public final class DIContainer
     @Getter
     private final IIngredientRequestController ingredientRequestController;
 
-    //private final IShoppingListController shoppingListController;
+    @Getter
+    private final IShoppingListController shoppingListController;
 
 
     private DIContainer(EntityManagerFactory emf)
@@ -118,7 +119,7 @@ public final class DIContainer
         this.dishController = new DishController(dishService);
         this.weeklyMenuController = new WeeklyMenuController(weeklyMenuService);
         this.ingredientRequestController = new IngredientRequestController(ingredientRequestService);
-//        this.shoppingListController = new ShoppingListController(shoppingListService);
+        this.shoppingListController = new ShoppingListController(shoppingListService);
     }
 
     public static DIContainer getInstance()

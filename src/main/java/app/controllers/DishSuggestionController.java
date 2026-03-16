@@ -27,8 +27,6 @@ public class DishSuggestionController implements IDishSuggestionController
         ctx.status(200).json(dishSuggestionDTO);
     }
 
-    // GET /dish-suggestions
-    // GET /dish-suggestions?status=PENDING&week=10&year=2026&stationId=2&orderBy=status
     @Override
     public void getAll(Context ctx)
     {
@@ -50,8 +48,6 @@ public class DishSuggestionController implements IDishSuggestionController
         ctx.status(200).json(suggestionDTOS);
     }
 
-    // GET /dish-suggestions/current-week
-    // GET /dish-suggestions/current-week?status=PENDING
     @Override
     public void getCurrentWeek(Context ctx)
     {

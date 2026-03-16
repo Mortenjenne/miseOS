@@ -170,12 +170,12 @@ class UserDAOTest
     }
 
     @Test
-    @DisplayName("Find - Find user by role")
+    @DisplayName("Find - Find users by role")
     void findByRole()
     {
         Set<User> cooks = userDAO.findByRole(UserRole.LINE_COOK);
 
-        assertThat(cooks, hasSize(3));
+        assertThat(cooks, hasSize(2));
         cooks.forEach(u -> assertThat(u.getUserRole(), is(UserRole.LINE_COOK)));
     }
 

@@ -1,0 +1,91 @@
+### Variables
+@headChefId = 1
+@lineCookId = 3
+
+### Get all shopping lists
+GET {{url}}/shopping-lists
+X-Dev-User-Id: {{headChefId}}
+
+### Get by status DRAFT
+GET {{url}}/shopping-lists?status=DRAFT
+X-Dev-User-Id: {{headChefId}}
+
+### Get by status FINALIZED
+GET {{url}}/shopping-lists?status=FINALIZED
+X-Dev-User-Id: {{headChefId}}
+
+### Get by delivery date
+GET {{url}}/shopping-lists?deliveryDate=2026-03-20
+X-Dev-User-Id: {{headChefId}}
+
+### Get by status and delivery date
+GET {{url}}/shopping-lists?status=DRAFT&deliveryDate=2026-03-20
+X-Dev-User-Id: {{headChefId}}
+
+### Get shopping list by id
+GET {{url}}/shopping-lists/1
+X-Dev-User-Id: {{headChefId}}
+
+### Generate shopping list from approved requests
+POST {{url}}/shopping-lists
+Content-Type: application/json
+X-Dev-User-Id: {{headChefId}}
+
+{
+    "deliveryDate": "2026-03-20",
+    "targetLanguage": "DA"
+}
+
+### Update delivery date
+PATCH {{url}}/shopping-lists/1/delivery-date
+Content-Type: application/json
+X-Dev-User-Id: {{headChefId}}
+
+{
+    "deliveryDate": "2026-03-25"
+}
+
+### Add item manually
+POST {{url}}/shopping-lists/1/items
+Content-Type: application/json
+X-Dev-User-Id: {{headChefId}}
+
+{
+    "ingredientName": "Smør",
+    "quantity": 5.0,
+    "unit": "KG",
+    "supplier": "Arla"
+}
+
+### Update item
+PUT {{url}}/shopping-lists/1/items/1
+Content-Type: application/json
+X-Dev-User-Id: {{headChefId}}
+
+{
+    "quantity": 10.0,
+    "unit": "KG",
+    "supplier": "Lurpak"
+}
+
+### Mark single item as ordered
+PATCH {{url}}/shopping-lists/1/items/1/ordered
+X-Dev-User-Id: {{headChefId}}
+
+### Mark all items as ordered
+PATCH {{url}}/shopping-lists/1/items/ordered
+X-Dev-User-Id: {{headChefId}}
+
+### Remove item
+DELETE {{url}}/shopping-lists/1/items/1
+X-Dev-User-Id: {{headChefId}}
+
+### Finalize shopping list
+POST {{url}}/shopping-lists/1/finalize
+X-Dev-User-Id: {{headChefId}}
+
+### Delete shopping list
+DELETE {{url}}/shopping-lists/1
+X-Dev-User-Id: {{headChefId}}
+
+###

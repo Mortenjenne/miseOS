@@ -62,7 +62,7 @@ GET {{url}}/dish-suggestions/current-week?status=PENDING
 ### GET current week - APPROVED only
 GET {{url}}/dish-suggestions/current-week?status=APPROVED
 
-### POST create suggestion
+### POST create suggestion (Salmon)
 POST {{url}}/dish-suggestions/
 Content-Type: application/json
 

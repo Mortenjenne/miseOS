@@ -1,5 +1,6 @@
 package app.enums;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 
 import java.util.Arrays;
@@ -28,6 +29,7 @@ public enum SupportedLanguage
         this.displayName = displayName;
     }
 
+    @JsonCreator
     public static SupportedLanguage fromCode(String code)
     {
         if (code == null || code.isBlank())

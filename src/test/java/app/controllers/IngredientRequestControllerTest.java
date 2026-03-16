@@ -26,7 +26,7 @@ import static org.hamcrest.Matchers.*;
 class IngredientRequestControllerTest
 {
     private static final String ENDPOINT_URL = "/ingredient-requests";
-    private static final int TEST_PORT = 7777;
+    private static final int TEST_PORT = 7778;
     private static final String USER_HEADER = "X-Dev-User-Id";
 
     private static EntityManagerFactory emf;

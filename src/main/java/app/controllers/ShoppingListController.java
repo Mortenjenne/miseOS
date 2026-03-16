@@ -75,7 +75,6 @@ public class ShoppingListController implements IShoppingListController
 
         List<ShoppingListDTO> shoppingLists = shoppingListService.getShoppingLists(userId, status, deliveryDate);
         ctx.status(200).json(shoppingLists);
-
     }
 
     @Override

@@ -72,7 +72,7 @@ class ShoppingListDAOTest
     @DisplayName("Get by ID - should retrieve list and its items")
     void getByID()
     {
-        ShoppingList seed = (ShoppingList) seeded.get("shopping_list_1");
+        ShoppingList seed = (ShoppingList) seeded.get("shopping_list_draft");
 
         ShoppingList fetched = shoppingListDAO.getByID(seed.getId());
 
@@ -92,7 +92,7 @@ class ShoppingListDAOTest
     @DisplayName("Update - should change status and save")
     void update()
     {
-        ShoppingList seed = (ShoppingList) seeded.get("shopping_list_1");
+        ShoppingList seed = (ShoppingList) seeded.get("shopping_list_draft");
 
         seed.getShoppingListItems().forEach(ShoppingListItem::markAsOrdered);
         seed.finalizeShoppingList();
@@ -107,7 +107,7 @@ class ShoppingListDAOTest
     @DisplayName("Update - should throw ConflictException when finalizing with unordered items")
     void finalizeWithUnorderedItemsThrows()
     {
-        ShoppingList seed = (ShoppingList) seeded.get("shopping_list_1");
+        ShoppingList seed = (ShoppingList) seeded.get("shopping_list_draft");
 
         assertThrows(ConflictException.class, seed::finalizeShoppingList);
     }
@@ -126,7 +126,7 @@ class ShoppingListDAOTest
     @DisplayName("Delete - should remove list and cascade to items")
     void delete()
     {
-        ShoppingList seed = (ShoppingList) seeded.get("shopping_list_1");
+        ShoppingList seed = (ShoppingList) seeded.get("shopping_list_draft");
         Long id = seed.getId();
 
         boolean deleted = shoppingListDAO.delete(id);
@@ -183,7 +183,7 @@ class ShoppingListDAOTest
     @DisplayName("Find by delivery date - should return correct list")
     void findByDeliveryDate()
     {
-        ShoppingList seed = (ShoppingList) seeded.get("shopping_list_1");
+        ShoppingList seed = (ShoppingList) seeded.get("shopping_list_draft");
 
         Optional<ShoppingList> list = shoppingListDAO.findByDeliveryDate(seed.getDeliveryDate());
 
@@ -203,7 +203,7 @@ class ShoppingListDAOTest
     @DisplayName("Find by filter - filter by delivery date returns correct list")
     void findByDeliveryDateFilter()
     {
-        ShoppingList seed = (ShoppingList) seeded.get("shopping_list_1");
+        ShoppingList seed = (ShoppingList) seeded.get("shopping_list_draft");
 
         List<ShoppingList> result = shoppingListDAO.findByFilter(null, seed.getDeliveryDate());
 
@@ -215,7 +215,7 @@ class ShoppingListDAOTest
     @DisplayName("Find by filter - status FINALIZED returns finalized seed")
     void findByFinalizedStatusReturnsEmpty()
     {
-        ShoppingList seed = (ShoppingList) seeded.get("shopping_list_1");
+        ShoppingList seed = (ShoppingList) seeded.get("shopping_list_draft");
 
         seed.getShoppingListItems().forEach(ShoppingListItem::markAsOrdered);
         seed.finalizeShoppingList();
@@ -224,14 +224,14 @@ class ShoppingListDAOTest
 
         List<ShoppingList> result = shoppingListDAO.findByFilter(ShoppingListStatus.FINALIZED, null);
 
-        assertThat(result, hasSize(1));
+        assertThat(result, hasSize(2));
     }
 
     @Test
     @DisplayName("Find by filter - combined status and date returns match")
     void findByStatusAndDate()
     {
-        ShoppingList seed = (ShoppingList) seeded.get("shopping_list_1");
+        ShoppingList seed = (ShoppingList) seeded.get("shopping_list_draft");
 
         List<ShoppingList> result = shoppingListDAO.findByFilter(ShoppingListStatus.DRAFT, seed.getDeliveryDate());
 
@@ -250,7 +250,7 @@ class ShoppingListDAOTest
     @DisplayName("Cascade - should persist new item added to existing list")
     void cascadeAddItem()
     {
-        ShoppingList seed = (ShoppingList) seeded.get("shopping_list_1");
+        ShoppingList seed = (ShoppingList) seeded.get("shopping_list_draft");
         int originalSize = seed.getShoppingListItems().size();
 
         ShoppingListItem newItem = new ShoppingListItem("Sukker", 5, Unit.KG, "Danisco", "Rørsukker");
@@ -270,7 +270,7 @@ class ShoppingListDAOTest
     @DisplayName("Cascade - should remove item via orphanRemoval")
     void cascadeRemoveItem()
     {
-        ShoppingList seed = (ShoppingList) seeded.get("shopping_list_1");
+        ShoppingList seed = (ShoppingList) seeded.get("shopping_list_draft");
         Long listId = seed.getId();
 
         ShoppingList managedList = shoppingListDAO.getByID(listId);

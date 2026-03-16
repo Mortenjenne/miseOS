@@ -81,7 +81,7 @@ public class TestPopulator
     {
         User u1 = new User("Gordon", "Ramsay", "gordon@kitchen.com", "hash1", UserRole.HEAD_CHEF);
         User u2 = new User("Claire", "Smyth", "claire@pastry.com", "hash2", UserRole.LINE_COOK);
-        User u3 = new User("Marco", "Pierre", "marco@grill.com", "hash3", UserRole.LINE_COOK);
+        User u3 = new User("Marco", "Pierre", "marco@grill.com", "hash3", UserRole.SOUS_CHEF);
         User u4 = new User("Rene", "Redzepi", "rene@cold.com", "hash4", UserRole.LINE_COOK);
 
         Station cold = (Station) seeded.get("station_cold");
@@ -401,41 +401,32 @@ public class TestPopulator
     {
         User headChef = (User) seeded.get("user_gordon");
         User lineCook = (User) seeded.get("user_claire");
-
         LocalDate deliveryDate = LocalDate.now().plusDays(7);
 
-        Object[][] rawData = {
-            {"onions", 5.0, Unit.KG, "Løg til sauce"},
-            {"løg", 2.0, Unit.KG, "Garniture"},
-            {"rødløg", 1.5, Unit.KG, "Salat"},
-            {"red onion", 1.0, Unit.KG, "Burger"},
-            {"hvidløch", 10.0, Unit.PCS, "Massevis af hvidløg"},
-            {"garlic", 5.0, Unit.PCS, "Mere hvidløg"},
-            {"potatoes", 20.0, Unit.KG, "Mos"},
-            {"nye kartofler", 5.0, Unit.KG, "Side dish"}
-        };
+        List<IngredientRequest> requests = List.of(
+            new IngredientRequest("onions", 5.0, Unit.KG, "Inco", "Løg til sauce", RequestType.GENERAL_STOCK, deliveryDate, null, lineCook),
+            new IngredientRequest("onio", 7.0, Unit.KG, "Inco", "Løg til sauce", RequestType.GENERAL_STOCK, deliveryDate, null, lineCook),
+            new IngredientRequest("løg", 2.0, Unit.KG, "Inco", "Garniture", RequestType.GENERAL_STOCK, deliveryDate, null, lineCook),
+            new IngredientRequest("rødløg", 1.5, Unit.KG, "Inco", "Salat", RequestType.GENERAL_STOCK, deliveryDate, null, lineCook),
+            new IngredientRequest("red onion", 1.0, Unit.KG, "Inco", "Burger", RequestType.GENERAL_STOCK, deliveryDate, null, lineCook),
+            new IngredientRequest("hvidløg", 10.0, Unit.PCS, "Inco", "Massevis af hvidløg", RequestType.GENERAL_STOCK, deliveryDate, null, lineCook),
+            new IngredientRequest("hvidløch", 10.0, Unit.PCS, "Inco", "Massevis af hvidløg", RequestType.GENERAL_STOCK, deliveryDate, null, lineCook),
+            new IngredientRequest("garlic", 5.0, Unit.PCS, "Inco", "Mere hvidløg", RequestType.GENERAL_STOCK, deliveryDate, null, lineCook),
+            new IngredientRequest("potatoes", 20.0, Unit.KG, "Inco", "Mos", RequestType.GENERAL_STOCK, deliveryDate, null, lineCook),
+            new IngredientRequest("nye kartofler", 5.0, Unit.KG, "Inco", "Side dish", RequestType.GENERAL_STOCK, deliveryDate, null, lineCook),
+            new IngredientRequest("heavy cream", 2.0,  Unit.L,"Inco", "Sauce", RequestType.GENERAL_STOCK, deliveryDate, null, lineCook),
+            new IngredientRequest("fløde 38%",1.0,  Unit.L, "Inco", "Dessert", RequestType.GENERAL_STOCK, deliveryDate, null, lineCook),
+            new IngredientRequest("mælk",3.0,  Unit.L, "Inco", "Bechamel", RequestType.GENERAL_STOCK, deliveryDate, null, lineCook),
+            new IngredientRequest("butter", 1.0,  Unit.KG, "Arla", "Sauce",RequestType.GENERAL_STOCK, deliveryDate, null, lineCook),
+            new IngredientRequest("smør", 2.0,  Unit.KG,"Arla", "Bagning",RequestType.GENERAL_STOCK, deliveryDate, null, lineCook),
+            new IngredientRequest("beurre", 0.5,  Unit.KG,"Arla", "Fransk sauce", RequestType.GENERAL_STOCK, deliveryDate, null, lineCook)
+        );
 
-        for (Object[] row : rawData) {
-            String name = (String) row[0];
-            double quantity = (Double) row[1];
-            Unit unit = (Unit) row[2];
-            String note = (String) row[3];
-
-            IngredientRequest req = new IngredientRequest(
-                name,
-                quantity,
-                unit,
-                "Inco",
-                note,
-                RequestType.GENERAL_STOCK,
-                deliveryDate,
-                null,
-                lineCook
-            );
-
+        requests.forEach(req ->
+        {
             req.approve(headChef);
             ingredientRequestDAO.create(req);
-        }
+        });
     }
 
     private void populateWeeklyMenus()
@@ -506,17 +497,22 @@ public class TestPopulator
     private void populateShoppingLists()
     {
         User claire = (User) seeded.get("user_claire");
+        User gordon = (User) seeded.get("user_gordon");
 
         ShoppingList list1 = new ShoppingList(LocalDate.now().plusDays(3), claire);
-
         ShoppingListItem item1 = new ShoppingListItem("Frisk Dild", 15.0, Unit.BUNCH, "Grønttorvet", "Til fiskefrikadeller og garniture");
         ShoppingListItem item2 = new ShoppingListItem("Laks", 5.0, Unit.SIDES, "Hvide Sande Fiskehus", "Til rygning");
-
         list1.addItem(item1);
         list1.addItem(item2);
-
         shoppingListDAO.create(list1);
+        seeded.put("shopping_list_draft", list1);
 
-        seeded.put("shopping_list_1", list1);
+        ShoppingList list2 = new ShoppingList(LocalDate.now().plusDays(6), gordon);
+        ShoppingListItem item3 = new ShoppingListItem("Smør", 10.0, Unit.KG, "Arla", "Usaltet");
+        list2.addItem(item3);
+        item3.markAsOrdered();
+        list2.finalizeShoppingList();
+        shoppingListDAO.create(list2);
+        seeded.put("shopping_list_finalized", list2);
     }
 }
