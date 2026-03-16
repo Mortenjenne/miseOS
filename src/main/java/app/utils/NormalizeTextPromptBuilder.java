@@ -4,7 +4,7 @@ public class NormalizeTextPromptBuilder
 {
     private NormalizeTextPromptBuilder(){}
 
-    public static String buildNormalizeTextPrompt(String ingredientsJson, String languageName) throws Exception
+    public static String buildNormalizeTextPrompt(String ingredientsJson, String languageName)
     {
         return String.format(
             """

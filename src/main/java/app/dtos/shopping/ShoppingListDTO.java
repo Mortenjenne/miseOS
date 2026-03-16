@@ -2,7 +2,6 @@ package app.dtos.shopping;
 
 import app.dtos.user.UserReferenceDTO;
 import app.enums.ShoppingListStatus;
-import app.enums.Status;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.time.LocalDate;
