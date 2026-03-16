@@ -1,9 +1,14 @@
 package app.services;
 
 import app.dtos.dish.DishTranslationDTO;
-import app.persistence.entities.DishSuggestion;
+import app.persistence.entities.Dish;
+
+import java.util.Map;
+import java.util.Set;
 
 public interface IDishTranslationService
 {
-    DishTranslationDTO translateTo(DishSuggestion dish, String targetLanguage);
+    DishTranslationDTO translateDish(Dish dish, String targetLanguage);
+
+    Map<Long, DishTranslationDTO> translateDishes(Set<Dish> dishes, String targetLanguage);
 }

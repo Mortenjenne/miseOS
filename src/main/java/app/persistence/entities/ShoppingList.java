@@ -1,7 +1,10 @@
 package app.persistence.entities;
 
 import app.enums.ShoppingListStatus;
+import app.exceptions.ConflictException;
+import app.exceptions.UnauthorizedActionException;
 import app.exceptions.ValidationException;
+import app.utils.ValidationUtil;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,11 +25,9 @@ public class ShoppingList implements IEntity
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Setter
     @Column(name = "delivery_date")
     private LocalDate deliveryDate;
 
-    @Setter
     @Column(name = "shopping_list_status", nullable = false)
     private ShoppingListStatus shoppingListStatus;
 
@@ -46,8 +47,8 @@ public class ShoppingList implements IEntity
 
     public ShoppingList(LocalDate deliveryDate, User createdBy)
     {
-        requireNotNull(deliveryDate, "Delivery date");
-        requireNotNull(createdBy, "Created by user");
+        ValidationUtil.validateNotNull(deliveryDate, "Delivery date");
+        ValidationUtil.validateNotNull(createdBy, "Created by user");
 
         this.deliveryDate = deliveryDate;
         this.createdBy = createdBy;
@@ -56,8 +57,8 @@ public class ShoppingList implements IEntity
 
     public void addItem(ShoppingListItem shoppingListItem)
     {
-        requireNotNull(shoppingListItem, "Shopping list item");
-        requireDraft("add items");
+        ValidationUtil.validateNotNull(shoppingListItem, "Shopping list item");
+        ensureDraft("add items");
 
         shoppingListItems.add(shoppingListItem);
         shoppingListItem.setShoppingList(this);
@@ -66,8 +67,8 @@ public class ShoppingList implements IEntity
 
     public void removeItem(ShoppingListItem shoppingListItem)
     {
-        requireNotNull(shoppingListItem, "Shopping list item");
-        requireDraft("remove items");
+        ValidationUtil.validateNotNull(shoppingListItem, "Shopping list item");
+        ensureDraft("remove items");
 
         shoppingListItems.remove(shoppingListItem);
         shoppingListItem.setShoppingList(null);
@@ -76,7 +77,12 @@ public class ShoppingList implements IEntity
 
     public void finalizeShoppingList()
     {
-        requireDraft("finalize");
+        ensureDraft("finalize");
+
+        if (!allItemsOrdered())
+        {
+            throw new ConflictException("Cannot finalize — not all items have been ordered");
+        }
 
         this.shoppingListStatus = ShoppingListStatus.FINALIZED;
         this.finalizedAt = LocalDateTime.now();
@@ -84,10 +90,23 @@ public class ShoppingList implements IEntity
 
     public void updateDeliveryDate(LocalDate newDate)
     {
-        requireNotNull(newDate, "Delivery date");
-        requireDraft("update delivery date");
+        ValidationUtil.validateNotNull(newDate, "Delivery date");
+        ensureDraft("update delivery date");
 
         this.deliveryDate = newDate;
+    }
+
+    public void delete(User user)
+    {
+        if (!user.isHeadChef() && !user.isSousChef())
+        {
+            throw new UnauthorizedActionException("Only head or sous chef can delete shopping lists");
+        }
+
+        if (isFinalized())
+        {
+            throw new ConflictException("Cannot delete a finalized shopping list");
+        }
     }
 
     @PrePersist
@@ -120,19 +139,11 @@ public class ShoppingList implements IEntity
         return shoppingListItems.stream().allMatch(ShoppingListItem::isOrdered);
     }
 
-    private void requireNotNull(Object value, String fieldName)
-    {
-        if (value == null)
-        {
-            throw new ValidationException(fieldName + " is required");
-        }
-    }
-
-    private void requireDraft(String action)
+    private void ensureDraft(String action)
     {
         if (this.shoppingListStatus != ShoppingListStatus.DRAFT)
         {
-            throw new ValidationException("Cannot " + action + " - list is " + shoppingListStatus);
+            throw new ConflictException("Cannot " + action + " - list is " + shoppingListStatus);
         }
     }
 

@@ -1,0 +1,77 @@
+### Variables
+@headChefId = 1
+
+### Get all dishes
+GET {{url}}/dishes
+
+### Get all active dishes
+GET {{url}}/dishes?active=true
+
+### Get all inactive dishes
+GET {{url}}/dishes?active=false
+
+### Get dishes by station
+GET {{url}}/dishes?stationId=1
+
+### Get active dishes for station
+GET {{url}}/dishes?stationId=1&active=true
+
+### Get dish by id — check station shape in response
+GET {{url}}/dishes/1
+
+### Search by name
+GET {{url}}/dishes/search?query=laks
+
+### Get dishes grouped by station
+GET {{url}}/dishes/grouped
+
+### Get available dishes for week 7 2026
+GET {{url}}/dishes/available?week=7&year=2026
+
+### Create dish
+POST {{url}}/dishes
+Content-Type: application/json
+X-Dev-User-Id: {{headChefId}}
+
+{
+    "nameDA": "Røget Laks",
+    "descriptionDA": "Laks med dildcreme og rugbrødschips",
+    "stationId": 1,
+    "allergenIds": [1, 2]
+}
+
+### Update dish — bilingual language
+PUT {{url}}/dishes/1
+Content-Type: application/json
+X-Dev-User-Id: {{headChefId}}
+
+{
+    "nameDA": "Opdateret Laks",
+    "descriptionDA": "Opdateret beskrivelse",
+    "nameEN": "Updated Salmon",
+    "descriptionEN": "Updated description",
+    "allergenIds": [1]
+}
+
+### Update dish — remove all allergens
+PUT {{url}}/dishes/1
+Content-Type: application/json
+X-Dev-User-Id: {{headChefId}}
+
+{
+    "nameDA": "Opdateret Laks",
+    "descriptionDA": "Opdateret beskrivelse",
+    "allergenIds": []
+}
+
+### Activate dish e
+PATCH {{url}}/dishes/1/activate
+X-Dev-User-Id: {{headChefId}}
+
+### Deactivate dish
+PATCH {{url}}/dishes/1/deactivate
+X-Dev-User-Id: {{headChefId}}
+
+### Delete dish — expect 204
+DELETE {{url}}/dishes/2
+X-Dev-User-Id: {{headChefId}}

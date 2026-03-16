@@ -1,30 +1,29 @@
 package app.services;
 
+import app.dtos.ingredient.ApproveIngredientRequestDTO;
 import app.dtos.ingredient.CreateIngredientRequestDTO;
 import app.dtos.ingredient.IngredientRequestDTO;
+import app.dtos.ingredient.UpdateIngredientRequestDTO;
+import app.enums.RequestType;
 import app.enums.Status;
-import app.persistence.entities.User;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 
 public interface IIngredientRequestService
 {
-    IngredientRequestDTO createRequest(User creator, CreateIngredientRequestDTO requestDTO);
+    IngredientRequestDTO createIngredientRequest(Long creatorId, CreateIngredientRequestDTO requestDTO);
 
-    IngredientRequestDTO approveIngredientRequest(User headChef, Long ingredientRequestId);
+    IngredientRequestDTO approveIngredientRequest(Long requesterId, Long ingredientRequestId, ApproveIngredientRequestDTO approveDTO);
 
-    IngredientRequestDTO rejectIngredientRequest(User headChef, Long requestId);
+    IngredientRequestDTO rejectIngredientRequest(Long requesterId, Long requestId);
 
-    Set<IngredientRequestDTO> getAllPendingRequests();
+    List<IngredientRequestDTO> getRequests(Long requesterId, Status status, LocalDate deliveryDate, RequestType requestType, Long stationId);
 
-    Set<IngredientRequestDTO> getRequestByStatus(Status status);
+    IngredientRequestDTO getById(Long requesterId, Long id);
 
-    Set<IngredientRequestDTO> getRequestByStatusAndDate(Status status, LocalDate deliveryDate);
+    IngredientRequestDTO updateRequest(Long editorId, Long ingredientRequestId, UpdateIngredientRequestDTO dto);
 
-    IngredientRequestDTO getById(Long id);
-
-    IngredientRequestDTO updateRequest(User creator, IngredientRequestDTO requestDTO);
-
-    boolean deleteRequest(Long id, User headChef);
+    boolean deleteRequest(Long requesterId, Long ingredientRequestId);
 }

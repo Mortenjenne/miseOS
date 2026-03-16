@@ -1,0 +1,70 @@
+### Variables
+@headChefId = 1
+
+### Create weekly menu (draft)
+POST {{url}}/weekly-menus
+Content-Type: application/json
+X-Dev-User-Id: {{headChefId}}
+
+{
+    "week": 12,
+    "year": 2026
+}
+
+### Get menu by id
+GET {{url}}/weekly-menus/1
+
+### Get menu by week and year
+GET {{url}}/weekly-menus/by-week?week=12&year=2026
+X-Dev-User-Id: {{headChefId}}
+
+### Get menu overview list
+GET {{url}}/weekly-menus
+X-Dev-User-Id: {{headChefId}}
+
+### Get filtered menu overviews
+GET {{url}}/weekly-menus?status=DRAFT&year=2026&week=12
+X-Dev-User-Id: {{headChefId}}
+
+### Translate one slot
+POST {{url}}/weekly-menus/1/slots/1/translate
+X-Dev-User-Id: {{headChefId}}
+
+### Translate whole menu
+POST {{url}}/weekly-menus/1/translate
+X-Dev-User-Id: {{headChefId}}
+
+### Add slot to draft menu
+POST {{url}}/weekly-menus/1/slots
+Content-Type: application/json
+X-Dev-User-Id: {{headChefId}}
+
+{
+    "dayOfWeek": "FRIDAY",
+    "stationId": 1,
+    "dishId": 1
+}
+
+### Update slot dish
+PUT {{url}}/weekly-menus/4/slots/12
+Content-Type: application/json
+X-Dev-User-Id: {{headChefId}}
+
+{
+    "dishId": 1
+}
+
+### Remove slot from menu
+DELETE {{url}}/weekly-menus/4/slots/12
+X-Dev-User-Id: {{headChefId}}
+
+### Publish menu
+POST {{url}}/weekly-menus/1/publish
+X-Dev-User-Id: {{headChefId}}
+
+### Get current week published menu
+GET {{url}}/weekly-menus/current
+
+### Delete draft menu
+DELETE {{url}}/weekly-menus/2
+X-Dev-User-Id: {{headChefId}}

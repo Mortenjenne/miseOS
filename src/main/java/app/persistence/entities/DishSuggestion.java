@@ -30,16 +30,8 @@ public class DishSuggestion implements IEntity
     private String nameDA;
 
     @Setter
-    @Column(name = "name_en")
-    private String nameEN;
-
-    @Setter
     @Column(name = "description_da", nullable = false)
     private String descriptionDA;
-
-    @Setter
-    @Column(name = "description_en")
-    private String descriptionEN;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "dish_status", nullable = false)
@@ -50,11 +42,11 @@ public class DishSuggestion implements IEntity
     private String feedback;
 
     @Setter
-    @Column(name = "target_year")
+    @Column(name = "target_year", nullable = false)
     private Integer targetYear;
 
     @Setter
-    @Column(name = "target_week")
+    @Column(name = "target_week", nullable = false)
     private Integer targetWeek;
 
     @ManyToOne
@@ -62,7 +54,7 @@ public class DishSuggestion implements IEntity
     private Station station;
 
     @ManyToOne
-    @JoinColumn(name = "created_by_user_id")
+    @JoinColumn(name = "created_by_user_id", nullable = false)
     private User createdBy;
 
     @ManyToOne
@@ -70,7 +62,7 @@ public class DishSuggestion implements IEntity
     private User reviewedBy;
 
     @ManyToMany
-    @JoinTable(name = "dish_allergen", joinColumns = @JoinColumn(name = "dish_suggestion_id"), inverseJoinColumns = @JoinColumn(name = "allergen_id"))
+    @JoinTable(name = "dish_suggestion_allergen", joinColumns = @JoinColumn(name = "dish_suggestion_id"), inverseJoinColumns = @JoinColumn(name = "allergen_id"))
     private Set<Allergen> allergens = new HashSet<>();
 
     @Column(name = "reviewed_at")
@@ -98,19 +90,14 @@ public class DishSuggestion implements IEntity
         this.dishStatus = Status.PENDING;
     }
 
-    public void updateContent(String newNameDA, String newNameEN, String newDescriptionDA, String newDescriptionEN, Set<Allergen> newAllergens, User editor)
+    public void updateContent(String newNameDA, String newDescriptionDA, Set<Allergen> newAllergens)
     {
-        if (newNameDA != null && !newNameDA.isBlank())
-        {
-            this.nameDA = newNameDA.trim();
-        }
-        if (newDescriptionDA != null && !newDescriptionDA.isBlank())
-        {
-            this.descriptionDA = newDescriptionDA.trim();
-        }
+        ensurePending();
+        ValidationUtil.validateNotBlank(newNameDA, "Name");
+        ValidationUtil.validateNotBlank(newDescriptionDA, "Description");
 
-        this.nameEN = newNameEN != null ? newNameEN.trim() : this.nameEN;
-        this.descriptionEN = newDescriptionEN != null ? newDescriptionEN.trim() : this.descriptionEN;
+        this.nameDA = newNameDA.trim();
+        this.descriptionDA = newDescriptionDA.trim();
 
         if (newAllergens != null)
         {
@@ -119,17 +106,11 @@ public class DishSuggestion implements IEntity
         }
     }
 
-    public String getName(String language)
-    {
-        return "da".equalsIgnoreCase(language) ? nameDA : nameEN;
-    }
-
-    public String getDescription(String language) {return "da".equalsIgnoreCase(language) ? descriptionDA : descriptionEN;}
-
     public void approve(User approver)
     {
         validateApprover(approver);
         ensurePending();
+
         this.dishStatus = Status.APPROVED;
         this.reviewedBy = approver;
         this.reviewedAt = LocalDateTime.now();
@@ -139,6 +120,7 @@ public class DishSuggestion implements IEntity
     {
         validateApprover(approver);
         ensurePending();
+
         this.dishStatus = Status.REJECTED;
         this.reviewedBy = approver;
         this.reviewedAt = LocalDateTime.now();
@@ -153,25 +135,14 @@ public class DishSuggestion implements IEntity
         }
     }
 
-    public void removeAllergen(Allergen allergen)
+    public boolean isPending()
     {
-        if(allergen != null)
-        {
-            this.allergens.remove(allergen);
-        }
-
+        return this.dishStatus == Status.PENDING;
     }
 
-    public LocalDate getDeadlineDate()
+    public boolean isApproved()
     {
-        ValidationUtil.validateNotNull(targetWeek, "Target week");
-        ValidationUtil.validateNotNull(targetYear, "Target year");
-
-        LocalDate targetMonday = LocalDate.of(targetYear, 1, 1)
-            .with(WeekFields.ISO.weekOfYear(), targetWeek)
-            .with(WeekFields.ISO.dayOfWeek(), 1);
-
-        return targetMonday.minusDays(4);
+        return this.dishStatus == Status.APPROVED;
     }
 
     public void checkCreationAllowed(LocalDate today)
@@ -187,6 +158,26 @@ public class DishSuggestion implements IEntity
         LocalDate deadline = getDeadlineDate();
 
         return !today.isBefore(deadline);
+    }
+
+    public void removeAllergen(Allergen allergen)
+    {
+        if(allergen != null)
+        {
+            this.allergens.remove(allergen);
+        }
+    }
+
+    public LocalDate getDeadlineDate()
+    {
+        ValidationUtil.validateNotNull(targetWeek, "Target week");
+        ValidationUtil.validateNotNull(targetYear, "Target year");
+
+        LocalDate targetMonday = LocalDate.of(targetYear, 1, 1)
+            .with(WeekFields.ISO.weekOfYear(), targetWeek)
+            .with(WeekFields.ISO.dayOfWeek(), 1);
+
+        return targetMonday.minusDays(4);
     }
 
     @PrePersist

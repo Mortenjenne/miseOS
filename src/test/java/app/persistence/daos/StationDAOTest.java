@@ -1,6 +1,7 @@
 package app.persistence.daos;
 
 import app.config.HibernateTestConfig;
+import app.persistence.daos.impl.StationDAO;
 import app.persistence.entities.IEntity;
 import app.persistence.entities.Station;
 import app.testutils.TestCleanDB;
@@ -73,12 +74,13 @@ class StationDAOTest
     {
         Set<Station> stations = stationDAO.getAll();
 
-        assertThat(stations, hasSize(4));
+        assertThat(stations, hasSize(5));
         assertThat(stations, containsInAnyOrder(
             seeded.get("station_cold"),
             seeded.get("station_hot"),
             seeded.get("station_pastry"),
-            seeded.get("station_grill")
+            seeded.get("station_grill"),
+            seeded.get("station_salad")
         ));
     }
 
@@ -110,11 +112,13 @@ class StationDAOTest
     void update()
     {
         Station seed = (Station) seeded.get("station_cold");
-        seed.setStationName("Super Cold Kitchen");
-        seed.setDescription("Updated description");
+
+        seed.update(
+            "Super Cold Kitchen",
+            "Updated description"
+        );
 
         Station updated = stationDAO.update(seed);
-
 
         assertThat(updated.getId(), is(seed.getId()));
         assertThat(updated.getStationName(), is("Super Cold Kitchen"));
@@ -127,7 +131,7 @@ class StationDAOTest
     @Test
     void delete()
     {
-        Station seed = (Station) seeded.get("station_pastry");
+        Station seed = (Station) seeded.get("station_salad");
         Long id = seed.getId();
 
         boolean isDeleted = stationDAO.delete(id);

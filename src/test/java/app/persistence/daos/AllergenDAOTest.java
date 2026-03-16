@@ -1,6 +1,8 @@
 package app.persistence.daos;
 
 import app.config.HibernateTestConfig;
+import app.exceptions.DatabaseException;
+import app.persistence.daos.impl.AllergenDAO;
 import app.persistence.entities.Allergen;
 import app.persistence.entities.IEntity;
 import app.testutils.TestCleanDB;
@@ -40,11 +42,22 @@ class AllergenDAOTest
     @DisplayName("Create - should persist a new allergen")
     void create()
     {
-        Allergen newAllergen = new Allergen("Peanuts", "Peanuts and products thereof", 2);
-        Allergen result = allergenDAO.create(newAllergen);
+        Allergen garlic = new Allergen("Hvidløg", "Garlic", "Hvidløg og produkter heraf", "Garlic and products thereof", 15);
+        Allergen result = allergenDAO.create(garlic);
 
         assertThat(result.getId(), notNullValue());
-        assertThat(result.getName(), is("Peanuts"));
+        assertThat(result.getNameDA(), is("Hvidløg"));
+        assertThat(result.getNameEN(), is("Garlic"));
+        assertThat(result.getDisplayNumber(), is(15));
+    }
+
+    @Test
+    @DisplayName("Create - should trow exception when trying to create existing")
+    void createThrowsException()
+    {
+        Allergen newAllergen = new Allergen("Peanuts", "Peanuts", "Peanuts og produkter heraf", "Peanuts and products thereof", 5);
+
+        assertThrows(DatabaseException.class, () -> allergenDAO.create(newAllergen));
     }
 
     @Test
@@ -70,7 +83,7 @@ class AllergenDAOTest
         Allergen fetched = allergenDAO.getByID(seed.getId());
 
         assertThat(fetched.getId(), is(seed.getId()));
-        assertThat(fetched.getName(), is(seed.getName()));
+        assertThat(fetched.getNameDA(), is(seed.getNameDA()));
     }
 
     @Test
@@ -91,15 +104,22 @@ class AllergenDAOTest
     @DisplayName("Update - should change name of existing allergen")
     void update()
     {
-        Allergen seed = (Allergen) seeded.get("allergen_dairy");
-        seed.setName("Laktose (Mælk)");
+        Allergen seed = (Allergen) seeded.get("allergen_milk");
+
+        seed.update(
+            "Laktose (Mælk)",
+            seed.getNameEN(),
+            seed.getDescriptionDA(),
+            seed.getDescriptionEN(),
+            seed.getDisplayNumber()
+        );
 
         Allergen updated = allergenDAO.update(seed);
 
-        assertThat(updated.getName(), is("Laktose (Mælk)"));
+        assertThat(updated.getNameDA(), is("Laktose (Mælk)"));
 
         Allergen fetched = allergenDAO.getByID(seed.getId());
-        assertThat(fetched.getName(), is("Laktose (Mælk)"));
+        assertThat(fetched.getNameDA(), is("Laktose (Mælk)"));
     }
 
     @Test
@@ -108,7 +128,7 @@ class AllergenDAOTest
     {
         assertThrows(IllegalArgumentException.class, () -> allergenDAO.update(null));
 
-        Allergen transientAllergen = new Allergen("Shellfish", "Fish and products thereof", 4);
+        Allergen transientAllergen = new Allergen("Hvidløg", "Garlic", "Hvidløg og løg af samme type", "Garlic and products thereof", 4);
         assertThrows(IllegalArgumentException.class, () -> allergenDAO.update(transientAllergen));
     }
 
@@ -136,17 +156,17 @@ class AllergenDAOTest
     @DisplayName("Find by Name - should return allergen when name matches")
     void findByName()
     {
-        Optional<Allergen> result = allergenDAO.findByName("Gluten");
+        Optional<Allergen> result = allergenDAO.findByNameDA("Gluten");
 
         assertTrue(result.isPresent());
-        assertThat(result.get().getName(), is("Gluten"));
+        assertThat(result.get().getNameDA(), is("Gluten"));
     }
 
     @Test
     @DisplayName("Find by Name - should return empty Optional when name is not found")
     void findByNameNotFoundReturnsEmpty()
     {
-        Optional<Allergen> result = allergenDAO.findByName("Non-existing Allergen");
+        Optional<Allergen> result = allergenDAO.findByNameDA("Non-existing Allergen");
 
         assertTrue(result.isEmpty());
     }

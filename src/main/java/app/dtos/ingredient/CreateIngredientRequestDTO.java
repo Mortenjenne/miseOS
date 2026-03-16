@@ -13,6 +13,6 @@ public record CreateIngredientRequestDTO(
     String note,
     RequestType requestType,
     LocalDate deliveryDate,
-    Long dishSuggestionId
+    Long dishId
 )
 {}

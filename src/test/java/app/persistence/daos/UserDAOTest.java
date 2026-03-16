@@ -2,7 +2,10 @@ package app.persistence.daos;
 
 import app.config.HibernateTestConfig;
 import app.enums.UserRole;
+import app.persistence.daos.impl.UserDAO;
+import app.persistence.daos.interfaces.IUserDAO;
 import app.persistence.entities.IEntity;
+import app.persistence.entities.Station;
 import app.persistence.entities.User;
 import app.testutils.TestCleanDB;
 import app.testutils.TestPopulator;
@@ -107,15 +110,20 @@ class UserDAOTest
     void update()
     {
         User seed = (User) seeded.get("user_gordon");
-        seed.setFirstName("Dak");
-        seed.setLastName("Wichangoen");
-        seed.setUserRole(UserRole.SOUS_CHEF);
+        Station grill = (Station) seeded.get("station_grill");
+
+        seed.update(
+            "Dak",
+            "Wichangoen",
+            grill
+        );
 
         User updated = userDAO.update(seed);
 
         assertThat(updated.getId(), is(seed.getId()));
         assertThat(updated.getFirstName(), is("Dak"));
-        assertThat(updated.getUserRole(), is(UserRole.SOUS_CHEF));
+        assertThat(updated.getStation(), is(grill));
+        assertThat(updated.getStation().getStationName(),is(grill.getStationName()));
 
         User fetched = userDAO.getByID(seed.getId());
         assertThat(fetched.getLastName(), is("Wichangoen"));
@@ -162,12 +170,12 @@ class UserDAOTest
     }
 
     @Test
-    @DisplayName("Find - Find user by role")
+    @DisplayName("Find - Find users by role")
     void findByRole()
     {
         Set<User> cooks = userDAO.findByRole(UserRole.LINE_COOK);
 
-        assertThat(cooks, hasSize(3));
+        assertThat(cooks, hasSize(2));
         cooks.forEach(u -> assertThat(u.getUserRole(), is(UserRole.LINE_COOK)));
     }
 

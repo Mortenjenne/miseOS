@@ -6,7 +6,7 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
-@NoArgsConstructor
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 @Getter
 @Entity
 @Table(name = "station")
@@ -16,11 +16,9 @@ public class Station implements IEntity
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Setter
     @Column(name = "station_name",nullable = false, unique = true, length = 50)
     private String stationName;
 
-    @Setter
     @Column(name = "description", nullable = false, length = 255)
     private String description;
 
@@ -31,16 +29,18 @@ public class Station implements IEntity
     {
         ValidationUtil.validateNotBlank(stationName, "Station name");
         ValidationUtil.validateNotBlank(description, "Description");
-        this.stationName = stationName;
-        this.description = description;
+
+        this.stationName = stationName.trim();
+        this.description = description.trim();
     }
 
     public void update(String stationName, String description)
     {
         ValidationUtil.validateNotBlank(stationName, "Station name");
         ValidationUtil.validateNotBlank(description, "Description");
-        this.stationName = stationName;
-        this.description = description;
+
+        this.stationName = stationName.trim();
+        this.description = description.trim();
     }
 
     @PrePersist

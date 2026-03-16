@@ -1,138 +1,58 @@
 package app.config;
 
-import app.dtos.dish.DishTranslationDTO;
-import app.dtos.gemini.AiDishSuggestionDTO;
-import app.dtos.weather.WeatherForecastDTO;
-import app.enums.UserRole;
-import app.integrations.ai.GeminiClient;
-import app.integrations.ai.IAiClient;
-import app.integrations.translation.DeepLTranslationClient;
-import app.integrations.translation.ITranslationClient;
-import app.integrations.weather.WeatherClient;
-import app.persistence.entities.Allergen;
-import app.persistence.entities.DishSuggestion;
-import app.persistence.entities.Station;
-import app.persistence.entities.User;
-import app.services.*;
-import app.utils.WeatherForecastBuilder;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.http.HttpClient;
-import java.util.*;
+import app.controllers.*;
+import app.routes.*;
+import io.javalin.Javalin;
+import jakarta.persistence.EntityManagerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ApplicationConfig
 {
-    public static void start()
+    private static final Logger logger = LoggerFactory.getLogger(ApplicationConfig.class);
+
+    public static void startServer(int port)
     {
-        Properties properties = new Properties();
+        DIContainer di = DIContainer.getInstance();
+        buildAndStart(port, di);
+    }
 
-        try (InputStream input = ApplicationConfig.class
-                     .getClassLoader()
-                     .getResourceAsStream("config.properties")) {
+    public static Javalin startServer(int port, EntityManagerFactory emf)
+    {
+        DIContainer di = DIContainer.getTestInstance(emf);
+        return buildAndStart(port, di);
+    }
 
-            properties.load(input);
+    public static Javalin buildAndStart(int port, DIContainer di)
+    {
+        Routes routes = buildRoutes(di);
+        IExceptionController exceptionController = new ExceptionController();
+        ServerConfig serverConfig = new ServerConfig(routes, exceptionController);
 
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        Javalin app = serverConfig.create();
+        logger.info("Starting javalin app");
+        app.start(port);
+        return app;
+    }
 
-        HttpClient client = HttpClient.newHttpClient();
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-        String deeplUrl = properties.getProperty("DEEPL_URL");
-        String geminiUrl = properties.getProperty("GEMINI_URL");
-        String openMeteoUrl = properties.getProperty("OPEN_METEO_URL");
-        String deepLApiKey = System.getenv("DEEPL_APIKEY");
-        String geminiApiKey = System.getenv("GEMINI_API_KEY");
+    public static void stopServer(Javalin app)
+    {
+        app.stop();
+        logger.info("Stopping javalin app");
+    }
 
-        ITranslationClient translationService = new DeepLTranslationClient(client, objectMapper, deeplUrl, deepLApiKey);
-        IAiClient aiClient = new GeminiClient(client, objectMapper, geminiApiKey, geminiUrl);
-        IAiService aiService = new AiService(objectMapper, aiClient);
-        WeatherClient weatherClient = new WeatherClient(client, objectMapper, openMeteoUrl);
-
-
-        IDishTranslationService dishTranslationService = new DishTranslationService(translationService);
-        WeatherForecastDTO weatherForecastDTO = weatherClient.getWeatherForecast();
-        String forecast = WeatherForecastBuilder.getWeatherForecast(weatherForecastDTO);
-
-        List<AiDishSuggestionDTO> dishSuggestionDTOs = aiService.getAiDishSuggestion(forecast, "Sandwich station");
-        dishSuggestionDTOs.forEach(System.out::println);
-
-        List<String> ingredientsToNormalize = List.of(
-            "onions",
-            "løg",
-            "red onion",
-            "rødløg",
-            "hvidløg",
-            "garlic",
-            "hvidløch",
-            "potatoes",
-            "nye kartofler",
-            "carots",
-            "gulerødder",
-            "gulerod",
-            "piskefløde",
-            "heavy cream",
-            "cream",
-            "smør",
-            "unsalted butter",
-            "butter",
-            "salt",
-            "havsalt",
-            "pepper",
-            "sort peber",
-            "peber",
-            "shallots",
-            "skalotteløg",
-            "skalotte løg",
-            "spring onions",
-            "forårsløg",
-            "chives",
-            "purløg",
-            "parsley",
-            "persille",
-            "lemon",
-            "citron",
-            "lime juice",
-            "limes",
-            "olive oil",
-            "olivenolie",
-            "extra virgin olive oil"
+    private static Routes buildRoutes(DIContainer di)
+    {
+        return new Routes(
+            new AllergenRoute(di.getAllergenController()),
+            new UserRoute(di.getUserController()),
+            new StationRoute(di.getStationController()),
+            new MenuInspirationRoute(di.getMenuInspirationController()),
+            new DishSuggestionRoute(di.getDishSuggestionController()),
+            new DishRoute(di.getDishController()),
+            new WeeklyMenuRoute(di.getWeeklyMenuController()),
+            new IngredientRequestRoute(di.getIngredientRequestController()),
+            new ShoppingListRoute(di.getShoppingListController())
         );
-
-        User u1 = new User("Gordon", "Ramsay", "gordon@kitchen.com", "hash1", UserRole.HEAD_CHEF);
-        User u2 = new User("Claire", "Smyth", "claire@pastry.com", "hash2", UserRole.LINE_COOK);
-
-        Station s1 = new Station("Cold Kitchen", "Salads & Starters");
-        Set<Allergen> allergens = new HashSet<>();
-        Allergen gluten = new Allergen("Gluten", "Cereals containing gluten", 1);
-        Allergen dairy = new Allergen("Dairy", "Milk and products thereof (including lactose)",2);
-        Allergen eggs = new Allergen("Eggs", "Eggs and products thereof",3);
-        allergens.add(gluten);
-        allergens.add(dairy);
-        allergens.add(eggs);
-
-        DishSuggestion d1 = new DishSuggestion(
-            "Røget Laks",
-            "Laks med dildcreme og rugbrødschips",
-            7,
-            2026,
-            s1,
-            u1,
-            allergens
-        );
-
-        DishTranslationDTO dishTranslationDTO = dishTranslationService.translateTo(d1, "EN");
-
-        System.out.println(dishTranslationDTO);
-
-        Map<String, String> result = aiService.normalizeIngredientList(ingredientsToNormalize, "da");
-
-        result.forEach((k, v) -> System.out.println("Key: " + k + " Value " + v));
-
-
     }
 }

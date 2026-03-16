@@ -1,0 +1,43 @@
+
+### GET by ID
+GET {{url}}/allergens/16
+
+### GET ALL
+GET {{url}}/allergens
+
+### GET by Name
+GET {{url}}/allergens/name/Sell
+
+### POST create allergen
+POST {{url}}/allergens
+Content-Type: application/json
+
+{
+"nameDA": "Pinjekerner",
+"nameEN": "Pine nuts",
+"descriptionDA": "Pinjekerner og produkter heraf",
+"descriptionEN": "Pine nuts and products thereof",
+"displayNumber": 15
+}
+
+### POST seed EU allergens
+POST {{url}}/allergens/seed
+Content-Type: application/json
+
+### PUT update allergen
+PUT {{url}}/allergens/15
+Content-Type: application/json
+
+{
+    "nameDA": "Pinjekerner(Updated)",
+    "nameEN": "Pine nuts(Updated)",
+    "descriptionDA": "Pinje kerner og produkter her af(Updated)",
+    "descriptionEN": "Pine nuts and products thereof (updated)",
+    "displayNumber": 15
+}
+
+### DELETE allergen
+DELETE {{url}}/allergens/15
+
+###
+

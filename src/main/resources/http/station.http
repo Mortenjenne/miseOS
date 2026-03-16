@@ -1,0 +1,48 @@
+
+### Create Cold Section
+POST {{url}}/stations/
+Content-Type: application/json
+
+{
+    "name": "Cold Section",
+    "description": "Handles small starters, charcuterie, and breakfast items."
+}
+
+### Create Hot Station
+POST {{url}}/stations/
+Content-Type: application/json
+
+{
+    "name": "Hot Station",
+    "description": "Handles vegetarian options, meat options, business lunch and hot buffet food."
+}
+
+### Create Sandwich Station
+POST {{url}}/stations/
+Content-Type: application/json
+
+{
+    "name": "Sandwich Station",
+    "description": "Handles open sandwiches (smørrebrød) and traditional sandwiches."
+}
+
+### Get all stations
+GET {{url}}/stations/
+
+### Get by ID (Station 1)
+GET {{url}}/stations/1
+
+### Get station by Name (Hot)
+GET {{url}}/stations/name/Hot%20Station
+
+### Update Hot Station
+PUT {{url}}/stations/2
+Content-Type: application/json
+
+{
+    "name": "Hot Station & Buffet",
+    "description": "Responsible for vegetarian, meat-based, test: (Updated)"
+}
+
+### Delete a station (by ID)
+DELETE {{url}}/stations/1

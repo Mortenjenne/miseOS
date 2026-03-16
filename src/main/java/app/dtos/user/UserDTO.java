@@ -1,8 +1,9 @@
 package app.dtos.user;
 
-import app.persistence.entities.Station;
-import app.persistence.entities.User;
 import app.enums.UserRole;
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+import java.time.LocalDateTime;
 
 public record UserDTO(
     Long id,
@@ -10,17 +11,11 @@ public record UserDTO(
     String lastName,
     String email,
     UserRole userRole,
-    Station station
-) {
+    Long stationId,
+    String stationName,
 
-    public UserDTO(User user) {
-        this(
-            user.getId(),
-            user.getFirstName(),
-            user.getLastName(),
-            user.getEmail(),
-            user.getUserRole(),
-            user.getStation()
-        );
-    }
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
+    LocalDateTime createdAt
+)
+{
 }
