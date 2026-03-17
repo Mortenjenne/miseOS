@@ -4,14 +4,19 @@ import app.dtos.dishsuggestion.DishSuggestionCreateDTO;
 import app.dtos.dishsuggestion.DishSuggestionDTO;
 import app.dtos.dishsuggestion.DishSuggestionFilterDTO;
 import app.dtos.dishsuggestion.DishSuggestionUpdateDTO;
+import app.dtos.user.UserReferenceDTO;
+import app.enums.NotificationCategory;
+import app.enums.NotificationType;
 import app.enums.Status;
 import app.exceptions.UnauthorizedActionException;
 import app.mappers.DishSuggestionMapper;
+import app.mappers.UserMapper;
 import app.persistence.daos.interfaces.*;
 import app.persistence.daos.interfaces.readers.IStationReader;
 import app.persistence.daos.interfaces.readers.IUserReader;
 import app.persistence.entities.*;
 import app.services.IDishSuggestionService;
+import app.services.INotificationSender;
 import app.services.INotificationService;
 import app.utils.ValidationUtil;
 
@@ -28,16 +33,16 @@ public class DishSuggestionService implements IDishSuggestionService
     private final IUserReader userReader;
     private final IStationReader stationReader;
     private final IAllergenDAO allergenDAO;
-    private final INotificationService notificationService;
+    private final INotificationSender notificationSender;
 
-    public DishSuggestionService(IDishSuggestionDAO dishSuggestionDAO, IDishDAO dishDAO, IUserReader userReader, IStationReader stationReader, IAllergenDAO allergenDAO, INotificationService notificationService)
+    public DishSuggestionService(IDishSuggestionDAO dishSuggestionDAO, IDishDAO dishDAO, IUserReader userReader, IStationReader stationReader, IAllergenDAO allergenDAO, INotificationSender notificationSender)
     {
         this.dishSuggestionDAO = dishSuggestionDAO;
         this.dishDAO = dishDAO;
         this.userReader = userReader;
         this.stationReader = stationReader;
         this.allergenDAO = allergenDAO;
-        this.notificationService = notificationService;
+        this.notificationSender = notificationSender;
     }
 
     @Override
@@ -65,6 +70,14 @@ public class DishSuggestionService implements IDishSuggestionService
         dishRequest.checkCreationAllowed(LocalDate.now());
 
         DishSuggestion saved = dishSuggestionDAO.create(dishRequest);
+
+        int numberOfPendingDishes = dishSuggestionDAO.getPendingSuggestionsCount();
+        notificationSender.sendPendingUpdate(
+            NotificationType.NEW_DISH_SUGGESTIONS,
+            NotificationCategory.DISH_SUGGESTION,
+            numberOfPendingDishes
+        );
+
         return DishSuggestionMapper.toDTO(saved);
     }
 
@@ -94,6 +107,16 @@ public class DishSuggestionService implements IDishSuggestionService
 
         dishDAO.create(dish);
 
+        UserReferenceDTO reviewedBy = UserMapper.toReferenceDTO(approver);
+        notificationSender.notifyStaff(
+            updated.getCreatedBy().getId(),
+            NotificationType.SUGGESTION_APPROVED,
+            NotificationCategory.DISH_SUGGESTION,
+            updated.getId(),
+            updated.getNameDA(),
+            reviewedBy
+        );
+
         return DishSuggestionMapper.toDTO(updated);
     }
 
@@ -110,6 +133,16 @@ public class DishSuggestionService implements IDishSuggestionService
 
         dish.reject(approver, feedback);
         DishSuggestion updated = dishSuggestionDAO.update(dish);
+
+        UserReferenceDTO reviewedBy = UserMapper.toReferenceDTO(approver);
+        notificationSender.notifyStaff(
+            updated.getCreatedBy().getId(),
+            NotificationType.SUGGESTION_REJECTED,
+            NotificationCategory.DISH_SUGGESTION,
+            updated.getId(),
+            updated.getNameDA(),
+            reviewedBy
+        );
 
         return DishSuggestionMapper.toDTO(updated);
     }

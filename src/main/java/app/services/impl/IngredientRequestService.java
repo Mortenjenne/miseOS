@@ -16,6 +16,7 @@ import app.persistence.entities.Dish;
 import app.persistence.entities.IngredientRequest;
 import app.persistence.entities.User;
 import app.services.IIngredientRequestService;
+import app.services.INotificationSender;
 import app.services.INotificationService;
 import app.utils.ValidationUtil;
 
@@ -27,15 +28,15 @@ public class IngredientRequestService implements IIngredientRequestService
     private final IIngredientRequestDAO ingredientRequestDAO;
     private final IDishReader dishReader;
     private final IUserReader userReader;
-    private final INotificationService notificationService;
+    private final INotificationSender notificationSender;
 
 
-    public IngredientRequestService(IIngredientRequestDAO ingredientRequestDAO, IDishReader dishReader, IUserReader userReader, INotificationService notificationService)
+    public IngredientRequestService(IIngredientRequestDAO ingredientRequestDAO, IDishReader dishReader, IUserReader userReader, INotificationSender notificationSender)
     {
         this.ingredientRequestDAO = ingredientRequestDAO;
         this.dishReader = dishReader;
         this.userReader = userReader;
-        this.notificationService = notificationService;
+        this.notificationSender = notificationSender;
     }
 
     @Override

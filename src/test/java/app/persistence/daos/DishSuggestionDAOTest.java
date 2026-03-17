@@ -295,4 +295,12 @@ class DishSuggestionDAOTest {
         Set<DishSuggestion> result = dishSuggestionDAO.findByFilter(null, 7, 2026, 999L, null);
         assertThat(result, is(empty()));
     }
+
+    @Test
+    @DisplayName("Count pending dishes - Should return correct number of pending dish suggestions")
+    void countPendingDishes()
+    {
+        int numberOfPendingDishes = dishSuggestionDAO.getPendingSuggestionsCount();
+        assertThat(numberOfPendingDishes, is(5));
+    }
 }

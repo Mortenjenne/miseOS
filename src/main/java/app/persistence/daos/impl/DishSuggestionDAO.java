@@ -41,8 +41,8 @@ public class DishSuggestionDAO implements IDishSuggestionDAO
                         "SELECT DISTINCT ds FROM DishSuggestion ds " +
                             "LEFT JOIN FETCH ds.allergens " +
                             "WHERE (:status IS NULL OR ds.dishStatus  = :status) " +
-                            "AND (:week IS NULL OR ds.targetWeek  = :week) " +
-                            "AND (:year IS NULL OR ds.targetYear  = :year) " +
+                            "AND (:week IS NULL OR ds.targetWeek = :week) " +
+                            "AND (:year IS NULL OR ds.targetYear = :year) " +
                             "AND (:stationId IS NULL OR ds.station.id = :stationId) " +
                             "ORDER BY " + orderColumn,
                         DishSuggestion.class)
@@ -56,6 +56,29 @@ public class DishSuggestionDAO implements IDishSuggestionDAO
             catch (PersistenceException e)
             {
                 throw new DatabaseException("Failed to fetch dish suggestions", e);
+            }
+        }
+    }
+
+    @Override
+    public int getPendingSuggestionsCount()
+    {
+        try(EntityManager em = emf.createEntityManager())
+        {
+            try
+            {
+                TypedQuery<Long> query = em.createQuery(
+                    "SELECT COUNT(ds) FROM DishSuggestion ds " +
+                        "WHERE ds.dishStatus = :status",
+                    Long.class
+                );
+                query.setParameter("status", Status.PENDING);
+
+                return Math.toIntExact(query.getSingleResult());
+            }
+            catch (PersistenceException e)
+            {
+                throw new DatabaseException("Failed to count all pending dishes", e);
             }
         }
     }
