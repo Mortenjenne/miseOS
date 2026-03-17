@@ -4,11 +4,15 @@ import app.dtos.ingredient.ApproveIngredientRequestDTO;
 import app.dtos.ingredient.CreateIngredientRequestDTO;
 import app.dtos.ingredient.IngredientRequestDTO;
 import app.dtos.ingredient.UpdateIngredientRequestDTO;
+import app.dtos.user.UserReferenceDTO;
+import app.enums.NotificationCategory;
+import app.enums.NotificationType;
 import app.enums.RequestType;
 import app.enums.Status;
 import app.exceptions.UnauthorizedActionException;
 import app.exceptions.ValidationException;
 import app.mappers.IngredientRequestMapper;
+import app.mappers.UserMapper;
 import app.persistence.daos.interfaces.readers.IDishReader;
 import app.persistence.daos.interfaces.IIngredientRequestDAO;
 import app.persistence.daos.interfaces.readers.IUserReader;
@@ -17,7 +21,6 @@ import app.persistence.entities.IngredientRequest;
 import app.persistence.entities.User;
 import app.services.IIngredientRequestService;
 import app.services.INotificationSender;
-import app.services.INotificationService;
 import app.utils.ValidationUtil;
 
 import java.time.LocalDate;
@@ -66,6 +69,11 @@ public class IngredientRequestService implements IIngredientRequestService
         IngredientRequest saved = ingredientRequestDAO.create(ingredientRequest);
 
         int numberOfPendingRequests = ingredientRequestDAO.getPendingRequestCount();
+        notificationSender.sendPendingUpdate(
+            NotificationType.NEW_INGREDIENT_REQUEST,
+            NotificationCategory.INGREDIENT_REQUEST,
+            numberOfPendingRequests
+        );
 
         return IngredientRequestMapper.toDTO(saved);
     }
@@ -87,6 +95,17 @@ public class IngredientRequestService implements IIngredientRequestService
         request.approve(requester);
 
         IngredientRequest updated = ingredientRequestDAO.update(request);
+
+        UserReferenceDTO reviewedBy = UserMapper.toReferenceDTO(requester);
+        notificationSender.notifyStaff(
+            updated.getCreatedBy().getId(),
+            NotificationType.REQUEST_APPROVED,
+            NotificationCategory.INGREDIENT_REQUEST,
+            updated.getId(),
+            updated.getName(),
+            reviewedBy
+        );
+
         return IngredientRequestMapper.toDTO(updated);
     }
 
@@ -102,6 +121,17 @@ public class IngredientRequestService implements IIngredientRequestService
         request.reject(requester);
 
         IngredientRequest updated = ingredientRequestDAO.update(request);
+
+        UserReferenceDTO reviewedBy = UserMapper.toReferenceDTO(requester);
+        notificationSender.notifyStaff(
+            updated.getCreatedBy().getId(),
+            NotificationType.REQUEST_REJECTED,
+            NotificationCategory.INGREDIENT_REQUEST,
+            updated.getId(),
+            updated.getName(),
+            reviewedBy
+        );
+
         return IngredientRequestMapper.toDTO(updated);
     }
 

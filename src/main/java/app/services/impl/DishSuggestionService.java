@@ -17,7 +17,6 @@ import app.persistence.daos.interfaces.readers.IUserReader;
 import app.persistence.entities.*;
 import app.services.IDishSuggestionService;
 import app.services.INotificationSender;
-import app.services.INotificationService;
 import app.utils.ValidationUtil;
 
 import java.time.LocalDate;
