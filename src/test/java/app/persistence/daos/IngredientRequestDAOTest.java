@@ -235,4 +235,12 @@ class IngredientRequestDAOTest
 
         assertThat(all.size(), greaterThan(filtered.size()));
     }
+
+    @Test
+    @DisplayName("Count pending dishes - Should return correct number of pending ingredient requests")
+    void countPendingDishes()
+    {
+        int numberOfPendingDishes = ingredientRequestDAO.getPendingRequestCount();
+        assertThat(numberOfPendingDishes, is(3));
+    }
 }

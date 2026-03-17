@@ -64,6 +64,9 @@ public class IngredientRequestService implements IIngredientRequestService
         );
 
         IngredientRequest saved = ingredientRequestDAO.create(ingredientRequest);
+
+        int numberOfPendingRequests = ingredientRequestDAO.getPendingRequestCount();
+
         return IngredientRequestMapper.toDTO(saved);
     }
 

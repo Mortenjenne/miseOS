@@ -11,4 +11,6 @@ import java.util.List;
 public interface IIngredientRequestDAO extends IEntityDAO<IngredientRequest, Long>
 {
     List<IngredientRequest> findByFilter(Status status, LocalDate deliveryDate, Long creatorId, RequestType requestType, Long stationId);
+
+    int getPendingRequestCount();
 }
