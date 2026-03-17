@@ -1,0 +1,11 @@
+package app.enums;
+
+public enum NotificationType
+{
+    NEW_DISH_SUGGESTIONS,
+    NEW_INGREDIENT_REQUEST,
+    REQUEST_APPROVED,
+    REQUEST_REJECTED,
+    SUGGESTION_APPROVED,
+    SUGGESTION_REJECTED
+}
