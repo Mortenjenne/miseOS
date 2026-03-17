@@ -1,12 +1,18 @@
+### Variables
+@headChefId = 1
+@lineCookId = 3
 
 ### GET by ID
 GET {{url}}/dish-suggestions/1
+X-Dev-User-Id: {{headChefId}}
 
 ### GET all - no filters
 GET {{url}}/dish-suggestions
+X-Dev-User-Id: {{headChefId}}
 
 ### GET all - status PENDING
 GET {{url}}/dish-suggestions?status=PENDING
+X-Dev-User-Id: {{headChefId}}
 
 ### GET all - status APPROVED
 GET {{url}}/dish-suggestions?status=APPROVED
@@ -65,32 +71,35 @@ GET {{url}}/dish-suggestions/current-week?status=APPROVED
 ### POST create suggestion (Salmon)
 POST {{url}}/dish-suggestions/
 Content-Type: application/json
+X-Dev-User-Id: {{lineCookId}}
 
 {
     "nameDA": "Laks med beurre blanc",
     "descriptionDA": "Færøsk laks bagt med fransk smør sauce",
     "stationId": 1,
     "allergenIds": [1, 4],
-    "targetWeek": 12,
+    "targetWeek": 15,
     "targetYear": 2026
 }
 
 ### POST create suggestion (Butter chicken)
 POST {{url}}/dish-suggestions
 Content-Type: application/json
+X-Dev-User-Id: {{lineCookId}}
 
 {
     "nameDA": "Butter Chicken",
     "descriptionDA": "Marineret kylling i cremet og aromatisk curry-sauce med stegte blomkål og ris",
     "stationId": 1,
     "allergenIds": [1, 2, 3, 4, 5],
-    "targetWeek": 13,
+    "targetWeek": 14,
     "targetYear": 2026
 }
 
 ### PUT update suggestion
 PUT {{url}}/dish-suggestions/1
 Content-Type: application/json
+X-Dev-User-Id: {{lineCookId}}
 
 {
     "nameDA": "Laks med citron og kapers",
@@ -101,6 +110,7 @@ Content-Type: application/json
 ### PUT update suggestion allergens
 PUT {{url}}/dish-suggestions/1
 Content-Type: application/json
+X-Dev-User-Id: {{lineCookId}}
 
 {
     "nameDA": "Laks med citron og kapers",
@@ -109,12 +119,14 @@ Content-Type: application/json
 }
 
 ### PATCH approve suggestion
-PATCH {{url}}/dish-suggestions/1/approve
+PATCH {{url}}/dish-suggestions/6/approve
+X-Dev-User-Id: {{headChefId}}
 
 
 ### PATCH reject suggestion
-PATCH {{local}}/dish-suggestions/2/reject
+PATCH {{url}}/dish-suggestions/5/reject
 Content-Type: application/json
+X-Dev-User-Id: {{headChefId}}
 
 {
     "feedback": "Retten passer ikke til menuen - for tung til forår"
@@ -124,6 +136,7 @@ Content-Type: application/json
 ### PATCH reject - blank feedback
 PATCH {{url}}/dish-suggestions/2/reject
 Content-Type: application/json
+X-Dev-User-Id: {{headChefId}}
 
 {
     "feedback": ""
@@ -131,3 +144,4 @@ Content-Type: application/json
 
 ### DELETE - Delete suggestions
 DELETE {{local}}/dish-suggestions/3
+X-Dev-User-Id: {{headChefId}}

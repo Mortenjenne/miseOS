@@ -50,7 +50,7 @@ public class NotificationController implements INotificationController
     @Override
     public void handleClose(WsCloseContext ctx)
     {
-        logger.info("WebSocket closing session: {}", ctx.sessionId());
+        logger.info("WebSocket closing session: {} reason: {}", ctx.sessionId(), ctx.reason());
         notificationRegistry.unregisterAdmin(ctx);
         notificationRegistry.unregisterStaff(ctx);
     }
@@ -58,8 +58,16 @@ public class NotificationController implements INotificationController
     @Override
     public void handleError(WsErrorContext ctx)
     {
-        logger.error("WebSocket error on session: {}", ctx.sessionId(), ctx.error());
-        notificationRegistry.unregisterAdmin(ctx);
-        notificationRegistry.unregisterStaff(ctx);
+        logger.info("WebSocket closing: {} error: {} ", ctx.sessionId(), String.valueOf(ctx.error()));
+        String sessionType = ctx.attribute("sessionType");
+
+        if ("ADMIN".equals(sessionType))
+        {
+            notificationRegistry.unregisterAdmin(ctx);
+        }
+        else
+        {
+            notificationRegistry.unregisterStaff(ctx);
+        }
     }
 }
