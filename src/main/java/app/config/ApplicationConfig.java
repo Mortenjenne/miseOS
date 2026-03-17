@@ -52,7 +52,8 @@ public class ApplicationConfig
             new DishRoute(di.getDishController()),
             new WeeklyMenuRoute(di.getWeeklyMenuController()),
             new IngredientRequestRoute(di.getIngredientRequestController()),
-            new ShoppingListRoute(di.getShoppingListController())
+            new ShoppingListRoute(di.getShoppingListController()),
+            new NotificationRoute(di.getNotificationController())
         );
     }
 }

@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class NotificationService implements INotificationRegistry, INotificationSender
+public class NotificationService implements INotificationService
 {
     private final Set<WsContext> adminSessions = ConcurrentHashMap.newKeySet();
     private final Map<Long, WsContext> staffSessions = new ConcurrentHashMap<>();

@@ -16,6 +16,7 @@ import app.persistence.entities.Dish;
 import app.persistence.entities.IngredientRequest;
 import app.persistence.entities.User;
 import app.services.IIngredientRequestService;
+import app.services.INotificationService;
 import app.utils.ValidationUtil;
 
 import java.time.LocalDate;
@@ -26,13 +27,15 @@ public class IngredientRequestService implements IIngredientRequestService
     private final IIngredientRequestDAO ingredientRequestDAO;
     private final IDishReader dishReader;
     private final IUserReader userReader;
+    private final INotificationService notificationService;
 
 
-    public IngredientRequestService(IIngredientRequestDAO ingredientRequestDAO, IDishReader dishReader, IUserReader userReader)
+    public IngredientRequestService(IIngredientRequestDAO ingredientRequestDAO, IDishReader dishReader, IUserReader userReader, INotificationService notificationService)
     {
         this.ingredientRequestDAO = ingredientRequestDAO;
         this.dishReader = dishReader;
         this.userReader = userReader;
+        this.notificationService = notificationService;
     }
 
     @Override

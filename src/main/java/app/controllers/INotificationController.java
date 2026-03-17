@@ -1,10 +1,15 @@
 package app.controllers;
 
-import io.javalin.websocket.WsContext;
+import io.javalin.websocket.WsCloseContext;
+import io.javalin.websocket.WsConfig;
+import io.javalin.websocket.WsConnectContext;
+import io.javalin.websocket.WsErrorContext;
 
 public interface INotificationController
 {
-    void registerAdmin(WsContext ctx);
-    void registerStaff(WsContext ctx, Long userId);
-    void onClose(WsContext ctx);
+    void handleNotifications(WsConfig ws);
+
+    void handleConnect(WsConnectContext ctx);
+    void handleClose(WsCloseContext ctx);
+    void handleError(WsErrorContext ctx);
 }

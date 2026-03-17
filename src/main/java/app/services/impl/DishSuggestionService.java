@@ -12,6 +12,7 @@ import app.persistence.daos.interfaces.readers.IStationReader;
 import app.persistence.daos.interfaces.readers.IUserReader;
 import app.persistence.entities.*;
 import app.services.IDishSuggestionService;
+import app.services.INotificationService;
 import app.utils.ValidationUtil;
 
 import java.time.LocalDate;
@@ -27,14 +28,16 @@ public class DishSuggestionService implements IDishSuggestionService
     private final IUserReader userReader;
     private final IStationReader stationReader;
     private final IAllergenDAO allergenDAO;
+    private final INotificationService notificationService;
 
-    public DishSuggestionService(IDishSuggestionDAO dishSuggestionDAO, IDishDAO dishDAO, IUserReader userReader, IStationReader stationReader, IAllergenDAO allergenDAO)
+    public DishSuggestionService(IDishSuggestionDAO dishSuggestionDAO, IDishDAO dishDAO, IUserReader userReader, IStationReader stationReader, IAllergenDAO allergenDAO, INotificationService notificationService)
     {
         this.dishSuggestionDAO = dishSuggestionDAO;
         this.dishDAO = dishDAO;
         this.userReader = userReader;
         this.stationReader = stationReader;
         this.allergenDAO = allergenDAO;
+        this.notificationService = notificationService;
     }
 
     @Override
