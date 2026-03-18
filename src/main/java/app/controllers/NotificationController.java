@@ -2,7 +2,9 @@ package app.controllers;
 
 import app.enums.SessionType;
 import app.services.INotificationRegistry;
+import app.services.INotificationSnapshotService;
 import app.utils.SecurityUtil;
+import io.javalin.http.Context;
 import io.javalin.websocket.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,10 +13,12 @@ public class NotificationController implements INotificationController
 {
     private static final Logger logger = LoggerFactory.getLogger(NotificationController.class);
     private final INotificationRegistry notificationRegistry;
+    private final INotificationSnapshotService notificationSnapshotService;
 
-    public NotificationController(INotificationRegistry notificationRegistry)
+    public NotificationController(INotificationRegistry notificationRegistry, INotificationSnapshotService notificationSnapshotService)
     {
         this.notificationRegistry = notificationRegistry;
+        this.notificationSnapshotService = notificationSnapshotService;
     }
 
     @Override
@@ -66,6 +70,12 @@ public class NotificationController implements INotificationController
     {
         logger.info("WebSocket closing: {} error: {} ", ctx.sessionId(), String.valueOf(ctx.error()));
         cleanup(ctx);
+
+    }
+
+    @Override
+    public void getSnapshot(Context ctx)
+    {
 
     }
 

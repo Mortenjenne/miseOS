@@ -50,6 +50,7 @@ public final class DIContainer
     private final IDishTranslationService dishTranslationService;
     private final IMenuInspirationService menuInspirationService;
     private final INotificationService notificationService;
+    private final INotificationSnapshotService notificationSnapshotService;
 
     @Getter
     private final IAllergenController allergenController;
@@ -104,6 +105,7 @@ public final class DIContainer
         this.stationDAO = new StationDAO(emf);
 
         this.notificationService = new NotificationService();
+        this.notificationSnapshotService = new NotificationSnapshotService(userDAO, dishSuggestionDAO, ingredientRequestDAO);
         this.dishTranslationService = new DishTranslationService(translationClient);
         this.aiService = new AiService(objectMapper, aiClient);
         this.allergenService = new AllergenService(allergenDAO, userDAO);
@@ -126,7 +128,7 @@ public final class DIContainer
         this.weeklyMenuController = new WeeklyMenuController(weeklyMenuService);
         this.ingredientRequestController = new IngredientRequestController(ingredientRequestService);
         this.shoppingListController = new ShoppingListController(shoppingListService);
-        this.notificationController = new NotificationController(notificationService);
+        this.notificationController = new NotificationController(notificationService, notificationSnapshotService);
     }
 
     public static DIContainer getInstance()

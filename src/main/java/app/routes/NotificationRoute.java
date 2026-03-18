@@ -19,6 +19,7 @@ public class NotificationRoute
         return () ->
         {
           ws("/notifications", notificationController::handleNotifications);
+          get("/notifcations/snapshot", notificationController::getSnapshot);
         };
     }
 }
