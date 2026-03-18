@@ -1,5 +1,6 @@
 package app.controllers;
 
+import app.dtos.notification.AdminNotificationSnapshotDTO;
 import app.enums.SessionType;
 import app.services.INotificationRegistry;
 import app.services.INotificationSnapshotService;
@@ -76,7 +77,9 @@ public class NotificationController implements INotificationController
     @Override
     public void getSnapshot(Context ctx)
     {
-
+        Long userId = SecurityUtil.requireUserId(ctx);
+        AdminNotificationSnapshotDTO snapshot = notificationSnapshotService.getPendingSnapshot(userId);
+        ctx.status(200).json(snapshot);
     }
 
     private void cleanup(WsContext ctx)

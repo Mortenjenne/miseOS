@@ -243,7 +243,7 @@ public class DishSuggestionService implements IDishSuggestionService
 
         notificationSender.broadcastPendingUpdate(
             NotificationType.PENDING_COUNT_UPDATED,
-            NotificationCategory.INGREDIENT_REQUEST,
+            NotificationCategory.DISH_SUGGESTION,
             remainingPendingDishSuggestions
         );
     }

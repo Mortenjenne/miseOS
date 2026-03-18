@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class NotificationService implements INotificationService
+public class NotificationService implements INotificationSender, INotificationRegistry
 {
     private final Set<WsContext> adminSessions = ConcurrentHashMap.newKeySet();
     private final Map<Long, WsContext> staffSessions = new ConcurrentHashMap<>();
@@ -40,7 +40,7 @@ public class NotificationService implements INotificationService
     public void unregisterStaff(WsContext ctx)
     {
         staffSessions.entrySet()
-            .removeIf(entry -> entry.getValue().equals(ctx));
+            .removeIf(entry -> entry.getValue().session.equals(ctx.session));
     }
 
     @Override
@@ -53,13 +53,8 @@ public class NotificationService implements INotificationService
             LocalDateTime.now()
         );
 
-        adminSessions.forEach(session ->
-        {
-            if(session.session.isOpen())
-            {
-                session.send(message);
-            }
-        });
+        adminSessions.removeIf(session -> !session.session.isOpen());
+        adminSessions.forEach(session -> session.send(message));
     }
 
     @Override

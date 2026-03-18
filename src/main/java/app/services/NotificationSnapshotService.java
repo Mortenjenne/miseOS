@@ -27,10 +27,7 @@ public class NotificationSnapshotService implements INotificationSnapshotService
         ValidationUtil.validateId(requesterId);
 
         User user = userReader.getByID(requesterId);
-        if (!user.isHeadChef() && !user.isSousChef())
-        {
-            throw new UnauthorizedActionException("Only head chef or sous chef can view admin notification snapshot");
-        }
+        requireHeadChefOrSousChef(user);
 
         int pendingSuggestions = dishSuggestionReader.getPendingSuggestionsCount();
         int pendingRequests = ingredientRequestReader.getPendingRequestCount();
@@ -40,5 +37,13 @@ public class NotificationSnapshotService implements INotificationSnapshotService
             pendingRequests,
             pendingSuggestions + pendingRequests
         );
+    }
+
+    private void requireHeadChefOrSousChef(User user)
+    {
+        if (!user.isHeadChef() && !user.isSousChef())
+        {
+            throw new UnauthorizedActionException("Only head chef or sous chef can view admin notification snapshot");
+        }
     }
 }

@@ -49,7 +49,7 @@ public final class DIContainer
     private final IAiService aiService;
     private final IDishTranslationService dishTranslationService;
     private final IMenuInspirationService menuInspirationService;
-    private final INotificationService notificationService;
+    private final NotificationService notificationService;
     private final INotificationSnapshotService notificationSnapshotService;
 
     @Getter
