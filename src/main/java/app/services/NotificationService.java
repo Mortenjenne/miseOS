@@ -7,6 +7,7 @@ import app.enums.NotificationCategory;
 import app.enums.NotificationType;
 import io.javalin.websocket.WsContext;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -39,16 +40,17 @@ public class NotificationService implements INotificationService
     public void unregisterStaff(WsContext ctx)
     {
         staffSessions.entrySet()
-            .removeIf(entry -> entry.getValue().session.equals(ctx.session));
+            .removeIf(entry -> entry.getValue().equals(ctx));
     }
 
     @Override
-    public void sendPendingUpdate(NotificationType notificationType, NotificationCategory category, int count)
+    public void broadcastPendingUpdate(NotificationType notificationType, NotificationCategory category, int count)
     {
         AdminNotificationMessageDTO message = new AdminNotificationMessageDTO(
             notificationType,
             category,
-            count
+            count,
+            LocalDateTime.now()
         );
 
         adminSessions.forEach(session ->
@@ -68,7 +70,8 @@ public class NotificationService implements INotificationService
             category,
             requestId,
             itemName,
-            reviewedBy
+            reviewedBy,
+            LocalDateTime.now()
         );
 
         WsContext session = staffSessions.get(userId);

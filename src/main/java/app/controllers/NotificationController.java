@@ -1,10 +1,9 @@
 package app.controllers;
 
+import app.enums.SessionType;
 import app.services.INotificationRegistry;
-import io.javalin.websocket.WsCloseContext;
-import io.javalin.websocket.WsConfig;
-import io.javalin.websocket.WsConnectContext;
-import io.javalin.websocket.WsErrorContext;
+import app.utils.SecurityUtil;
+import io.javalin.websocket.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,38 +34,56 @@ public class NotificationController implements INotificationController
         String role = ctx.queryParam("role");
         String userIdParam = ctx.queryParam("userId");
 
-        logger.info("WebSocket connecting: User {} with role {}", userIdParam, role);
+        logger.info("WebSocket connecting: User: {} with role: {} with session: {}", userIdParam, role, ctx.sessionId);
 
         if ("HEAD_CHEF".equals(role) || "SOUS_CHEF".equals(role))
         {
+            ctx.attribute("sessionType", SessionType.ADMIN.name());
             notificationRegistry.registerAdmin(ctx);
+            return;
         }
-        else if (userIdParam != null)
+
+        if (userIdParam != null)
         {
+            ctx.attribute("sessionType", SessionType.STAFF.name());
             notificationRegistry.registerStaff(ctx, Long.parseLong(userIdParam));
+            return;
         }
+
+        logger.warn("Closing websocket session={} due to missing/invalid registration params", ctx.sessionId());
+        ctx.closeSession(1008, "Invalid websocket registration");
     }
 
     @Override
     public void handleClose(WsCloseContext ctx)
     {
         logger.info("WebSocket closing session: {} reason: {}", ctx.sessionId(), ctx.reason());
-        notificationRegistry.unregisterAdmin(ctx);
-        notificationRegistry.unregisterStaff(ctx);
+        cleanup(ctx);
     }
 
     @Override
     public void handleError(WsErrorContext ctx)
     {
         logger.info("WebSocket closing: {} error: {} ", ctx.sessionId(), String.valueOf(ctx.error()));
+        cleanup(ctx);
+
+    }
+
+    private void cleanup(WsContext ctx)
+    {
         String sessionType = ctx.attribute("sessionType");
 
-        if ("ADMIN".equals(sessionType))
+        if (SessionType.ADMIN.name().equals(sessionType))
         {
             notificationRegistry.unregisterAdmin(ctx);
         }
+        else if (SessionType.STAFF.name().equals(sessionType))
+        {
+            notificationRegistry.unregisterStaff(ctx);
+        }
         else
         {
+            notificationRegistry.unregisterAdmin(ctx);
             notificationRegistry.unregisterStaff(ctx);
         }
     }

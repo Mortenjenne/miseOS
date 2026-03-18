@@ -69,7 +69,7 @@ public class IngredientRequestService implements IIngredientRequestService
         IngredientRequest saved = ingredientRequestDAO.create(ingredientRequest);
 
         int numberOfPendingRequests = ingredientRequestDAO.getPendingRequestCount();
-        notificationSender.sendPendingUpdate(
+        notificationSender.broadcastPendingUpdate(
             NotificationType.NEW_INGREDIENT_REQUEST,
             NotificationCategory.INGREDIENT_REQUEST,
             numberOfPendingRequests
@@ -106,6 +106,7 @@ public class IngredientRequestService implements IIngredientRequestService
             reviewedBy
         );
 
+        broadcastPendingIngredientRequests();
         return IngredientRequestMapper.toDTO(updated);
     }
 
@@ -123,6 +124,7 @@ public class IngredientRequestService implements IIngredientRequestService
         IngredientRequest updated = ingredientRequestDAO.update(request);
 
         UserReferenceDTO reviewedBy = UserMapper.toReferenceDTO(requester);
+
         notificationSender.notifyStaff(
             updated.getCreatedBy().getId(),
             NotificationType.REQUEST_REJECTED,
@@ -132,6 +134,7 @@ public class IngredientRequestService implements IIngredientRequestService
             reviewedBy
         );
 
+        broadcastPendingIngredientRequests();
         return IngredientRequestMapper.toDTO(updated);
     }
 
@@ -212,7 +215,24 @@ public class IngredientRequestService implements IIngredientRequestService
         IngredientRequest ingredientRequest = ingredientRequestDAO.getByID(ingredientRequestId);
 
         ingredientRequest.delete(requester);
-        return ingredientRequestDAO.delete(ingredientRequestId);
+        boolean isDeleted = ingredientRequestDAO.delete(ingredientRequestId);
+
+        if(isDeleted)
+        {
+            broadcastPendingIngredientRequests();
+        }
+        return isDeleted;
+    }
+
+    private void broadcastPendingIngredientRequests()
+    {
+        int remainingPendingRequests = ingredientRequestDAO.getPendingRequestCount();
+
+        notificationSender.broadcastPendingUpdate(
+            NotificationType.PENDING_COUNT_UPDATED,
+            NotificationCategory.INGREDIENT_REQUEST,
+            remainingPendingRequests
+        );
     }
 
     private Dish validateAndGetDishForRequest(RequestType requestType, Long dishId, User creator)

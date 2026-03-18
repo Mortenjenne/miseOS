@@ -5,4 +5,5 @@ import app.persistence.entities.DishSuggestion;
 
 public interface IDishSuggestionReader extends IEntityReader<DishSuggestion, Long>
 {
+    int getPendingSuggestionsCount();
 }

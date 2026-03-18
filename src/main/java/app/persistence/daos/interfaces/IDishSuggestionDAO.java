@@ -10,6 +10,4 @@ import java.util.Set;
 public interface IDishSuggestionDAO extends IDishSuggestionReader, IEntityDAO<DishSuggestion, Long>
 {
     Set<DishSuggestion> findByFilter(Status status, Integer week, Integer year, Long stationId, String orderBy);
-
-    int getPendingSuggestionsCount();
 }

@@ -71,7 +71,7 @@ public class DishSuggestionService implements IDishSuggestionService
         DishSuggestion saved = dishSuggestionDAO.create(dishRequest);
 
         int numberOfPendingDishes = dishSuggestionDAO.getPendingSuggestionsCount();
-        notificationSender.sendPendingUpdate(
+        notificationSender.broadcastPendingUpdate(
             NotificationType.NEW_DISH_SUGGESTIONS,
             NotificationCategory.DISH_SUGGESTION,
             numberOfPendingDishes
@@ -116,6 +116,7 @@ public class DishSuggestionService implements IDishSuggestionService
             reviewedBy
         );
 
+        broadcastPendingDishSuggestions();
         return DishSuggestionMapper.toDTO(updated);
     }
 
@@ -143,6 +144,7 @@ public class DishSuggestionService implements IDishSuggestionService
             reviewedBy
         );
 
+        broadcastPendingDishSuggestions();
         return DishSuggestionMapper.toDTO(updated);
     }
 
@@ -185,7 +187,13 @@ public class DishSuggestionService implements IDishSuggestionService
             throw new UnauthorizedActionException("Only head chef, sous chef or creator can delete");
         }
 
-        return dishSuggestionDAO.delete(dishId);
+        boolean isDeleted =  dishSuggestionDAO.delete(dishId);
+
+        if(isDeleted)
+        {
+            broadcastPendingDishSuggestions();
+        }
+        return isDeleted;
     }
 
     @Override
@@ -227,6 +235,17 @@ public class DishSuggestionService implements IDishSuggestionService
             .stream()
             .map(DishSuggestionMapper::toDTO)
             .collect(Collectors.toList());
+    }
+
+    private void broadcastPendingDishSuggestions()
+    {
+        int remainingPendingDishSuggestions = dishSuggestionDAO.getPendingSuggestionsCount();
+
+        notificationSender.broadcastPendingUpdate(
+            NotificationType.PENDING_COUNT_UPDATED,
+            NotificationCategory.INGREDIENT_REQUEST,
+            remainingPendingDishSuggestions
+        );
     }
 
     private void ensureIsKitchenStaff(User user)
