@@ -38,7 +38,7 @@ X-Dev-User-Id: {{lineCookId}}
     "preferredSupplier": "Grønttorvet",
     "note": "Til laks",
     "requestType": "DISH_SPECIFIC",
-    "deliveryDate": "2026-03-20",
+    "deliveryDate": "2026-03-21",
     "dishId": 1
 }
 
@@ -69,12 +69,12 @@ X-Dev-User-Id: {{lineCookId}}
     "preferredSupplier": "Inco",
     "note": "Opdateret note",
     "requestType": "DISH_SPECIFIC",
-    "deliveryDate": "2026-03-21",
+    "deliveryDate": "2026-03-22",
     "dishId": 1
 }
 
 ### Approve request (without adjustments)
-PATCH {{url}}/ingredient-requests/5/approve
+PATCH {{url}}/ingredient-requests/39/approve
 X-Dev-User-Id: {{headChefId}}
 
 ### Approve request (with adjustments)

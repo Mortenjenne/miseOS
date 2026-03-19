@@ -15,8 +15,9 @@ public class Routes
     private final WeeklyMenuRoute weeklyMenuRoute;
     private final IngredientRequestRoute ingredientRequestRoute;
     private final ShoppingListRoute shoppingListRoute;
+    private final NotificationRoute notificationRoute;
 
-    public Routes(AllergenRoute allergenRoute, UserRoute userRoute, StationRoute stationRoute, MenuInspirationRoute menuInspirationRoute, DishSuggestionRoute dishSuggestionRoute, DishRoute dishRoute, WeeklyMenuRoute weeklyMenuRoute, IngredientRequestRoute ingredientRequestRoute, ShoppingListRoute shoppingListRoute)
+    public Routes(AllergenRoute allergenRoute, UserRoute userRoute, StationRoute stationRoute, MenuInspirationRoute menuInspirationRoute, DishSuggestionRoute dishSuggestionRoute, DishRoute dishRoute, WeeklyMenuRoute weeklyMenuRoute, IngredientRequestRoute ingredientRequestRoute, ShoppingListRoute shoppingListRoute, NotificationRoute notificationRoute)
     {
         this.allergenRoute = allergenRoute;
         this.userRoute = userRoute;
@@ -27,6 +28,7 @@ public class Routes
         this.weeklyMenuRoute = weeklyMenuRoute;
         this.ingredientRequestRoute = ingredientRequestRoute;
         this.shoppingListRoute = shoppingListRoute;
+        this.notificationRoute = notificationRoute;
     }
 
     public EndpointGroup getRoutes()
@@ -42,6 +44,7 @@ public class Routes
             weeklyMenuRoute.getRoutes().addEndpoints();
             ingredientRequestRoute.getRoutes().addEndpoints();
             shoppingListRoute.getRoutes().addEndpoints();
+            notificationRoute.getRoutes().addEndpoints();
         };
     }
 }

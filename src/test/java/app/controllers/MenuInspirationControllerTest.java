@@ -53,7 +53,7 @@ class MenuInspirationControllerTest
     }
 
     @Test
-    @DisplayName("GET /menu-inspirations/daily - Should give 3 dish suggestion from ai client")
+    @DisplayName("GET /menu-inspirations/daily - Should give 10 dish suggestion from ai client")
     void getDailyInspiration()
     {
         User claire = (User) seeded.get("user_claire");

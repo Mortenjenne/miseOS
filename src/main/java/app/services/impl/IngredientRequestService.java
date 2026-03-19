@@ -4,11 +4,15 @@ import app.dtos.ingredient.ApproveIngredientRequestDTO;
 import app.dtos.ingredient.CreateIngredientRequestDTO;
 import app.dtos.ingredient.IngredientRequestDTO;
 import app.dtos.ingredient.UpdateIngredientRequestDTO;
+import app.dtos.user.UserReferenceDTO;
+import app.enums.NotificationCategory;
+import app.enums.NotificationType;
 import app.enums.RequestType;
 import app.enums.Status;
 import app.exceptions.UnauthorizedActionException;
 import app.exceptions.ValidationException;
 import app.mappers.IngredientRequestMapper;
+import app.mappers.UserMapper;
 import app.persistence.daos.interfaces.readers.IDishReader;
 import app.persistence.daos.interfaces.IIngredientRequestDAO;
 import app.persistence.daos.interfaces.readers.IUserReader;
@@ -16,6 +20,7 @@ import app.persistence.entities.Dish;
 import app.persistence.entities.IngredientRequest;
 import app.persistence.entities.User;
 import app.services.IIngredientRequestService;
+import app.services.INotificationSender;
 import app.utils.ValidationUtil;
 
 import java.time.LocalDate;
@@ -26,13 +31,15 @@ public class IngredientRequestService implements IIngredientRequestService
     private final IIngredientRequestDAO ingredientRequestDAO;
     private final IDishReader dishReader;
     private final IUserReader userReader;
+    private final INotificationSender notificationSender;
 
 
-    public IngredientRequestService(IIngredientRequestDAO ingredientRequestDAO, IDishReader dishReader, IUserReader userReader)
+    public IngredientRequestService(IIngredientRequestDAO ingredientRequestDAO, IDishReader dishReader, IUserReader userReader, INotificationSender notificationSender)
     {
         this.ingredientRequestDAO = ingredientRequestDAO;
         this.dishReader = dishReader;
         this.userReader = userReader;
+        this.notificationSender = notificationSender;
     }
 
     @Override
@@ -60,6 +67,14 @@ public class IngredientRequestService implements IIngredientRequestService
         );
 
         IngredientRequest saved = ingredientRequestDAO.create(ingredientRequest);
+
+        int numberOfPendingRequests = ingredientRequestDAO.getPendingRequestCount();
+        notificationSender.broadcastPendingUpdate(
+            NotificationType.NEW_INGREDIENT_REQUEST,
+            NotificationCategory.INGREDIENT_REQUEST,
+            numberOfPendingRequests
+        );
+
         return IngredientRequestMapper.toDTO(saved);
     }
 
@@ -80,6 +95,18 @@ public class IngredientRequestService implements IIngredientRequestService
         request.approve(requester);
 
         IngredientRequest updated = ingredientRequestDAO.update(request);
+
+        UserReferenceDTO reviewedBy = UserMapper.toReferenceDTO(requester);
+        notificationSender.notifyStaff(
+            updated.getCreatedBy().getId(),
+            NotificationType.REQUEST_APPROVED,
+            NotificationCategory.INGREDIENT_REQUEST,
+            updated.getId(),
+            updated.getName(),
+            reviewedBy
+        );
+
+        broadcastPendingIngredientRequests();
         return IngredientRequestMapper.toDTO(updated);
     }
 
@@ -95,6 +122,19 @@ public class IngredientRequestService implements IIngredientRequestService
         request.reject(requester);
 
         IngredientRequest updated = ingredientRequestDAO.update(request);
+
+        UserReferenceDTO reviewedBy = UserMapper.toReferenceDTO(requester);
+
+        notificationSender.notifyStaff(
+            updated.getCreatedBy().getId(),
+            NotificationType.REQUEST_REJECTED,
+            NotificationCategory.INGREDIENT_REQUEST,
+            updated.getId(),
+            updated.getName(),
+            reviewedBy
+        );
+
+        broadcastPendingIngredientRequests();
         return IngredientRequestMapper.toDTO(updated);
     }
 
@@ -175,7 +215,24 @@ public class IngredientRequestService implements IIngredientRequestService
         IngredientRequest ingredientRequest = ingredientRequestDAO.getByID(ingredientRequestId);
 
         ingredientRequest.delete(requester);
-        return ingredientRequestDAO.delete(ingredientRequestId);
+        boolean isDeleted = ingredientRequestDAO.delete(ingredientRequestId);
+
+        if(isDeleted)
+        {
+            broadcastPendingIngredientRequests();
+        }
+        return isDeleted;
+    }
+
+    private void broadcastPendingIngredientRequests()
+    {
+        int remainingPendingRequests = ingredientRequestDAO.getPendingRequestCount();
+
+        notificationSender.broadcastPendingUpdate(
+            NotificationType.PENDING_COUNT_UPDATED,
+            NotificationCategory.INGREDIENT_REQUEST,
+            remainingPendingRequests
+        );
     }
 
     private Dish validateAndGetDishForRequest(RequestType requestType, Long dishId, User creator)

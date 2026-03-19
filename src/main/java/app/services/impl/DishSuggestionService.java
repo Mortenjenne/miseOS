@@ -4,14 +4,19 @@ import app.dtos.dishsuggestion.DishSuggestionCreateDTO;
 import app.dtos.dishsuggestion.DishSuggestionDTO;
 import app.dtos.dishsuggestion.DishSuggestionFilterDTO;
 import app.dtos.dishsuggestion.DishSuggestionUpdateDTO;
+import app.dtos.user.UserReferenceDTO;
+import app.enums.NotificationCategory;
+import app.enums.NotificationType;
 import app.enums.Status;
 import app.exceptions.UnauthorizedActionException;
 import app.mappers.DishSuggestionMapper;
+import app.mappers.UserMapper;
 import app.persistence.daos.interfaces.*;
 import app.persistence.daos.interfaces.readers.IStationReader;
 import app.persistence.daos.interfaces.readers.IUserReader;
 import app.persistence.entities.*;
 import app.services.IDishSuggestionService;
+import app.services.INotificationSender;
 import app.utils.ValidationUtil;
 
 import java.time.LocalDate;
@@ -27,14 +32,16 @@ public class DishSuggestionService implements IDishSuggestionService
     private final IUserReader userReader;
     private final IStationReader stationReader;
     private final IAllergenDAO allergenDAO;
+    private final INotificationSender notificationSender;
 
-    public DishSuggestionService(IDishSuggestionDAO dishSuggestionDAO, IDishDAO dishDAO, IUserReader userReader, IStationReader stationReader, IAllergenDAO allergenDAO)
+    public DishSuggestionService(IDishSuggestionDAO dishSuggestionDAO, IDishDAO dishDAO, IUserReader userReader, IStationReader stationReader, IAllergenDAO allergenDAO, INotificationSender notificationSender)
     {
         this.dishSuggestionDAO = dishSuggestionDAO;
         this.dishDAO = dishDAO;
         this.userReader = userReader;
         this.stationReader = stationReader;
         this.allergenDAO = allergenDAO;
+        this.notificationSender = notificationSender;
     }
 
     @Override
@@ -62,6 +69,14 @@ public class DishSuggestionService implements IDishSuggestionService
         dishRequest.checkCreationAllowed(LocalDate.now());
 
         DishSuggestion saved = dishSuggestionDAO.create(dishRequest);
+
+        int numberOfPendingDishes = dishSuggestionDAO.getPendingSuggestionsCount();
+        notificationSender.broadcastPendingUpdate(
+            NotificationType.NEW_DISH_SUGGESTIONS,
+            NotificationCategory.DISH_SUGGESTION,
+            numberOfPendingDishes
+        );
+
         return DishSuggestionMapper.toDTO(saved);
     }
 
@@ -91,6 +106,17 @@ public class DishSuggestionService implements IDishSuggestionService
 
         dishDAO.create(dish);
 
+        UserReferenceDTO reviewedBy = UserMapper.toReferenceDTO(approver);
+        notificationSender.notifyStaff(
+            updated.getCreatedBy().getId(),
+            NotificationType.SUGGESTION_APPROVED,
+            NotificationCategory.DISH_SUGGESTION,
+            updated.getId(),
+            updated.getNameDA(),
+            reviewedBy
+        );
+
+        broadcastPendingDishSuggestions();
         return DishSuggestionMapper.toDTO(updated);
     }
 
@@ -108,6 +134,17 @@ public class DishSuggestionService implements IDishSuggestionService
         dish.reject(approver, feedback);
         DishSuggestion updated = dishSuggestionDAO.update(dish);
 
+        UserReferenceDTO reviewedBy = UserMapper.toReferenceDTO(approver);
+        notificationSender.notifyStaff(
+            updated.getCreatedBy().getId(),
+            NotificationType.SUGGESTION_REJECTED,
+            NotificationCategory.DISH_SUGGESTION,
+            updated.getId(),
+            updated.getNameDA(),
+            reviewedBy
+        );
+
+        broadcastPendingDishSuggestions();
         return DishSuggestionMapper.toDTO(updated);
     }
 
@@ -150,7 +187,13 @@ public class DishSuggestionService implements IDishSuggestionService
             throw new UnauthorizedActionException("Only head chef, sous chef or creator can delete");
         }
 
-        return dishSuggestionDAO.delete(dishId);
+        boolean isDeleted =  dishSuggestionDAO.delete(dishId);
+
+        if(isDeleted)
+        {
+            broadcastPendingDishSuggestions();
+        }
+        return isDeleted;
     }
 
     @Override
@@ -192,6 +235,17 @@ public class DishSuggestionService implements IDishSuggestionService
             .stream()
             .map(DishSuggestionMapper::toDTO)
             .collect(Collectors.toList());
+    }
+
+    private void broadcastPendingDishSuggestions()
+    {
+        int remainingPendingDishSuggestions = dishSuggestionDAO.getPendingSuggestionsCount();
+
+        notificationSender.broadcastPendingUpdate(
+            NotificationType.PENDING_COUNT_UPDATED,
+            NotificationCategory.DISH_SUGGESTION,
+            remainingPendingDishSuggestions
+        );
     }
 
     private void ensureIsKitchenStaff(User user)

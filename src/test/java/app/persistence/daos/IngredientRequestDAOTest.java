@@ -129,7 +129,7 @@ class IngredientRequestDAOTest
     void getAll()
     {
         List<IngredientRequest> requests = ingredientRequestDAO.findByFilter(null, null, null, null, null);
-        assertThat(requests, hasSize(11));
+        assertThat(requests, hasSize(19));
     }
 
     @Test
@@ -234,5 +234,13 @@ class IngredientRequestDAOTest
         List<IngredientRequest> filtered = ingredientRequestDAO.findByFilter(Status.PENDING, null, null, null, null);
 
         assertThat(all.size(), greaterThan(filtered.size()));
+    }
+
+    @Test
+    @DisplayName("Count pending dishes - Should return correct number of pending ingredient requests")
+    void countPendingDishes()
+    {
+        int numberOfPendingDishes = ingredientRequestDAO.getPendingRequestCount();
+        assertThat(numberOfPendingDishes, is(3));
     }
 }

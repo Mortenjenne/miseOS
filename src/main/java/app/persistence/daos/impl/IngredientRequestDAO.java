@@ -64,6 +64,29 @@ public class IngredientRequestDAO implements IIngredientRequestDAO
     }
 
     @Override
+    public int getPendingRequestCount()
+    {
+        try(EntityManager em = emf.createEntityManager())
+        {
+            try
+            {
+                TypedQuery<Long> query = em.createQuery(
+                    "SELECT COUNT(ir) FROM IngredientRequest ir " +
+                        "WHERE ir.requestStatus = :status",
+                    Long.class
+                );
+                query.setParameter("status", Status.PENDING);
+
+                return Math.toIntExact(query.getSingleResult());
+            }
+            catch (PersistenceException e)
+            {
+                throw new DatabaseException("Failed to count all pending ingredient requests", e);
+            }
+        }
+    }
+
+    @Override
     public IngredientRequest create(IngredientRequest ingredientRequest)
     {
         DBValidator.validateNotNull(ingredientRequest, "IngredientRequest");
