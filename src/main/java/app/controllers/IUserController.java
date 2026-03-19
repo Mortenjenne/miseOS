@@ -15,4 +15,5 @@ public interface IUserController extends ICrudController
     void assignToStation(Context ctx);
 
 
+    void getMe(Context ctx);
 }

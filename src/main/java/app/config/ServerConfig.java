@@ -77,7 +77,8 @@ public class ServerConfig
         String requestId = UUID.randomUUID().toString().substring(0, 8);
         ctx.attribute(REQ_ID, requestId);
         ctx.attribute(START_TIME, System.currentTimeMillis());
-        String body = ctx.body();
+
+        String body = isSensitivePath(ctx.path()) ? "[CENSORED]" : ctx.body();
 
         if (!body.isBlank())
         {
@@ -122,5 +123,10 @@ public class ServerConfig
                 duration
             );
         }
+    }
+
+    private boolean isSensitivePath(String path)
+    {
+        return path.contains("/login") || path.contains("/register") || path.contains("/password") || path.contains("/auth");
     }
 }

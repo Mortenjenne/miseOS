@@ -1,5 +1,6 @@
 package app.controllers;
 
+import app.dtos.security.AuthenticatedUser;
 import app.dtos.security.LoginRequestDTO;
 import app.dtos.security.LoginResponseDTO;
 import app.enums.UserRole;
@@ -8,6 +9,7 @@ import app.exceptions.UnauthorizedActionException;
 import app.persistence.entities.User;
 import app.services.ISecurityService;
 import io.javalin.http.Context;
+import io.javalin.security.RouteRole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,10 +56,10 @@ public class SecurityController implements ISecurityController
         validateHeader(header);
 
         String token = header.substring(7);
-        User user = securityService.verifyAndGetUser(token);
+        AuthenticatedUser authUser = securityService.verifyAndExtract(token);
 
-        ctx.attribute("user", user);
-        logger.info("[{}] Authenticated: {} role: {}", ctx.attribute("request-id"), user.getEmail(), user.getUserRole().name());
+        ctx.attribute("authUser", authUser);
+        logger.info("[{}] Authenticated: {} role: {}", ctx.attribute("request-id"), authUser.email(), authUser.userRole());
     }
 
     @Override
@@ -70,40 +72,44 @@ public class SecurityController implements ISecurityController
             return;
         }
 
-        User user = ctx.attribute("user");
-        requireUserNotNull(user);
+        AuthenticatedUser authUser = ctx.attribute("authUser");
+        requireUserNotNull(authUser);
 
         if (allowedRoles.contains("KITCHEN_STAFF"))
         {
-            boolean isKitchenStaff = user.getUserRole() == UserRole.HEAD_CHEF || user.getUserRole() == UserRole.SOUS_CHEF || user.getUserRole() == UserRole.LINE_COOK;
-
-            if (!isKitchenStaff)
+            if (!isKitchenStaff(authUser))
             {
                 throw new UnauthorizedActionException("Kitchen staff only");
             }
             return;
         }
 
-        if (!allowedRoles.contains(user.getUserRole().name()))
+        if (!allowedRoles.contains(authUser.userRole().name()))
         {
-            logger.warn("[{}] Authorization failed: {} has role {} but needs {}", ctx.attribute("request-id"), user.getEmail(), user.getUserRole().name(), allowedRoles);
+            logger.warn("[{}] Authorization failed: {} has role {} but needs {}", ctx.attribute("request-id"), authUser.email(), authUser.userRole(), allowedRoles);
             throw new UnauthorizedActionException("Insufficient role. Required: " + allowedRoles);
         }
     }
 
-    private static void requireUserNotNull(User user)
+    private static void requireUserNotNull(AuthenticatedUser authenticatedUser)
     {
-        if (user == null)
+        if (authenticatedUser == null)
         {
             throw new AuthenticationException("No authenticated user found");
         }
+    }
+
+    private boolean isKitchenStaff(AuthenticatedUser authenticatedUser)
+    {
+        return authenticatedUser.userRole() == UserRole.HEAD_CHEF || authenticatedUser.userRole() == UserRole.SOUS_CHEF || authenticatedUser.userRole() == UserRole.LINE_COOK;
     }
 
     private Set<String> getAllowedRoles(Context ctx)
     {
         return ctx.routeRoles()
             .stream()
-            .map(role -> role.toString().toUpperCase())
+            .map(RouteRole::toString)
+            .map(String::toUpperCase)
             .collect(Collectors.toSet());
     }
 

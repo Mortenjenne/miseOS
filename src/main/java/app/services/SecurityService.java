@@ -2,7 +2,8 @@ package app.services;
 
 import app.dtos.security.LoginRequestDTO;
 import app.dtos.security.LoginResponseDTO;
-import app.dtos.security.TokenClaims;
+import app.dtos.security.AuthenticatedUser;
+import app.enums.UserRole;
 import app.exceptions.AuthenticationException;
 import app.persistence.daos.interfaces.readers.IUserReader;
 import app.persistence.entities.User;
@@ -29,6 +30,7 @@ public class SecurityService implements ISecurityService
         this.issuer = issuer;
         this.secretKey = secretKey;
         this.expirationMs = expirationMs;
+        validateSecurityConfig();
     }
 
     @Override
@@ -78,13 +80,7 @@ public class SecurityService implements ISecurityService
     }
 
     @Override
-    public User verifyAndGetUser(String token)
-    {
-        TokenClaims claims = verifyAndExtract(token);
-        return userReader.getByID(claims.userId());
-    }
-
-    private TokenClaims verifyAndExtract(String token)
+    public AuthenticatedUser verifyAndExtract(String token)
     {
         try
         {
@@ -93,16 +89,20 @@ public class SecurityService implements ISecurityService
             if (!jwt.verify(new MACVerifier(secretKey)))
                 throw new AuthenticationException("Token signature invalid");
 
-            JWTClaimsSet claims = jwt.getJWTClaimsSet();
+            JWTClaimsSet claims = getJwtClaimsSet(jwt);
 
-            if (claims.getExpirationTime().before(new Date()))
-                throw new AuthenticationException("Token has expired");
+            Long userId = claims.getLongClaim("userId");
+            String email = claims.getStringClaim("email");
+            String role = claims.getStringClaim("role");
 
-            return new TokenClaims(
-                claims.getLongClaim("userId"),
-                claims.getStringClaim("email"),
-                claims.getStringClaim("role")
-            );
+            if (userId == null || userId <= 0 || email == null || email.isBlank() || role == null || role.isBlank())
+            {
+                throw new AuthenticationException("Token claims invalid");
+            }
+
+            UserRole userRole = parseUserRoleClaim(role);
+
+            return new AuthenticatedUser(userId, email, userRole);
         }
         catch (AuthenticationException e)
         {
@@ -112,6 +112,43 @@ public class SecurityService implements ISecurityService
         {
             throw new AuthenticationException("Token could not be verified");
         }
+    }
+
+    private JWTClaimsSet getJwtClaimsSet(SignedJWT jwt) throws ParseException
+    {
+        JWTClaimsSet claims = jwt.getJWTClaimsSet();
+
+        Date now = new Date();
+
+        if (claims.getExpirationTime() == null || claims.getExpirationTime().before(now))
+        {
+            throw new AuthenticationException("Token has expired");
+        }
+
+        if (claims.getNotBeforeTime() != null && now.before(claims.getNotBeforeTime()))
+        {
+            throw new AuthenticationException("Token not active yet");
+        }
+
+        if (!issuer.equals(claims.getIssuer()))
+        {
+            throw new AuthenticationException("Token issuer invalid");
+        }
+        return claims;
+    }
+
+    private UserRole parseUserRoleClaim(String roleClaim)
+    {
+        UserRole role;
+        try
+        {
+            role = UserRole.valueOf(roleClaim.toUpperCase());
+        }
+        catch (IllegalArgumentException ex)
+        {
+            throw new AuthenticationException("Token role invalid");
+        }
+        return role;
     }
 
     private void validateLoginRequest(LoginRequestDTO dto)
@@ -127,5 +164,28 @@ public class SecurityService implements ISecurityService
             token,
             user.getEmail(),
             user.getUserRole().name());
+    }
+
+    private void validateSecurityConfig()
+    {
+        if (issuer == null || issuer.isBlank())
+        {
+            throw new IllegalStateException("JWT issuer must be configured");
+        }
+
+        if (secretKey == null || secretKey.isBlank())
+        {
+            throw new IllegalStateException("JWT secret key must be configured");
+        }
+
+        if (secretKey.getBytes().length < 32)
+        {
+            throw new IllegalStateException("JWT secret key too short. Use at least 32 bytes");
+        }
+
+        if (expirationMs <= 0)
+        {
+            throw new IllegalStateException("JWT expiration must be > 0");
+        }
     }
 }

@@ -2,8 +2,6 @@ package app.routes;
 
 import io.javalin.apibuilder.EndpointGroup;
 
-import static io.javalin.apibuilder.ApiBuilder.get;
-
 public class Routes
 {
     private final SecurityRoute securityRoute;

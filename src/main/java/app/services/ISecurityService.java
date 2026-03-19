@@ -1,8 +1,8 @@
 package app.services;
 
+import app.dtos.security.AuthenticatedUser;
 import app.dtos.security.LoginRequestDTO;
 import app.dtos.security.LoginResponseDTO;
-import app.dtos.security.TokenClaims;
 import app.persistence.entities.User;
 
 public interface ISecurityService
@@ -11,5 +11,5 @@ public interface ISecurityService
 
     String createToken(Long userId, String email, String role);
 
-    User verifyAndGetUser(String token);
+    AuthenticatedUser verifyAndExtract(String token);
 }

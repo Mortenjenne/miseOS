@@ -3,6 +3,8 @@ package app.controllers;
 import app.dtos.security.LoginRequestDTO;
 import app.dtos.user.*;
 import app.enums.UserRole;
+import app.mappers.UserMapper;
+import app.persistence.entities.User;
 import app.services.IUserService;
 import app.utils.RequestUtil;
 import app.utils.SecurityUtil;
@@ -139,5 +141,12 @@ public class UserController implements IUserController
         boolean deleted = userService.delete(requesterId, targetUserId);
 
         ctx.status(deleted ? 204 : 404);
+    }
+
+    @Override
+    public void getMe(Context ctx)
+    {
+        User user = ctx.attribute("user");
+        ctx.status(200).json(UserMapper.toDTO(user));
     }
 }
