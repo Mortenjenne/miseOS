@@ -129,7 +129,7 @@ class IngredientRequestDAOTest
     void getAll()
     {
         List<IngredientRequest> requests = ingredientRequestDAO.findByFilter(null, null, null, null, null);
-        assertThat(requests, hasSize(11));
+        assertThat(requests, hasSize(19));
     }
 
     @Test
