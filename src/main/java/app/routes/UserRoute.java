@@ -1,6 +1,7 @@
 package app.routes;
 
 import app.controllers.IUserController;
+import app.enums.Role;
 import io.javalin.apibuilder.EndpointGroup;
 
 import static io.javalin.apibuilder.ApiBuilder.*;
@@ -23,11 +24,10 @@ public class UserRoute
         {
             path("users", () ->
             {
-                get(userController::getAll);
-                get("/{id}", userController::getById);
-                post("/login", userController::login);
-                post( userController::create);
-                put("/{id}", userController::update);
+                get("/", userController::getAll, Role.HEAD_CHEF);
+                get("/{id}", userController::getById, Role.HEAD_CHEF);
+                post("/", userController::create, Role.ANYONE);
+                put("/{id}", userController::update, Role.HEAD_CHEF, Role.SOUS_CHEF, Role.LINE_COOK);
                 patch("/{id}/station/{stationId}", userController::assignToStation);
                 patch("/{id}/role", userController::changeRole);
                 patch("/{id}/email", userController::changeEmail);

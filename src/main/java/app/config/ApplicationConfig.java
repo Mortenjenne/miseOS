@@ -26,9 +26,7 @@ public class ApplicationConfig
     public static Javalin buildAndStart(int port, DIContainer di)
     {
         Routes routes = buildRoutes(di);
-        IExceptionController exceptionController = new ExceptionController();
-        ServerConfig serverConfig = new ServerConfig(routes, exceptionController);
-
+        ServerConfig serverConfig = new ServerConfig(routes, di.getExceptionController(), di.getSecurityController());
         Javalin app = serverConfig.create();
         logger.info("Starting javalin app");
         app.start(port);
@@ -44,6 +42,7 @@ public class ApplicationConfig
     private static Routes buildRoutes(DIContainer di)
     {
         return new Routes(
+            new SecurityRoute(di.getSecurityController(), di.getUserController()),
             new AllergenRoute(di.getAllergenController()),
             new UserRoute(di.getUserController()),
             new StationRoute(di.getStationController()),

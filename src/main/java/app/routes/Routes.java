@@ -6,6 +6,7 @@ import static io.javalin.apibuilder.ApiBuilder.get;
 
 public class Routes
 {
+    private final SecurityRoute securityRoute;
     private final AllergenRoute allergenRoute;
     private final UserRoute userRoute;
     private final StationRoute stationRoute;
@@ -17,8 +18,9 @@ public class Routes
     private final ShoppingListRoute shoppingListRoute;
     private final NotificationRoute notificationRoute;
 
-    public Routes(AllergenRoute allergenRoute, UserRoute userRoute, StationRoute stationRoute, MenuInspirationRoute menuInspirationRoute, DishSuggestionRoute dishSuggestionRoute, DishRoute dishRoute, WeeklyMenuRoute weeklyMenuRoute, IngredientRequestRoute ingredientRequestRoute, ShoppingListRoute shoppingListRoute, NotificationRoute notificationRoute)
+    public Routes(SecurityRoute securityRoute, AllergenRoute allergenRoute, UserRoute userRoute, StationRoute stationRoute, MenuInspirationRoute menuInspirationRoute, DishSuggestionRoute dishSuggestionRoute, DishRoute dishRoute, WeeklyMenuRoute weeklyMenuRoute, IngredientRequestRoute ingredientRequestRoute, ShoppingListRoute shoppingListRoute, NotificationRoute notificationRoute)
     {
+        this.securityRoute = securityRoute;
         this.allergenRoute = allergenRoute;
         this.userRoute = userRoute;
         this.stationRoute = stationRoute;
@@ -35,6 +37,7 @@ public class Routes
     {
         return () ->
         {
+            securityRoute.getRoutes().addEndpoints();
             allergenRoute.getRoutes().addEndpoints();
             userRoute.getRoutes().addEndpoints();
             stationRoute.getRoutes().addEndpoints();

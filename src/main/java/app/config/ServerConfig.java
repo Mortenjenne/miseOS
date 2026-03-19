@@ -1,6 +1,7 @@
 package app.config;
 
 import app.controllers.IExceptionController;
+import app.controllers.ISecurityController;
 import app.exceptions.*;
 import app.routes.Routes;
 import io.javalin.Javalin;
@@ -9,7 +10,6 @@ import io.javalin.http.Context;
 import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import io.javalin.rendering.template.JavalinThymeleaf;
 
 import java.util.UUID;
 
@@ -21,11 +21,13 @@ public class ServerConfig
 
     private final Routes routes;
     private final IExceptionController exceptionController;
+    private final ISecurityController securityController;
 
-    public ServerConfig(Routes routes, IExceptionController exceptionController)
+    public ServerConfig(Routes routes, IExceptionController exceptionController, ISecurityController securityController)
     {
         this.routes = routes;
         this.exceptionController = exceptionController;
+        this.securityController = securityController;
     }
 
     public Javalin create()
@@ -36,12 +38,19 @@ public class ServerConfig
             config.router.contextPath = "/api/v1";
             config.bundledPlugins.enableRouteOverview("/routes");
             config.routes.apiBuilder(routes.getRoutes());
-            configureMiddleWare(config);
+            configureMiddleWareLogging(config);
+            configureMiddleWareSecurity(config);
             configureExceptions(config);
         });
     }
 
-    private void configureMiddleWare(JavalinConfig config)
+    private void configureMiddleWareSecurity(JavalinConfig config)
+    {
+        config.routes.beforeMatched(securityController::authenticate);
+        config.routes.beforeMatched(securityController::authorize);
+    }
+
+    private void configureMiddleWareLogging(JavalinConfig config)
     {
         config.routes.before(this::logRequest);
         config.routes.after(this::logResponse);

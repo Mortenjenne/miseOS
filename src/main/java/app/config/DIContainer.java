@@ -51,6 +51,7 @@ public final class DIContainer
     private final IMenuInspirationService menuInspirationService;
     private final NotificationService notificationService;
     private final INotificationSnapshotService notificationSnapshotService;
+    private final ISecurityService securityService;
 
     @Getter
     private final IAllergenController allergenController;
@@ -81,6 +82,12 @@ public final class DIContainer
 
     @Getter
     private final INotificationController notificationController;
+
+    @Getter
+    private final IExceptionController exceptionController;
+
+    @Getter
+    private final ISecurityController securityController;
 
 
     private DIContainer(EntityManagerFactory emf)
@@ -117,7 +124,7 @@ public final class DIContainer
         this.ingredientRequestService = new IngredientRequestService(ingredientRequestDAO, dishDAO, userDAO, notificationService);
         this.shoppingListService = new ShoppingListService(shoppingListDAO, ingredientRequestDAO, userDAO, aiService);
         this.menuInspirationService = new MenuInspirationService(aiService, userDAO, weatherClient);
-
+        this.securityService = new SecurityService(userDAO, apiConfig.getIssuer(), apiConfig.getSecretKey(), apiConfig.getExpirationMs());
 
         this.allergenController = new AllergenController(allergenService);
         this.stationController = new StationController(stationService);
@@ -129,6 +136,8 @@ public final class DIContainer
         this.ingredientRequestController = new IngredientRequestController(ingredientRequestService);
         this.shoppingListController = new ShoppingListController(shoppingListService);
         this.notificationController = new NotificationController(notificationService, notificationSnapshotService);
+        this.exceptionController = new ExceptionController();
+        this.securityController = new SecurityController(securityService);
     }
 
     public static DIContainer getInstance()
