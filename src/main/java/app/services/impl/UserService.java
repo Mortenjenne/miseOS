@@ -1,5 +1,6 @@
 package app.services.impl;
 
+import app.dtos.security.LoginRequestDTO;
 import app.dtos.user.*;
 import app.enums.UserRole;
 import app.exceptions.UnauthorizedActionException;

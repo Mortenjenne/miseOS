@@ -6,5 +6,6 @@ public enum UserRole
     SOUS_CHEF,
     CHEF_DE_PARTIE,
     LINE_COOK,
-    CUSTOMER;
+    CUSTOMER,
+    ANYONE;
 }

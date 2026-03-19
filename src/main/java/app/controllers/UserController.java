@@ -1,5 +1,6 @@
 package app.controllers;
 
+import app.dtos.security.LoginRequestDTO;
 import app.dtos.user.*;
 import app.enums.UserRole;
 import app.services.IUserService;
