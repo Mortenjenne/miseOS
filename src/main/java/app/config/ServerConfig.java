@@ -55,6 +55,7 @@ public class ServerConfig
         config.routes.exception(IllegalStateException.class, exceptionController::handleIllegalState);
         config.routes.exception(ConflictException.class, exceptionController::handleConflict);
         config.routes.exception(UnauthorizedActionException.class, exceptionController::handleUnauthorized);
+        config.routes.exception(AuthenticationException.class, exceptionController::handleAuthentication);
         config.routes.exception(AIIntegrationException.class, exceptionController::handleAIIntegration);
         config.routes.exception(WeatherIntegrationException.class, exceptionController::handleWeatherIntegration);
         config.routes.exception(TranslationException.class, exceptionController::handleTranslation);

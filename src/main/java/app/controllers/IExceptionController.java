@@ -3,6 +3,7 @@ package app.controllers;
 import app.exceptions.*;
 import io.javalin.http.Context;
 import jakarta.persistence.EntityNotFoundException;
+import org.jetbrains.annotations.NotNull;
 
 public interface IExceptionController
 {
@@ -27,4 +28,6 @@ public interface IExceptionController
     void handleTranslation(TranslationException e, Context ctx);
 
     void handleGenericException(Exception e, Context ctx);
+
+    void handleAuthentication(AuthenticationException e, Context ctx);
 }

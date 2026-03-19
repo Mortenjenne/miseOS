@@ -78,7 +78,13 @@ public class SecurityService implements ISecurityService
     }
 
     @Override
-    public TokenClaims verifyAndExtract(String token)
+    public User verifyAndGetUser(String token)
+    {
+        TokenClaims claims = verifyAndExtract(token);
+        return userReader.getByID(claims.userId());
+    }
+
+    private TokenClaims verifyAndExtract(String token)
     {
         try
         {
@@ -93,10 +99,14 @@ public class SecurityService implements ISecurityService
                 throw new AuthenticationException("Token has expired");
 
             return new TokenClaims(
-                ((Number) claims.getClaim("userId")).longValue(),
-                claims.getClaim("email").toString(),
-                claims.getClaim("role").toString()
+                claims.getLongClaim("userId"),
+                claims.getStringClaim("email"),
+                claims.getStringClaim("role")
             );
+        }
+        catch (AuthenticationException e)
+        {
+            throw e;
         }
         catch (ParseException | JOSEException e)
         {
@@ -118,6 +128,4 @@ public class SecurityService implements ISecurityService
             user.getEmail(),
             user.getUserRole().name());
     }
-
-
 }

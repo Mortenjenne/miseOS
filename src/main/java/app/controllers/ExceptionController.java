@@ -101,6 +101,14 @@ public class ExceptionController implements IExceptionController
         buildErrorResponse(500, "An unexpected error occurred. Reference: " + reqId, ctx, reqId);
     }
 
+    @Override
+    public void handleAuthentication(AuthenticationException e, Context ctx)
+    {
+        String reqId = ctx.attribute("request-id");
+        logger.warn("[{}] Authentication failed [{}] {}: {}", reqId, ctx.method(), ctx.path(), e.getMessage());
+        buildErrorResponse(401, e.getMessage(), ctx, reqId);
+    }
+
     private void buildErrorResponse(int status, String message, Context ctx, String referenceId)
     {
         ErrorResponseDTO responseDTO = new ErrorResponseDTO(
