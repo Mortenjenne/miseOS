@@ -82,9 +82,9 @@ public class DishSuggestionService implements IDishSuggestionService
         ValidationUtil.validateId(dishId);
 
         DishSuggestion suggestion = dishSuggestionDAO.getByID(dishId);
-        User approver = userReader.getByID(authUser.userId());
+        User reviewer = userReader.getByID(authUser.userId());
 
-        suggestion.approve(approver);
+        suggestion.approve(reviewer);
 
         DishSuggestion updated = dishSuggestionDAO.update(suggestion);
 
@@ -100,7 +100,7 @@ public class DishSuggestionService implements IDishSuggestionService
 
         dishDAO.create(dish);
 
-        notifyStaffSuggestionApproved(approver, updated);
+        notifyStaffSuggestionApproved(reviewer, updated);
         broadcastRemainingPendingDishSuggestions();
 
         return DishSuggestionMapper.toDTO(updated);
@@ -115,12 +115,12 @@ public class DishSuggestionService implements IDishSuggestionService
         validateAuthenticatedUser(authUser);
 
         DishSuggestion dish = dishSuggestionDAO.getByID(dishId);
-        User rejecter = userReader.getByID(authUser.userId());
+        User reviewer = userReader.getByID(authUser.userId());
 
-        dish.reject(rejecter, feedback);
+        dish.reject(reviewer, feedback);
         DishSuggestion updated = dishSuggestionDAO.update(dish);
 
-        notifyStaffSuggestionRejected(rejecter, updated);
+        notifyStaffSuggestionRejected(reviewer, updated);
         broadcastRemainingPendingDishSuggestions();
 
         return DishSuggestionMapper.toDTO(updated);
@@ -158,6 +158,7 @@ public class DishSuggestionService implements IDishSuggestionService
     public boolean deleteSuggestion(AuthenticatedUser authUser, Long dishId)
     {
         validateAuthenticatedUser(authUser);
+        ValidationUtil.validateId(dishId);
 
         DishSuggestion suggestion = dishSuggestionDAO.getByID(dishId);
 

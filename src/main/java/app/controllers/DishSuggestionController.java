@@ -129,6 +129,6 @@ public class DishSuggestionController implements IDishSuggestionController
         Long allergenId = RequestUtil.requirePathId(ctx, "allergenId");
 
         DishSuggestionDTO dishSuggestionDTO = dishSuggestionService.removeAllergen(authUser, suggestionId, allergenId);
-        ctx.status(204).json(dishSuggestionDTO);
+        ctx.status(200).json(dishSuggestionDTO);
     }
 }
