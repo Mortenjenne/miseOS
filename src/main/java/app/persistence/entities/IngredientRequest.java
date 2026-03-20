@@ -14,7 +14,7 @@ import lombok.Setter;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-@NoArgsConstructor
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 @Getter
 @Entity
 @Table(name = "ingredient_request")
@@ -60,23 +60,38 @@ public class IngredientRequest implements IEntity
     @Column
     private LocalDateTime updatedAt;
 
-    @Setter
     @ManyToOne
     @JoinColumn(name = "created_by_user_id")
     private User createdBy;
 
-    @Setter
     @ManyToOne
     @JoinColumn(name = "dish_id")
     private Dish dish;
 
     public IngredientRequest(String name, double quantity, Unit unit, String preferredSupplier, String note, RequestType requestType, LocalDate deliveryDate, Dish dish, User createdBy)
     {
-        this.name = name;
+        ValidationUtil.validateNotBlank(name, "Name");
+        ValidationUtil.validatePositive(quantity, "Quantity");
+        ValidationUtil.validateNotNull(unit, "Unit");
+        ValidationUtil.validateNotNull(requestType, "Request type");
+        ValidationUtil.validateNotNull(deliveryDate, "Delivery date");
+        ValidationUtil.validateNotNull(createdBy, "Created by");
+
+        if (requestType == RequestType.DISH_SPECIFIC && dish == null)
+        {
+            throw new IllegalArgumentException("Dish is required for dish-specific requests");
+        }
+
+        if (requestType == RequestType.GENERAL_STOCK && dish != null)
+        {
+            throw new IllegalArgumentException("Dish must be null for general requests");
+        }
+
+        this.name = name.trim();
         this.quantity = quantity;
         this.unit = unit;
         this.preferredSupplier = preferredSupplier;
-        this.note = note;
+        this.note = note != null ? note.trim() : null;
         this.requestStatus = Status.PENDING;
         this.requestType = requestType;
         this.deliveryDate = deliveryDate;
@@ -87,7 +102,7 @@ public class IngredientRequest implements IEntity
     public void approve(User headChef)
     {
         requireHeadOrSousChef(headChef);
-        valideIngredientRequest();
+        requirePendingStatus();
         this.requestStatus = Status.APPROVED;
         this.reviewedAt = LocalDateTime.now();
     }
@@ -95,7 +110,7 @@ public class IngredientRequest implements IEntity
     public void reject(User headChef)
     {
         requireHeadOrSousChef(headChef);
-        valideIngredientRequest();
+        requirePendingStatus();
         this.requestStatus = Status.REJECTED;
         this.reviewedAt = LocalDateTime.now();
     }
@@ -114,17 +129,16 @@ public class IngredientRequest implements IEntity
         this.note = note;
         this.deliveryDate = deliveryDate;
         this.dish = dish;
-        this.updatedAt = LocalDateTime.now();
     }
 
     public void delete(User user)
     {
         boolean isOwner = this.createdBy.getId().equals(user.getId());
-        boolean isHeadChef = user.isHeadChef();
+        boolean isHeadChefOrSousChef = user.isHeadChef() || user.isSousChef();
 
-        if (!isOwner && !isHeadChef)
+        if (!isOwner && !isHeadChefOrSousChef)
         {
-            throw new UnauthorizedActionException("Can only delete your own requests");
+            throw new UnauthorizedActionException("Only owner, head chef, or sous chef can delete requests");
         }
 
         if (!isPending())
@@ -147,8 +161,6 @@ public class IngredientRequest implements IEntity
         {
             this.note = note.trim();
         }
-
-        this.updatedAt = LocalDateTime.now();
     }
 
     public boolean isPending() {
@@ -156,18 +168,13 @@ public class IngredientRequest implements IEntity
     }
 
     @PrePersist
-    public void createdAt()
+    private void createdAt()
     {
         this.createdAt = LocalDateTime.now();
     }
 
-    private void valideIngredientRequest()
-    {
-        if (this.requestStatus != Status.PENDING)
-        {
-            throw new ConflictException("Only pending suggestions allowed here");
-        }
-    }
+    @PreUpdate
+    private void onUpdate(){this.updatedAt = LocalDateTime.now();}
 
     private void requirePendingStatus()
     {
