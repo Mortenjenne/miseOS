@@ -5,21 +5,20 @@ import app.dtos.allergen.AllergenDTO;
 import app.dtos.allergen.AllergenUpdateRequestDTO;
 
 import java.util.List;
-import java.util.Set;
 
 public interface IAllergenService
 {
-    AllergenDTO registerAllergen(Long creatorId, AllergenCreateRequestDTO dto);
+    AllergenDTO registerAllergen(AllergenCreateRequestDTO dto);
 
-    AllergenDTO updateAllergen(Long allergenId, Long editorId, AllergenUpdateRequestDTO dto);
+    AllergenDTO updateAllergen(Long allergenId, AllergenUpdateRequestDTO dto);
 
-    boolean deleteAllergen(Long allergenId, Long requesterId);
+    boolean deleteAllergen(Long allergenId);
 
     AllergenDTO getAllergenById(Long id);
 
-    Set<AllergenDTO> getAllAllergens();
+    List<AllergenDTO> getAllAllergens();
 
     AllergenDTO getAllergenByNameDA(String nameDA);
 
-    List<AllergenDTO> seedEUAllergens(Long headChefId);
+    List<AllergenDTO> seedEUAllergens();
 }

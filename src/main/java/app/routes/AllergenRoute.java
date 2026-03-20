@@ -1,6 +1,7 @@
 package app.routes;
 
 import app.controllers.IAllergenController;
+import app.enums.Role;
 import io.javalin.apibuilder.EndpointGroup;
 
 import static io.javalin.apibuilder.ApiBuilder.*;
@@ -19,13 +20,13 @@ public class AllergenRoute
     {
         return () -> path("/allergens", () ->
         {
-            get("/", allergenController::getAll);
-            get("/{id}", allergenController::getById);
-            get("/name/{name}", allergenController::getByName);
-            post("/", allergenController::create);
-            post("/seed", allergenController::seedEUAllergens);
-            put("/{id}", allergenController::update);
-            delete("/{id}", allergenController::delete);
+            get("/", allergenController::getAll, Role.KITCHEN_STAFF);
+            get("/name/{name}", allergenController::getByName, Role.KITCHEN_STAFF);
+            get("/{id}", allergenController::getById, Role.KITCHEN_STAFF);
+            post("/", allergenController::create, Role.HEAD_CHEF);
+            post("/seed", allergenController::seedEUAllergens, Role.HEAD_CHEF);
+            put("/{id}", allergenController::update, Role.HEAD_CHEF);
+            delete("/{id}", allergenController::delete, Role.HEAD_CHEF);
         });
     }
 }

@@ -1,32 +1,38 @@
 
 ### GET by ID
 GET {{url}}/allergens/16
+Authorization: Bearer {{authToken}}
 
 ### GET ALL
 GET {{url}}/allergens
+Authorization: Bearer {{authToken}}
 
 ### GET by Name
 GET {{url}}/allergens/name/Sell
+Authorization: Bearer {{authToken}}
 
 ### POST create allergen
 POST {{url}}/allergens
 Content-Type: application/json
+Authorization: Bearer {{authToken}}
 
 {
-"nameDA": "Pinjekerner",
-"nameEN": "Pine nuts",
-"descriptionDA": "Pinjekerner og produkter heraf",
-"descriptionEN": "Pine nuts and products thereof",
-"displayNumber": 15
+    "nameDA": "Pinjekerner",
+    "nameEN": "Pine nuts",
+    "descriptionDA": "Pinjekerner og produkter heraf",
+    "descriptionEN": "Pine nuts and products thereof",
+    "displayNumber": 15
 }
 
 ### POST seed EU allergens
 POST {{url}}/allergens/seed
 Content-Type: application/json
+Authorization: Bearer {{authToken}}
 
 ### PUT update allergen
 PUT {{url}}/allergens/15
 Content-Type: application/json
+Authorization: Bearer {{authToken}}
 
 {
     "nameDA": "Pinjekerner(Updated)",
@@ -38,6 +44,7 @@ Content-Type: application/json
 
 ### DELETE allergen
 DELETE {{url}}/allergens/15
+Authorization: Bearer {{authToken}}
 
 ###
 

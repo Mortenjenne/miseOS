@@ -6,7 +6,6 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
-@AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Entity
@@ -23,10 +22,10 @@ public class Allergen implements IEntity
     @Column(name = "name_en", nullable = false, unique = true, length = 100)
     private String nameEN;
 
-    @Column(name = "description_da", length = 255)
+    @Column(name = "description_da", length = 150)
     private String descriptionDA;
 
-    @Column(name = "description_en", length = 255)
+    @Column(name = "description_en", length = 150)
     private String descriptionEN;
 
     @Column(name = "display_number")
@@ -80,6 +79,9 @@ public class Allergen implements IEntity
     private void onCreate() {
         this.createdAt = LocalDateTime.now();
     }
+
+    @PreUpdate
+    private void onUpdate(){this.updatedAt = LocalDateTime.now(); }
 
     @Override
     public boolean equals(Object o)
