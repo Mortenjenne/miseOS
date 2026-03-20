@@ -16,17 +16,14 @@ public class WeeklyMenuSlot implements IEntity
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Setter
     @Enumerated(EnumType.STRING)
     @Column(name = "day_of_week", nullable = false)
     private DayOfWeek dayOfWeek;
 
-    @Setter
     @ManyToOne
     @JoinColumn(name = "dish_id")
     private Dish dish;
 
-    @Setter
     @ManyToOne
     @JoinColumn(name = "station_id", nullable = false)
     private Station station;
@@ -36,7 +33,6 @@ public class WeeklyMenuSlot implements IEntity
     @JoinColumn(name = "weekly_menu_id")
     private WeeklyMenu weeklyMenu;
 
-    @Setter
     @Column(name = "is_empty", nullable = false)
     private boolean isEmpty;
 
@@ -62,5 +58,4 @@ public class WeeklyMenuSlot implements IEntity
     {
         return getClass().hashCode();
     }
-
 }

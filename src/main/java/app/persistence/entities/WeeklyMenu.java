@@ -21,15 +21,12 @@ public class WeeklyMenu implements IEntity
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Setter
     @Column(name = "week_number", nullable = false)
     private int weekNumber;
 
-    @Setter
     @Column(name = "year", nullable = false)
     private int year;
 
-    @Setter
     @Enumerated(EnumType.STRING)
     @Column(name = "menu_status", nullable = false)
     private MenuStatus menuStatus;
@@ -113,5 +110,4 @@ public class WeeklyMenu implements IEntity
     {
         return getClass().hashCode();
     }
-
 }

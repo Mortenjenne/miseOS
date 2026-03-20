@@ -1,6 +1,7 @@
 package app.routes;
 
 import app.controllers.INotificationController;
+import app.enums.Role;
 import io.javalin.apibuilder.EndpointGroup;
 
 import static io.javalin.apibuilder.ApiBuilder.*;
@@ -18,8 +19,8 @@ public class NotificationRoute
     {
         return () ->
         {
-          ws("/notifications", notificationController::handleNotifications);
-          get("/notifications/snapshot", notificationController::getSnapshot);
+          ws("/notifications", notificationController::handleNotifications, Role.KITCHEN_STAFF);
+          get("/notifications/snapshot", notificationController::getSnapshot, Role.HEAD_CHEF, Role.SOUS_CHEF);
         };
     }
 }
