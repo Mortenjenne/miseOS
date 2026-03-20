@@ -1,7 +1,9 @@
 package app.controllers;
 
 import app.dtos.dishsuggestion.*;
+import app.dtos.security.AuthenticatedUser;
 import app.enums.Status;
+import app.persistence.entities.DishSuggestion;
 import app.services.IDishSuggestionService;
 import app.utils.RequestUtil;
 import app.utils.SecurityUtil;
@@ -22,14 +24,17 @@ public class DishSuggestionController implements IDishSuggestionController
     @Override
     public void getById(Context ctx)
     {
+        AuthenticatedUser authUser = SecurityUtil.getAuthenticatedUser(ctx);
         Long suggestionId = RequestUtil.requirePathId(ctx, "id");
-        DishSuggestionDTO dishSuggestionDTO = dishSuggestionService.getById(suggestionId);
+
+        DishSuggestionDTO dishSuggestionDTO = dishSuggestionService.getById(authUser, suggestionId);
         ctx.status(200).json(dishSuggestionDTO);
     }
 
     @Override
     public void getAll(Context ctx)
     {
+        AuthenticatedUser authUser = SecurityUtil.getAuthenticatedUser(ctx);
         Status status = RequestUtil.getQueryStatus(ctx, "status");
         Integer week = RequestUtil.getQueryInt(ctx, "week");
         Integer year = RequestUtil.getQueryInt(ctx, "year");
@@ -44,7 +49,7 @@ public class DishSuggestionController implements IDishSuggestionController
             orderBy
         );
 
-        List<DishSuggestionDTO> suggestionDTOS = dishSuggestionService.getByFilter(filter);
+        List<DishSuggestionDTO> suggestionDTOS = dishSuggestionService.getByFilter(authUser, filter);
         ctx.status(200).json(suggestionDTOS);
     }
 
@@ -58,53 +63,54 @@ public class DishSuggestionController implements IDishSuggestionController
     @Override
     public void create(Context ctx)
     {
-        Long userId = SecurityUtil.requireUserId(ctx);
+        AuthenticatedUser authUser = SecurityUtil.getAuthenticatedUser(ctx);
 
         DishSuggestionCreateDTO dto = ctx.bodyValidator(DishSuggestionCreateDTO.class)
             .check(Objects::nonNull, "Dish suggestion create body cannot be null")
             .get();
 
-        DishSuggestionDTO dishSuggestionDTO = dishSuggestionService.createSuggestion(userId, dto);
+        DishSuggestionDTO dishSuggestionDTO = dishSuggestionService.createSuggestion(authUser, dto);
         ctx.status(201).json(dishSuggestionDTO);
     }
 
     @Override
     public void update(Context ctx)
     {
-        Long userId = SecurityUtil.requireUserId(ctx);
+        AuthenticatedUser authUser = SecurityUtil.getAuthenticatedUser(ctx);
         Long suggestionID = RequestUtil.requirePathId(ctx, "id");
 
         DishSuggestionUpdateDTO dto = ctx.bodyValidator(DishSuggestionUpdateDTO.class)
             .check(Objects::nonNull, "Dish suggestion update body cannot be null")
             .get();
 
-        DishSuggestionDTO dishSuggestionDTO = dishSuggestionService.updateSuggestion(userId, suggestionID, dto);
+        DishSuggestionDTO dishSuggestionDTO = dishSuggestionService.updateSuggestion(authUser, suggestionID, dto);
         ctx.status(200).json(dishSuggestionDTO);
     }
 
     @Override
     public void delete(Context ctx)
     {
-        Long userId = SecurityUtil.requireUserId(ctx);
+        AuthenticatedUser authUser = SecurityUtil.getAuthenticatedUser(ctx);
         Long suggestionId = RequestUtil.requirePathId(ctx, "id");
 
-        boolean isDeleted = dishSuggestionService.deleteSuggestion(suggestionId, userId);
+        boolean isDeleted = dishSuggestionService.deleteSuggestion(authUser, suggestionId);
         ctx.status(isDeleted ? 204 : 404);
     }
 
     @Override
     public void approveSuggestion(Context ctx)
     {
-        Long userId = SecurityUtil.requireUserId(ctx);
+        AuthenticatedUser authUser = SecurityUtil.getAuthenticatedUser(ctx);
         Long suggestionId = RequestUtil.requirePathId(ctx, "id");
-        DishSuggestionDTO dishSuggestionDTO = dishSuggestionService.approveSuggestion(suggestionId, userId);
+
+        DishSuggestionDTO dishSuggestionDTO = dishSuggestionService.approveSuggestion(authUser, suggestionId);
         ctx.status(200).json(dishSuggestionDTO);
     }
 
     @Override
     public void rejectSuggestion(Context ctx)
     {
-        Long userId = SecurityUtil.requireUserId(ctx);
+        AuthenticatedUser authUser = SecurityUtil.getAuthenticatedUser(ctx);
         Long suggestionId = RequestUtil.requirePathId(ctx, "id");
 
         RejectDishSuggestionDTO dto = ctx.bodyValidator(RejectDishSuggestionDTO.class)
@@ -112,7 +118,18 @@ public class DishSuggestionController implements IDishSuggestionController
             .check(r -> r.feedback() != null && !r.feedback().isBlank(), "Feedback is required")
             .get();
 
-        DishSuggestionDTO dishSuggestionDTO = dishSuggestionService.rejectSuggestion(suggestionId, userId, dto.feedback());
+        DishSuggestionDTO dishSuggestionDTO = dishSuggestionService.rejectSuggestion(authUser, suggestionId, dto.feedback());
         ctx.status(200).json(dishSuggestionDTO);
+    }
+
+    @Override
+    public void removeAllergen(Context ctx)
+    {
+        AuthenticatedUser authUser = SecurityUtil.getAuthenticatedUser(ctx);
+        Long suggestionId = RequestUtil.requirePathId(ctx, "id");
+        Long allergenId = RequestUtil.requirePathId(ctx, "allergenId");
+
+        DishSuggestionDTO dishSuggestionDTO = dishSuggestionService.removeAllergen(authUser, suggestionId, allergenId);
+        ctx.status(204).json(dishSuggestionDTO);
     }
 }

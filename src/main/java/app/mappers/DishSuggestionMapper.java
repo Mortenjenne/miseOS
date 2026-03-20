@@ -6,6 +6,7 @@ import app.dtos.station.StationReferenceDTO;
 import app.dtos.user.UserReferenceDTO;
 import app.persistence.entities.DishSuggestion;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public class DishSuggestionMapper
@@ -37,7 +38,10 @@ public class DishSuggestionMapper
             allergens,
             suggestion.getTargetWeek(),
             suggestion.getTargetYear(),
-            suggestion.getCreatedAt()
+            suggestion.getDeadlineDate(),
+            suggestion.isPastDeadline(LocalDate.now()),
+            suggestion.getCreatedAt(),
+            suggestion.getUpdatedAt()
         );
     }
 }

@@ -21,7 +21,7 @@ public class DishSuggestionDAO implements IDishSuggestionDAO
     }
 
     @Override
-    public Set<DishSuggestion> findByFilter(Status status, Integer week, Integer year, Long stationId, String orderBy)
+    public Set<DishSuggestion> findByFilter(Status status, Long creatorId, Integer week, Integer year, Long stationId, String orderBy)
     {
         String target = orderBy != null ? orderBy : "";
 
@@ -41,12 +41,14 @@ public class DishSuggestionDAO implements IDishSuggestionDAO
                         "SELECT DISTINCT ds FROM DishSuggestion ds " +
                             "LEFT JOIN FETCH ds.allergens " +
                             "WHERE (:status IS NULL OR ds.dishStatus  = :status) " +
+                            "AND (:creatorId IS NULL OR ds.createdBy = :creatorId) " +
                             "AND (:week IS NULL OR ds.targetWeek = :week) " +
                             "AND (:year IS NULL OR ds.targetYear = :year) " +
                             "AND (:stationId IS NULL OR ds.station.id = :stationId) " +
                             "ORDER BY " + orderColumn,
                         DishSuggestion.class)
                     .setParameter("status", status)
+                    .setParameter("creatorId", creatorId)
                     .setParameter("week", week)
                     .setParameter("year", year)
                     .setParameter("stationId", stationId);

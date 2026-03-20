@@ -6,9 +6,9 @@ import app.dtos.user.UserReferenceDTO;
 import app.enums.Status;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
 
 public record DishSuggestionDTO(
     Long id,
@@ -24,7 +24,11 @@ public record DishSuggestionDTO(
     List<AllergenDTO> allergens,
     Integer targetWeek,
     Integer targetYear,
+    LocalDate deadline,
+    boolean isPastDeadline,
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
-    LocalDateTime createdAt
+    LocalDateTime createdAt,
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
+    LocalDateTime updatedAt
 )
 {}

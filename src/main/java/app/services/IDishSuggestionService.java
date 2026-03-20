@@ -4,25 +4,28 @@ import app.dtos.dishsuggestion.DishSuggestionCreateDTO;
 import app.dtos.dishsuggestion.DishSuggestionDTO;
 import app.dtos.dishsuggestion.DishSuggestionFilterDTO;
 import app.dtos.dishsuggestion.DishSuggestionUpdateDTO;
+import app.dtos.security.AuthenticatedUser;
 import app.enums.Status;
 
 import java.util.List;
 
 public interface IDishSuggestionService
 {
-    DishSuggestionDTO createSuggestion(Long creatorId, DishSuggestionCreateDTO dto);
+    DishSuggestionDTO createSuggestion(AuthenticatedUser authUser, DishSuggestionCreateDTO dto);
 
-    DishSuggestionDTO approveSuggestion(Long dishId, Long approverId);
+    DishSuggestionDTO approveSuggestion(AuthenticatedUser authUser, Long dishId);
 
-    DishSuggestionDTO rejectSuggestion(Long dishId, Long approverId, String feedback);
+    DishSuggestionDTO rejectSuggestion(AuthenticatedUser authUser, Long dishId, String feedback);
 
-    DishSuggestionDTO updateSuggestion(Long editorId, Long suggestionId, DishSuggestionUpdateDTO dto);
+    DishSuggestionDTO updateSuggestion(AuthenticatedUser authUser, Long suggestionId, DishSuggestionUpdateDTO dto);
 
-    boolean deleteSuggestion(Long dishId, Long userId);
+    boolean deleteSuggestion(AuthenticatedUser authUser, Long dishId);
 
-    DishSuggestionDTO getById(Long id);
+    DishSuggestionDTO getById(AuthenticatedUser authUser, Long id);
 
-    List<DishSuggestionDTO> getByFilter(DishSuggestionFilterDTO dto);
+    List<DishSuggestionDTO> getByFilter(AuthenticatedUser authUser, DishSuggestionFilterDTO dto);
 
     List<DishSuggestionDTO> getCurrentWeek(Status status);
+
+    DishSuggestionDTO removeAllergen(AuthenticatedUser authUser, Long suggestionId, Long allergenId);
 }
