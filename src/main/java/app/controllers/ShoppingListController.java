@@ -1,5 +1,6 @@
 package app.controllers;
 
+import app.dtos.security.AuthenticatedUser;
 import app.dtos.shopping.*;
 import app.enums.ShoppingListStatus;
 import app.services.IShoppingListService;
@@ -23,12 +24,13 @@ public class ShoppingListController implements IShoppingListController
     @Override
     public void create(Context ctx)
     {
-        Long userId = SecurityUtil.requireUserId(ctx);
+        AuthenticatedUser authUser = SecurityUtil.getAuthenticatedUser(ctx);
+
         CreateShoppingListDTO dto = ctx.bodyValidator(CreateShoppingListDTO.class)
             .check(Objects::nonNull, "Body cannot be null")
             .get();
 
-        ShoppingListDTO shoppingListDTO = shoppingListService.generateShoppingList(userId, dto);
+        ShoppingListDTO shoppingListDTO = shoppingListService.generateShoppingList(authUser, dto);
         ctx.status(201).json(shoppingListDTO);
 
     }
@@ -45,104 +47,99 @@ public class ShoppingListController implements IShoppingListController
     @Override
     public void delete(Context ctx)
     {
-        Long userId = SecurityUtil.requireUserId(ctx);
+        AuthenticatedUser authUser = SecurityUtil.getAuthenticatedUser(ctx);
         Long listId = RequestUtil.requirePathId(ctx,"id");
 
-        boolean isDeleted = shoppingListService.deleteShoppingList(userId, listId);
+        boolean isDeleted = shoppingListService.deleteShoppingList(authUser, listId);
         ctx.status(isDeleted ? 204 : 404);
     }
 
     @Override
     public void updateDeliveryDate(Context ctx)
     {
-        Long userId = SecurityUtil.requireUserId(ctx);
         Long listId = RequestUtil.requirePathId(ctx, "id");
 
         UpdateShoppingListDTO dto = ctx.bodyValidator(UpdateShoppingListDTO.class)
             .check(Objects::nonNull, "Body cannot be null")
             .get();
 
-        ShoppingListDTO shoppingListDTO = shoppingListService.updateDeliveryDate(userId, listId, dto);
+        ShoppingListDTO shoppingListDTO = shoppingListService.updateDeliveryDate(listId, dto);
         ctx.status(200).json(shoppingListDTO);
     }
 
     @Override
     public void getShoppingLists(Context ctx)
     {
-        Long userId = SecurityUtil.requireUserId(ctx);
         ShoppingListStatus status = RequestUtil.getQueryShoppingListStatus(ctx, "status");
         LocalDate deliveryDate = RequestUtil.getQueryDate(ctx, "deliveryDate");
 
-        List<ShoppingListDTO> shoppingLists = shoppingListService.getShoppingLists(userId, status, deliveryDate);
+        List<ShoppingListDTO> shoppingLists = shoppingListService.getShoppingLists(status, deliveryDate);
         ctx.status(200).json(shoppingLists);
     }
 
     @Override
     public void addShoppingListItem(Context ctx)
     {
-        Long userId = SecurityUtil.requireUserId(ctx);
+        AuthenticatedUser authUser = SecurityUtil.getAuthenticatedUser(ctx);
         Long listId = RequestUtil.requirePathId(ctx, "id");
+
         CreateShoppingListItemDTO dto = ctx.bodyValidator(CreateShoppingListItemDTO.class)
             .check(Objects::nonNull, "Body cannot be null")
             .get();
 
-        ShoppingListDTO shoppingListDTO = shoppingListService.addItemToShoppingList(userId, listId, dto);
+        ShoppingListDTO shoppingListDTO = shoppingListService.addItemToShoppingList(authUser, listId, dto);
         ctx.status(201).json(shoppingListDTO);
     }
 
     @Override
     public void removeShoppingListItem(Context ctx)
     {
-        Long userId = SecurityUtil.requireUserId(ctx);
         Long listId = RequestUtil.requirePathId(ctx,"id");
         Long itemId = RequestUtil.requirePathId(ctx,"itemId");
 
-        ShoppingListDTO shoppingListDTO = shoppingListService.removeItem(userId, listId, itemId);
+        ShoppingListDTO shoppingListDTO = shoppingListService.removeItem(listId, itemId);
         ctx.status(200).json(shoppingListDTO);
     }
 
     @Override
     public void updateShoppingListItem(Context ctx)
     {
-        Long userId = SecurityUtil.requireUserId(ctx);
         Long listId = RequestUtil.requirePathId(ctx, "id");
         Long itemId = RequestUtil.requirePathId(ctx, "itemId");
+
         UpdateShoppingListItemDTO dto = ctx.bodyValidator(UpdateShoppingListItemDTO.class)
             .check(Objects::nonNull, "Body cannot be null")
             .get();
 
-        ShoppingListDTO shoppingListDTO = shoppingListService.updateItem(userId, listId, itemId, dto);
+        ShoppingListDTO shoppingListDTO = shoppingListService.updateItem(listId, itemId, dto);
         ctx.status(200).json(shoppingListDTO);
     }
 
     @Override
     public void markShoppingListItemOrdered(Context ctx)
     {
-        Long userId = SecurityUtil.requireUserId(ctx);
         Long listId = RequestUtil.requirePathId(ctx, "id");
         Long itemId = RequestUtil.requirePathId(ctx, "itemId");
 
-        ShoppingListDTO shoppingListDTO = shoppingListService.markItemOrdered(userId, listId, itemId);
+        ShoppingListDTO shoppingListDTO = shoppingListService.markItemOrdered(listId, itemId);
         ctx.status(200).json(shoppingListDTO);
     }
 
     @Override
     public void markAllShoppinglistItemOrdered(Context ctx)
     {
-        Long userId = SecurityUtil.requireUserId(ctx);
         Long listId = RequestUtil.requirePathId(ctx, "id");
 
-        ShoppingListDTO shoppingListDTO = shoppingListService.markAllItemsOrdered(userId, listId);
+        ShoppingListDTO shoppingListDTO = shoppingListService.markAllItemsOrdered(listId);
         ctx.status(200).json(shoppingListDTO);
     }
 
     @Override
     public void finalizeShoppingList(Context ctx)
     {
-        Long userId = SecurityUtil.requireUserId(ctx);
         Long id = RequestUtil.requirePathId(ctx, "id");
 
-        ShoppingListDTO shoppingListDTO = shoppingListService.finalizeShoppingList(userId, id);
+        ShoppingListDTO shoppingListDTO = shoppingListService.finalizeShoppingList(id);
         ctx.status(200).json(shoppingListDTO);
     }
 }

@@ -6,11 +6,10 @@ import app.exceptions.ValidationException;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-@NoArgsConstructor
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 @Getter
 @Entity
 @Table(name = "shopping_list_item")
@@ -20,7 +19,7 @@ public class ShoppingListItem implements IEntity
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "ingredient_name", nullable = false)
+    @Column(name = "ingredient_name", nullable = false, length = 80)
     private String ingredientName;
 
     @Column(name = "total_quantity", nullable = false)
@@ -30,7 +29,7 @@ public class ShoppingListItem implements IEntity
     @Column(name = "unit", nullable = false)
     private Unit unit;
 
-    @Column(name = "supplier")
+    @Column(name = "supplier", length = 80)
     private String supplier;
 
     @Column(name = "is_ordered")
@@ -45,7 +44,6 @@ public class ShoppingListItem implements IEntity
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Setter
     @ManyToOne
     @JoinColumn(name = "shopping_list_id", nullable = false)
     private ShoppingList shoppingList;
@@ -68,6 +66,14 @@ public class ShoppingListItem implements IEntity
     void createdAt()
     {
         this.createdAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    void onUpdate(){ this.updatedAt = LocalDateTime.now(); }
+
+    void setShoppingList(ShoppingList shoppingList)
+    {
+        this.shoppingList = shoppingList;
     }
 
     public void markAsOrdered()
@@ -103,7 +109,6 @@ public class ShoppingListItem implements IEntity
         if (supplier != null && !supplier.isBlank()) {
             this.supplier = supplier;
         }
-        this.updatedAt = LocalDateTime.now();
     }
 
     private void requireNotBlank(String value)

@@ -3,7 +3,6 @@ package app.utils;
 import app.dtos.security.AuthenticatedUser;
 import app.exceptions.AuthenticationException;
 import io.javalin.http.Context;
-import io.javalin.http.UnauthorizedResponse;
 
 public class SecurityUtil
 {
@@ -34,6 +33,16 @@ public class SecurityUtil
         {
             throw new AuthenticationException("No authenticated user found");
         }
+        if (authUser.userId() == null || authUser.userId() <= 0)
+        {
+            throw new AuthenticationException("Authenticated user id is invalid");
+        }
+
+        if (authUser.email() == null || authUser.email().isBlank())
+        {
+            throw new AuthenticationException("Authenticated user email is invalid");
+        }
+
         return authUser;
     }
 }

@@ -33,7 +33,7 @@ public class IngredientRequest implements IEntity
     @Column(name = "unit", nullable = false)
     private Unit unit;
 
-    @Column(name = "preferred_supplier")
+    @Column(name = "preferred_supplier", length = 100)
     private String preferredSupplier;
 
     @Column(name = "note")
@@ -56,7 +56,7 @@ public class IngredientRequest implements IEntity
     @Column(name = "reviewed_at")
     private LocalDateTime reviewedAt;
 
-    @Column
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     @ManyToOne
