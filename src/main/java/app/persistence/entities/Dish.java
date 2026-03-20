@@ -66,9 +66,11 @@ public class Dish implements IEntity
         ValidationUtil.validateNotBlank(descriptionDA, "Description");
         ValidationUtil.validateNotNull(station, "Station");
         ValidationUtil.validateNotNull(createdBy, "Created by");
+        ValidationUtil.validateRange(originWeek, 1, 53, "Origin week");
+        ValidationUtil.validateRange(originYear, 2020, 2100, "Origin year");
 
-        this.nameDA = nameDA;
-        this.descriptionDA = descriptionDA;
+        this.nameDA = nameDA.trim();
+        this.descriptionDA = descriptionDA.trim();
         this.station = station;
         this.allergens = allergens != null ? allergens : new HashSet<>();
         this.createdBy = createdBy;

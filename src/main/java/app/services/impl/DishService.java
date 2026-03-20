@@ -166,6 +166,11 @@ public class DishService implements IDishService
     @Override
     public List<DishDTO> getAll(Long stationId, Boolean active)
     {
+        if (stationId != null)
+        {
+            ValidationUtil.validateId(stationId);
+        }
+
         return dishDAO.findByFilter(stationId, active)
             .stream()
             .map(DishMapper::toDTO)
