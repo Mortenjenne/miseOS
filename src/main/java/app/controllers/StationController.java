@@ -4,7 +4,6 @@ import app.dtos.station.StationDTO;
 import app.dtos.station.StationRequestDTO;
 import app.services.IStationService;
 import app.utils.RequestUtil;
-import app.utils.SecurityUtil;
 import io.javalin.http.Context;
 
 import java.util.Set;
@@ -21,21 +20,18 @@ public class StationController implements IStationController
     @Override
     public void create(Context ctx)
     {
-        Long userId = SecurityUtil.requireUserId(ctx);
-
         StationRequestDTO dto = ctx.bodyValidator(StationRequestDTO.class)
             .check(s -> s.name() != null && !s.name().isBlank(), "Station name is required")
             .check(s -> s.description() != null && !s.description().isBlank(), "Station description is required")
             .get();
 
-        StationDTO stationDTO = stationService.createStation(userId, dto);
+        StationDTO stationDTO = stationService.createStation(dto);
         ctx.status(201).json(stationDTO);
     }
 
     @Override
     public void update(Context ctx)
     {
-        Long userId = SecurityUtil.requireUserId(ctx);
         Long stationId = RequestUtil.requirePathId(ctx,"id");
 
         StationRequestDTO dto = ctx.bodyValidator(StationRequestDTO.class)
@@ -43,17 +39,16 @@ public class StationController implements IStationController
             .check(s -> s.description() != null && !s.description().isBlank(), "Station description is required")
             .get();
 
-        StationDTO stationDTO = stationService.updateStation(userId, stationId, dto);
+        StationDTO stationDTO = stationService.updateStation(stationId, dto);
         ctx.status(200).json(stationDTO);
     }
 
     @Override
     public void delete(Context ctx)
     {
-        Long userId = SecurityUtil.requireUserId(ctx);
         Long stationId = RequestUtil.requirePathId(ctx,"id");
 
-        boolean isDeleted = stationService.deleteStation(userId, stationId);
+        boolean isDeleted = stationService.deleteStation(stationId);
         ctx.status(isDeleted ? 204 : 404);
     }
 

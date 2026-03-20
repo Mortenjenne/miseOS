@@ -15,7 +15,9 @@ public class StationMapper
         return new StationDTO(
             station.getId(),
             station.getStationName(),
-            station.getDescription()
+            station.getDescription(),
+            station.getCreatedAt(),
+            station.getUpdatedAt()
         );
     }
 

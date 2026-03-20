@@ -16,14 +16,17 @@ public class Station implements IEntity
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "station_name",nullable = false, unique = true, length = 50)
+    @Column(name = "station_name",nullable = false, unique = true, length = 100)
     private String stationName;
 
-    @Column(name = "description", nullable = false, length = 255)
+    @Column(name = "description", nullable = false, length = 100)
     private String description;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
     public Station(String stationName, String description)
     {
@@ -46,6 +49,11 @@ public class Station implements IEntity
     @PrePersist
     private void onCreate() {
         this.createdAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    private void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
     }
 
     @Override

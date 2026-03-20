@@ -116,7 +116,7 @@ public final class DIContainer
         this.dishTranslationService = new DishTranslationService(translationClient);
         this.aiService = new AiService(objectMapper, aiClient);
         this.allergenService = new AllergenService(allergenDAO);
-        this.stationService = new StationService(stationDAO, userDAO);
+        this.stationService = new StationService(stationDAO);
         this.dishService = new DishService(dishDAO, allergenDAO, stationDAO, userDAO);
         this.dishSuggestionService = new DishSuggestionService(dishSuggestionDAO, dishDAO, userDAO, stationDAO, allergenDAO, notificationService);
         this.userService = new UserService(userDAO, stationDAO);
