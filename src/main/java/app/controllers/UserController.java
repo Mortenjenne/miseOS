@@ -1,15 +1,13 @@
 package app.controllers;
 
-import app.dtos.security.LoginRequestDTO;
+import app.dtos.security.AuthenticatedUser;
 import app.dtos.user.*;
-import app.enums.UserRole;
-import app.mappers.UserMapper;
-import app.persistence.entities.User;
 import app.services.IUserService;
 import app.utils.RequestUtil;
 import app.utils.SecurityUtil;
 import io.javalin.http.Context;
 
+import java.util.List;
 import java.util.Objects;
 
 public class UserController implements IUserController
@@ -22,48 +20,37 @@ public class UserController implements IUserController
     }
 
     @Override
-    public void login(Context ctx)
-    {
-        LoginRequestDTO dto = ctx.bodyValidator(LoginRequestDTO.class)
-            .check(Objects::nonNull, "Login payload cannot be null")
-            .get();
-
-        UserDTO userDTO = userService.login(dto);
-
-        ctx.status(200).json(userDTO);
-    }
-
-    @Override
     public void changeRole(Context ctx)
     {
-        Long requesterId = SecurityUtil.requireUserId(ctx);
         Long targetUserId = RequestUtil.requirePathId(ctx, "id");
 
-        UserRole role = ctx.bodyAsClass(UserRole.class);
-        UserDTO userDTO = userService.changeRole(requesterId, targetUserId, role);
+        UserRoleUpdateDTO dto = ctx.bodyValidator(UserRoleUpdateDTO.class)
+            .check(d -> d.userRole() != null, "Role cannot be null")
+            .get();
 
+        UserDTO userDTO = userService.changeRole(targetUserId, dto);
         ctx.status(200).json(userDTO);
     }
 
     @Override
     public void changeEmail(Context ctx)
     {
-        Long userId = SecurityUtil.requireUserId(ctx);
+        AuthenticatedUser authUser = SecurityUtil.getAuthenticatedUser(ctx);
+        Long targetUserId = RequestUtil.requirePathId(ctx, "id");
 
-        String newEmail = ctx.bodyValidator(String.class)
-            .check(e -> e != null && !e.isBlank(), "Email cannot be empty")
-            .check(e -> e.contains("@"), "Invalid email")
+        EmailUpdateDTO dto = ctx.bodyValidator(EmailUpdateDTO.class)
+            .check(d -> d.email() != null && d.email().contains("@"), "Valid email is required")
             .get();
 
-        UserDTO userDTO = userService.changeEmail(userId, newEmail);
-
+        UserDTO userDTO = userService.changeEmail(authUser, targetUserId, dto);
         ctx.status(200).json(userDTO);
     }
 
     @Override
     public void changePassword(Context ctx)
     {
-        Long userId = SecurityUtil.requireUserId(ctx);
+        AuthenticatedUser authUser = SecurityUtil.getAuthenticatedUser(ctx);
+        Long targetUserId = RequestUtil.requirePathId(ctx, "id");
 
         ChangeUserPasswordDTO dto = ctx.bodyValidator(ChangeUserPasswordDTO.class)
             .check(Objects::nonNull, "Password payload cannot be null")
@@ -71,7 +58,7 @@ public class UserController implements IUserController
             .check(p -> p.newPassword() != null && !p.newPassword().isBlank(), "New password cannot be empty")
             .get();
 
-        UserDTO userDTO = userService.changePassword(userId, dto);
+        UserDTO userDTO = userService.changePassword(authUser, targetUserId, dto);
 
         ctx.status(200).json(userDTO);
     }
@@ -79,11 +66,10 @@ public class UserController implements IUserController
     @Override
     public void assignToStation(Context ctx)
     {
-        Long requesterId = SecurityUtil.requireUserId(ctx);
         Long targetUserId = RequestUtil.requirePathId(ctx, "id");
         Long stationId = RequestUtil.requirePathId(ctx, "stationId");
 
-        UserDTO userDTO = userService.assignToStation(requesterId, targetUserId, stationId);
+        UserDTO userDTO = userService.assignToStation(targetUserId, stationId);
         ctx.status(200).json(userDTO);
     }
 
@@ -93,15 +79,14 @@ public class UserController implements IUserController
         Long id = RequestUtil.requirePathId(ctx, "id");
 
         UserDTO userDTO = userService.findById(id);
-        ctx.status(200);
-        ctx.json(userDTO);
+        ctx.status(200).json(userDTO);
     }
 
     @Override
     public void getAll(Context ctx)
     {
-        ctx.status(200);
-        ctx.json(userService.findAll());
+        List<UserDTO> users = userService.findAll();
+        ctx.status(200).json(users);
     }
 
     @Override
@@ -112,41 +97,38 @@ public class UserController implements IUserController
             .get();
 
         UserDTO userDTO = userService.registerUser(dto);
-        ctx.status(201);
-        ctx.json(userDTO);
+        ctx.status(201).json(userDTO);
     }
 
     @Override
     public void update(Context ctx)
     {
-        Long id = RequestUtil.requirePathId(ctx, "id");
+        AuthenticatedUser authUser = SecurityUtil.getAuthenticatedUser(ctx);
+        Long userId = RequestUtil.requirePathId(ctx, "id");
 
         UpdateUserDTO dto = ctx.bodyValidator(UpdateUserDTO.class)
             .check(Objects::nonNull, "Update payload cannot be null")
             .get();
 
-        UserDTO userDTO = userService.update(id, dto);
+        UserDTO userDTO = userService.update(authUser, userId, dto);
         ctx.status(200).json(userDTO);
     }
 
     @Override
     public void delete(Context ctx)
     {
-        Long requesterId = SecurityUtil.requireUserId(ctx);
+        AuthenticatedUser authUser = SecurityUtil.getAuthenticatedUser(ctx);
+        Long targetUserId = RequestUtil.requirePathId(ctx, "id");
 
-        Long targetUserId = ctx.pathParamAsClass("id", Long.class)
-            .check(i -> i > 0, "ID must be positive")
-            .get();
-
-        boolean deleted = userService.delete(requesterId, targetUserId);
-
+        boolean deleted = userService.delete(authUser, targetUserId);
         ctx.status(deleted ? 204 : 404);
     }
 
     @Override
     public void getMe(Context ctx)
     {
-        User user = ctx.attribute("user");
-        ctx.status(200).json(UserMapper.toDTO(user));
+        AuthenticatedUser authUser = SecurityUtil.getAuthenticatedUser(ctx);
+        UserDTO userDTO = userService.findById(authUser.userId());
+        ctx.status(200).json(userDTO);
     }
 }

@@ -1,6 +1,6 @@
 package app.services.impl;
 
-import app.dtos.security.LoginRequestDTO;
+import app.dtos.security.AuthenticatedUser;
 import app.dtos.user.*;
 import app.enums.UserRole;
 import app.exceptions.UnauthorizedActionException;
@@ -14,17 +14,16 @@ import app.services.IUserService;
 import app.utils.PasswordUtil;
 import app.utils.ValidationUtil;
 
-
+import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class UserService implements IUserService
 {
     private final IUserDAO userDAO;
     private final IStationReader stationReader;
 
-public UserService(IUserDAO userDAO, IStationReader stationReader)
+    public UserService(IUserDAO userDAO, IStationReader stationReader)
     {
         this.userDAO = userDAO;
         this.stationReader = stationReader;
@@ -60,34 +59,21 @@ public UserService(IUserDAO userDAO, IStationReader stationReader)
     }
 
     @Override
-    public Set<UserDTO> findAll()
+    public List<UserDTO> findAll()
     {
         return userDAO.getAll().stream()
             .map(UserMapper::toDTO)
-            .collect(Collectors.toSet());
-    }
-
-
-    @Override
-    public UserDTO login(LoginRequestDTO loginRequest)
-    {
-        validatePassword(loginRequest.password());
-
-        return userDAO.findByEmail(loginRequest.email())
-            .filter(user -> user.verifyPassword(loginRequest.password()))
-            .map(UserMapper::toDTO)
-            .orElseThrow(() -> new IllegalArgumentException("Invalid email or password"));
+            .sorted(Comparator.comparing(UserDTO::firstName))
+            .toList();
     }
 
     @Override
-    public UserDTO update(Long userId, UpdateUserDTO dto)
+    public UserDTO update(AuthenticatedUser authUser, Long targetUserId, UpdateUserDTO dto)
     {
-        ValidationUtil.validateId(userId);
-        ValidationUtil.validateId(dto.stationId());
-        requireMinimumLength(dto.firstName(), "First name");
-        requireMinimumLength(dto.lastName(), "Last name");
+        validateUpdateRequest(authUser, targetUserId, dto);
+        validateOwnershipOrAdmin(authUser, targetUserId);
 
-        User user = userDAO.getByID(userId);
+        User user = userDAO.getByID(targetUserId);
         Station station = stationReader.getByID(dto.stationId());
 
         user.update(
@@ -101,13 +87,10 @@ public UserService(IUserDAO userDAO, IStationReader stationReader)
     }
 
     @Override
-    public UserDTO assignToStation(Long requesterId, Long targetUserId, Long stationId) {
-        ValidationUtil.validateId(requesterId);
+    public UserDTO assignToStation(Long targetUserId, Long stationId)
+    {
         ValidationUtil.validateId(targetUserId);
         ValidationUtil.validateId(stationId);
-
-        User requester = userDAO.getByID(requesterId);
-        requireHeadChef(requester);
 
         User targetUser = userDAO.getByID(targetUserId);
         Station station = stationReader.getByID(stationId);
@@ -119,43 +102,38 @@ public UserService(IUserDAO userDAO, IStationReader stationReader)
     }
 
     @Override
-    public UserDTO changeRole(Long requesterId, Long targetUserId, UserRole newRole)
+    public UserDTO changeRole(Long targetUserId, UserRoleUpdateDTO dto)
     {
-        ValidationUtil.validateId(requesterId);
         ValidationUtil.validateId(targetUserId);
-        ValidationUtil.validateNotNull(newRole, "Role");
+        ValidationUtil.validateNotNull(dto, "User Role");
 
-        User requester = userDAO.getByID(requesterId);
-        requireHeadChef(requester);
+        User targetUser = userDAO.getByID(targetUserId);
+        targetUser.changeRole(dto.userRole());
 
-        User target = userDAO.getByID(targetUserId);
-        target.changeRole(newRole);
-
-        User updated = userDAO.update(target);
+        User updated = userDAO.update(targetUser);
         return UserMapper.toDTO(updated);
     }
 
     @Override
-    public UserDTO changeEmail(Long userId, String newEmail)
+    public UserDTO changeEmail(AuthenticatedUser authUser, Long targetUserId, EmailUpdateDTO dto)
     {
-        ValidationUtil.validateId(userId);
-        ValidationUtil.validateEmail(newEmail);
-        requireUniqueEmail(newEmail);
+        validateEmailRequest(dto);
+        validateOwnershipOrAdmin(authUser, targetUserId);
 
-        User user = userDAO.getByID(userId);
-        user.changeEmail(newEmail);
+        User user = userDAO.getByID(authUser.userId());
+        user.changeEmail(dto.email());
 
         User updated = userDAO.update(user);
         return UserMapper.toDTO(updated);
     }
 
     @Override
-    public UserDTO changePassword(Long userId, ChangeUserPasswordDTO dto)
+    public UserDTO changePassword(AuthenticatedUser authUser, Long targetUserId, ChangeUserPasswordDTO dto)
     {
-        ValidationUtil.validateId(userId);
         validatePassword(dto.newPassword());
+        validateOwnershipOrAdmin(authUser, targetUserId);
 
-        User user = userDAO.getByID(userId);
+        User user = userDAO.getByID(authUser.userId());
 
         if (!user.verifyPassword(dto.currentPassword()))
         {
@@ -170,15 +148,12 @@ public UserService(IUserDAO userDAO, IStationReader stationReader)
     }
 
     @Override
-    public boolean delete(Long requesterId, Long targetUserId)
+    public boolean delete(AuthenticatedUser authUser, Long targetUserId)
     {
-        ValidationUtil.validateId(requesterId);
+        ValidationUtil.validateNotNull(authUser, "Authenticated User");
         ValidationUtil.validateId(targetUserId);
 
-        User requester = userDAO.getByID(requesterId);
-        requireHeadChef(requester);
-
-        if (requesterId.equals(targetUserId))
+        if (authUser.userId().equals(targetUserId))
         {
             throw new IllegalArgumentException("Cannot delete your own account");
         }
@@ -186,11 +161,15 @@ public UserService(IUserDAO userDAO, IStationReader stationReader)
         return userDAO.delete(targetUserId);
     }
 
-    private void requireHeadChef(User user)
-    {
-        if (!user.isHeadChef())
+    private void validateOwnershipOrAdmin(AuthenticatedUser authUser, Long targetUserId) {
+        ValidationUtil.validateNotNull(authUser, "Authenticated User");
+
+        boolean isOwner = authUser.userId().equals(targetUserId);
+        boolean isHeadChef = authUser.isHeadChef();
+
+        if (!isOwner && !isHeadChef)
         {
-            throw new UnauthorizedActionException("Only head chef can change roles");
+            throw new UnauthorizedActionException("Access Denied: You can only modify your own data or must be a Head Chef.");
         }
     }
 
@@ -200,6 +179,27 @@ public UserService(IUserDAO userDAO, IStationReader stationReader)
         requireMinimumLength(dto.firstName(), "First name");
         requireMinimumLength(dto.lastName(), "Last name");
         validatePassword(dto.password());
+    }
+
+    private void validateEmailRequest(EmailUpdateDTO dto)
+    {
+        ValidationUtil.validateNotNull(dto, "Email");
+        ValidationUtil.validateEmail(dto.email());
+        requireUniqueEmail(dto.email());
+    }
+
+    private void validateUpdateRequest(AuthenticatedUser authUser, Long targetUserId, UpdateUserDTO dto)
+    {
+        ValidationUtil.validateNotNull(authUser, "Authenticated User");
+        ValidationUtil.validateId(targetUserId);
+        ValidationUtil.validateId(dto.stationId());
+        requireMinimumLength(dto.firstName(), "First name");
+        requireMinimumLength(dto.lastName(), "Last name");
+
+        if (!authUser.userId().equals(targetUserId) && !authUser.isHeadChef())
+        {
+            throw new UnauthorizedActionException("You can only update your own profile");
+        }
     }
 
     private void requireUniqueEmail(String email)

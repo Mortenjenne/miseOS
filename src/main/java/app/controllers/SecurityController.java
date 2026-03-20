@@ -6,13 +6,13 @@ import app.dtos.security.LoginResponseDTO;
 import app.enums.UserRole;
 import app.exceptions.AuthenticationException;
 import app.exceptions.UnauthorizedActionException;
-import app.persistence.entities.User;
 import app.services.ISecurityService;
 import io.javalin.http.Context;
 import io.javalin.security.RouteRole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -29,7 +29,10 @@ public class SecurityController implements ISecurityController
     @Override
     public void login(Context ctx)
     {
-        LoginRequestDTO dto = ctx.bodyAsClass(LoginRequestDTO.class);
+        LoginRequestDTO dto = ctx.bodyValidator(LoginRequestDTO.class)
+            .check(Objects::nonNull, "Login payload cannot be null")
+            .get();
+
         LoginResponseDTO response = securityService.login(dto);
 
         logger.info("[{}] Login successful: {}", ctx.attribute("request-id"), response.email());
