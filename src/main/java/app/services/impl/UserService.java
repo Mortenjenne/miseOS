@@ -120,7 +120,7 @@ public class UserService implements IUserService
         validateEmailRequest(dto);
         validateOwnershipOrAdmin(authUser, targetUserId);
 
-        User user = userDAO.getByID(authUser.userId());
+        User user = userDAO.getByID(targetUserId);
         user.changeEmail(dto.email());
 
         User updated = userDAO.update(user);
@@ -133,7 +133,7 @@ public class UserService implements IUserService
         validatePassword(dto.newPassword());
         validateOwnershipOrAdmin(authUser, targetUserId);
 
-        User user = userDAO.getByID(authUser.userId());
+        User user = userDAO.getByID(targetUserId);
 
         if (!user.verifyPassword(dto.currentPassword()))
         {

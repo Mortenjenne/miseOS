@@ -72,7 +72,6 @@ public class User implements IEntity
         this.firstName = firstName.trim();
         this.lastName = lastName.trim();
         this.station = station;
-        this.updatedAt = LocalDateTime.now();
     }
 
     public void changeRole(UserRole newRole)
