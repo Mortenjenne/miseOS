@@ -1,7 +1,8 @@
 package app.services.impl;
 
 import app.dtos.dish.*;
-import app.exceptions.UnauthorizedActionException;
+import app.dtos.security.AuthenticatedUser;
+import app.exceptions.ConflictException;
 import app.mappers.DishMapper;
 import app.persistence.daos.interfaces.IAllergenDAO;
 import app.persistence.daos.interfaces.IDishDAO;
@@ -38,13 +39,13 @@ public class DishService implements IDishService
     }
 
     @Override
-    public DishDTO createDish(Long creatorId, DishCreateDTO dto)
+    public DishDTO createDish(AuthenticatedUser authUser, DishCreateDTO dto)
     {
-        ValidationUtil.validateId(creatorId);
+        ValidationUtil.validateNotNull(authUser, "Authenticated User");
+        ValidationUtil.validateId(authUser.userId());
         validateCreateInput(dto);
 
-        User creator = userReader.getByID(creatorId);
-        requireHeadChefOrSousChef(creator);
+        User creator = userReader.getByID(authUser.userId());
         Station station = stationReader.getByID(dto.stationId());
         Set<Allergen> allergens = fetchAllergens(dto.allergenIds());
 
@@ -67,14 +68,10 @@ public class DishService implements IDishService
     }
 
     @Override
-    public DishDTO updateDish(Long editorId, Long dishId, DishUpdateDTO dto)
+    public DishDTO updateDish(Long dishId, DishUpdateDTO dto)
     {
-        ValidationUtil.validateId(editorId);
         ValidationUtil.validateId(dishId);
         validateUpdateInput(dto);
-
-        User editor = userReader.getByID(editorId);
-        requireHeadChefOrSousChef(editor);
 
         Dish dish = dishDAO.getByID(dishId);
         Set<Allergen> allergens = fetchAllergens(dto.allergenIds());
@@ -95,6 +92,7 @@ public class DishService implements IDishService
     public DishDTO getById(Long dishId)
     {
         ValidationUtil.validateId(dishId);
+
         Dish dish = dishDAO.getByID(dishId);
         return DishMapper.toDTO(dish);
     }
@@ -112,48 +110,38 @@ public class DishService implements IDishService
     }
 
     @Override
-    public boolean deleteDish(Long dishId, Long userId)
+    public boolean deleteDish(Long dishId)
     {
         ValidationUtil.validateId(dishId);
-        ValidationUtil.validateId(userId);
-
-        User user = userReader.getByID(userId);
-        requireHeadChefOrSousChef(user);
 
         if (dishDAO.isUsedInAnyMenu(dishId))
         {
-            throw new IllegalStateException("Dish is used in menus - use deactivate instead");
+            throw new ConflictException("Dish is used in menus - use deactivate instead");
         }
 
         return dishDAO.delete(dishId);
     }
 
     @Override
-    public DishDTO deactivate(Long dishId, Long userId)
+    public DishDTO deactivate(Long dishId)
     {
         ValidationUtil.validateId(dishId);
-        ValidationUtil.validateId(userId);
-
-        User user = userReader.getByID(userId);
-        requireHeadChefOrSousChef(user);
 
         Dish dish = dishDAO.getByID(dishId);
         dish.deactivate();
+
         Dish updated = dishDAO.update(dish);
         return DishMapper.toDTO(updated);
     }
 
     @Override
-    public DishDTO activate(Long dishId, Long userId)
+    public DishDTO activate(Long dishId)
     {
         ValidationUtil.validateId(dishId);
-        ValidationUtil.validateId(userId);
-
-        User user = userReader.getByID(userId);
-        requireHeadChefOrSousChef(user);
 
         Dish dish = dishDAO.getByID(dishId);
         dish.activate();
+
         Dish updated = dishDAO.update(dish);
         return DishMapper.toDTO(updated);
     }
@@ -232,14 +220,6 @@ public class DishService implements IDishService
         if (dto.descriptionEN() != null)
         {
             ValidationUtil.validateDescription(dto.descriptionEN(), "Description EN");
-        }
-    }
-
-    private void requireHeadChefOrSousChef(User user)
-    {
-        if(!user.isHeadChef() && !user.isSousChef())
-        {
-            throw new UnauthorizedActionException("Only head chef or sous chef can create dishes directly");
         }
     }
 }

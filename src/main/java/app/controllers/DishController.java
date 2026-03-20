@@ -1,11 +1,11 @@
 package app.controllers;
 
 import app.dtos.dish.*;
+import app.dtos.security.AuthenticatedUser;
 import app.services.IDishService;
 import app.utils.RequestUtil;
 import app.utils.SecurityUtil;
 import io.javalin.http.Context;
-import org.eclipse.jetty.http.HttpStatus;
 
 import java.util.List;
 import java.util.Map;
@@ -25,7 +25,7 @@ public class DishController implements IDishController
     {
         String query = RequestUtil.requireQueryString(ctx, "query");
         List<DishDTO> dishDTOS = dishService.searchByName(query);
-        ctx.status(HttpStatus.OK_200).json(dishDTOS);
+        ctx.status(200).json(dishDTOS);
     }
 
     @Override
@@ -48,18 +48,16 @@ public class DishController implements IDishController
     @Override
     public void activate(Context ctx)
     {
-        Long userId = SecurityUtil.requireUserId(ctx);
         Long dishId = RequestUtil.requirePathId(ctx, "id");
-        DishDTO dishDTO = dishService.activate(dishId, userId);
+        DishDTO dishDTO = dishService.activate(dishId);
         ctx.status(200).json(dishDTO);
     }
 
     @Override
     public void deactivate(Context ctx)
     {
-        Long userId = SecurityUtil.requireUserId(ctx);
         Long dishId = RequestUtil.requirePathId(ctx, "id");
-        DishDTO dishDTO = dishService.deactivate(dishId, userId);
+        DishDTO dishDTO = dishService.deactivate(dishId);
         ctx.status(200).json(dishDTO);
     }
 
@@ -74,7 +72,7 @@ public class DishController implements IDishController
     @Override
     public void getAll(Context ctx)
     {
-        Long stationId = RequestUtil.getQueryLong(ctx, "stationId");
+        Long stationId = RequestUtil.getQueryLong(ctx,"stationId");
         Boolean active = RequestUtil.getQueryBoolean(ctx, "active");
 
         List<DishDTO> dishDTOS = dishService.getAll(stationId, active);
@@ -84,37 +82,35 @@ public class DishController implements IDishController
     @Override
     public void create(Context ctx)
     {
-        Long userId = SecurityUtil.requireUserId(ctx);
+        AuthenticatedUser authUser = SecurityUtil.getAuthenticatedUser(ctx);
 
         DishCreateDTO dishCreateDTO = ctx.bodyValidator(DishCreateDTO.class)
             .check(Objects::nonNull, "Request body cannot be null")
             .get();
-        DishDTO dishDTO = dishService.createDish(userId, dishCreateDTO);
 
+        DishDTO dishDTO = dishService.createDish(authUser, dishCreateDTO);
         ctx.status(201).json(dishDTO);
     }
 
     @Override
     public void update(Context ctx)
     {
-        Long userId = SecurityUtil.requireUserId(ctx);
         Long dishId = RequestUtil.requirePathId(ctx,"id");
 
         DishUpdateDTO dishUpdateDTO = ctx.bodyValidator(DishUpdateDTO.class)
             .check(Objects::nonNull, "Request body cannot be null")
             .get();
-        DishDTO dishDTO = dishService.updateDish(userId, dishId, dishUpdateDTO);
 
+        DishDTO dishDTO = dishService.updateDish(dishId, dishUpdateDTO);
         ctx.status(200).json(dishDTO);
     }
 
     @Override
     public void delete(Context ctx)
     {
-        Long userId = SecurityUtil.requireUserId(ctx);
         Long dishId = RequestUtil.requirePathId(ctx,"id");
 
-        boolean isDeleted = dishService.deleteDish(dishId, userId);
+        boolean isDeleted = dishService.deleteDish(dishId);
         ctx.status(isDeleted ? 204 : 404);
     }
 }

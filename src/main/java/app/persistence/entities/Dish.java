@@ -20,16 +20,16 @@ public class Dish implements IEntity
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name_da", nullable = false)
+    @Column(name = "name_da", nullable = false, length = 100)
     private String nameDA;
 
-    @Column(name = "name_en")
+    @Column(name = "name_en", length = 100)
     private String nameEN;
 
-    @Column(name = "description_da", nullable = false)
+    @Column(name = "description_da", nullable = false, length = 150)
     private String descriptionDA;
 
-    @Column(name = "description_en")
+    @Column(name = "description_en", length = 150)
     private String descriptionEN;
 
     @ManyToOne
@@ -86,7 +86,6 @@ public class Dish implements IEntity
         this.descriptionDA = descriptionDA.trim();
         this.nameEN = nameEN != null ? nameEN.trim() : null;
         this.descriptionEN = descriptionEN != null ? descriptionEN.trim() : null;
-        this.updatedAt = LocalDateTime.now();
 
         if (allergens != null)
         {
@@ -102,27 +101,11 @@ public class Dish implements IEntity
 
         this.nameEN = nameEN.trim();
         this.descriptionEN = descriptionEN.trim();
-        this.updatedAt = LocalDateTime.now();
     }
 
     public boolean hasTranslation()
     {
         return (this.nameEN != null && !this.nameEN.isBlank()) && (this.descriptionEN != null && !this.descriptionEN.isBlank());
-    }
-
-    public boolean isForWeek(int week, int year)
-    {
-        return this.originWeek == week && this.originYear == year;
-    }
-
-    public String getName(String language)
-    {
-        return "en".equalsIgnoreCase(language) && nameEN != null ? nameEN : nameDA;
-    }
-
-    public String getDescription(String language)
-    {
-        return "en".equalsIgnoreCase(language) && descriptionEN != null ? descriptionEN : descriptionDA;
     }
 
     public void deactivate()
@@ -139,6 +122,12 @@ public class Dish implements IEntity
     private void onCreate()
     {
         this.createdAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    private void onUpdate()
+    {
+        this.updatedAt = LocalDateTime.now();
     }
 
     @Override
