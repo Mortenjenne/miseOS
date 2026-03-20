@@ -1,9 +1,9 @@
 package app.services.impl;
 
 import app.dtos.gemini.AiDishSuggestionDTO;
+import app.dtos.security.AuthenticatedUser;
 import app.dtos.station.StationDTO;
 import app.dtos.weather.WeatherForecastDTO;
-import app.exceptions.UnauthorizedActionException;
 import app.integrations.weather.IWeatherClient;
 import app.mappers.StationMapper;
 import app.persistence.daos.interfaces.readers.IUserReader;
@@ -29,12 +29,12 @@ public class MenuInspirationService implements IMenuInspirationService
         this.weatherClient = weatherClient;
     }
 
-    public List<AiDishSuggestionDTO> getDailyInspiration(Long chefId)
+    public List<AiDishSuggestionDTO> getDailyInspiration(AuthenticatedUser authUser)
     {
-        ValidationUtil.validateId(chefId);
-        User user = userReader.getByID(chefId);
-        requireKitchenStaff(user);
+        ValidationUtil.validateNotNull(authUser, "Authenticated User");
+        ValidationUtil.validateId(authUser.userId());
 
+        User user = userReader.getByID(authUser.userId());
         Station station = user.getStation();
         StationDTO stationDTO = StationMapper.toDTO(station);
 
@@ -44,13 +44,15 @@ public class MenuInspirationService implements IMenuInspirationService
     }
 
     @Override
-    public void streamDailyInspiration(Long chefId, Consumer<String> statusConsumer, Consumer<AiDishSuggestionDTO> dishConsumer, Runnable onComplete, Consumer<Throwable> errorConsumer)
+    public void streamDailyInspiration(AuthenticatedUser authUser, Consumer<String> statusConsumer, Consumer<AiDishSuggestionDTO> dishConsumer, Runnable onComplete, Consumer<Throwable> errorConsumer)
     {
-        ValidationUtil.validateId(chefId);
-        User user = userReader.getByID(chefId);
-        requireKitchenStaff(user);
+        ValidationUtil.validateNotNull(authUser, "Authenticated User");
+        ValidationUtil.validateId(authUser.userId());
 
+        User user = userReader.getByID(authUser.userId());
         Station station = user.getStation();
+        ValidationUtil.validateNotNull(station, "Station");
+
         statusConsumer.accept("Analyserer køkkenstationens udstyr...");
         StationDTO stationDTO = StationMapper.toDTO(station);
         statusConsumer.accept("Henter vejrdata for din lokation...");
@@ -59,11 +61,4 @@ public class MenuInspirationService implements IMenuInspirationService
         aiService.getStreamingDishSuggestions(weatherForecastDTO, stationDTO, dishConsumer, onComplete, errorConsumer);
     }
 
-    private void requireKitchenStaff(User user)
-    {
-        if(!user.isKitchenStaff())
-        {
-            throw new UnauthorizedActionException("Only staff can access daily menu inspirations");
-        }
-    }
 }

@@ -3,7 +3,6 @@ package app.controllers;
 import app.dtos.dishsuggestion.*;
 import app.dtos.security.AuthenticatedUser;
 import app.enums.Status;
-import app.persistence.entities.DishSuggestion;
 import app.services.IDishSuggestionService;
 import app.utils.RequestUtil;
 import app.utils.SecurityUtil;

@@ -1,6 +1,7 @@
 package app.controllers;
 
 import app.dtos.gemini.AiDishSuggestionDTO;
+import app.dtos.security.AuthenticatedUser;
 import app.services.IMenuInspirationService;
 import app.utils.SecurityUtil;
 import io.javalin.http.Context;
@@ -20,9 +21,9 @@ public class MenuInspirationController implements IMenuInspirationController
     @Override
     public void getDailyInspiration(Context ctx)
     {
-        Long userId = SecurityUtil.requireUserId(ctx);
+        AuthenticatedUser authUser = SecurityUtil.getAuthenticatedUser(ctx);
 
-        List<AiDishSuggestionDTO> suggestions = menuInspirationService.getDailyInspiration(userId);
+        List<AiDishSuggestionDTO> suggestions = menuInspirationService.getDailyInspiration(authUser);
         ctx.status(200).json(suggestions);
     }
 
@@ -30,10 +31,10 @@ public class MenuInspirationController implements IMenuInspirationController
     public void getStreamingSuggestions(SseClient client)
     {
         client.keepAlive();
-        Long userId = SecurityUtil.requireUserId(client.ctx());
+        AuthenticatedUser authUser = SecurityUtil.getAuthenticatedUser(client.ctx());
 
         menuInspirationService.streamDailyInspiration(
-            userId,
+            authUser,
             status -> client.sendEvent("status", status),
             dish -> client.sendEvent("dish", dish),
             () ->

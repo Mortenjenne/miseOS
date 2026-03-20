@@ -1,6 +1,7 @@
 package app.routes;
 
 import app.controllers.IMenuInspirationController;
+import app.enums.Role;
 import io.javalin.apibuilder.EndpointGroup;
 
 import static io.javalin.apibuilder.ApiBuilder.*;
@@ -18,8 +19,8 @@ public class MenuInspirationRoute
     {
         return () -> path("/menu-inspirations", () ->
         {
-            get("/daily", menuInspirationController::getDailyInspiration);
-            sse("/stream", menuInspirationController::getStreamingSuggestions);
+            get("/daily", menuInspirationController::getDailyInspiration, Role.KITCHEN_STAFF);
+            sse("/stream", menuInspirationController::getStreamingSuggestions, Role.KITCHEN_STAFF);
         });
     }
 }
