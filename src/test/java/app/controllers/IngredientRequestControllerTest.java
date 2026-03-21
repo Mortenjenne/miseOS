@@ -85,7 +85,7 @@ class IngredientRequestControllerTest
             IngredientRequest dill = (IngredientRequest) seeded.get("req_dill");
 
             IngredientRequestDTO response = given()
-                .header("Authorization", headChefToken)
+                .header("Authorization", lineCookToken)
                 .contentType(ContentType.JSON)
                 .body(payload)
                 .when()

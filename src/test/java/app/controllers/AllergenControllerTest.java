@@ -6,7 +6,7 @@ import app.dtos.allergen.AllergenCreateRequestDTO;
 import app.dtos.allergen.AllergenUpdateRequestDTO;
 import app.persistence.entities.Allergen;
 import app.persistence.entities.IEntity;
-import app.persistence.entities.User;
+import app.testutils.TestAuthenticationUtil;
 import app.testutils.TestCleanDB;
 import app.testutils.TestPopulator;
 import io.javalin.Javalin;
@@ -25,11 +25,12 @@ class AllergenControllerTest
 {
     private static final String ENDPOINT_URL = "/allergens";
     private static final int TEST_PORT = 7773;
-    private static final String USER_HEADER = "X-Dev-User-Id";
-
     private static EntityManagerFactory emf;
     private static Javalin app;
     private static Map<String, IEntity> seeded;
+
+    private String headChefToken;
+    private String lineChefToken;
 
     @BeforeAll
     static void startServer()
@@ -42,12 +43,15 @@ class AllergenControllerTest
     }
 
     @BeforeEach
-    void resetDatabase()
+    void setup()
     {
         TestCleanDB.truncateTables(emf);
         TestPopulator populator = new TestPopulator(emf);
         populator.populate();
+
         seeded = populator.getSeededData();
+        headChefToken = TestAuthenticationUtil.bearerToken("gordon@kitchen.com", "Hash1");
+        lineChefToken  = TestAuthenticationUtil.bearerToken("claire@pastry.com", "Hash2");
     }
 
     @AfterAll
@@ -66,6 +70,7 @@ class AllergenControllerTest
         {
             given()
                 .when()
+                .header("Authorization", lineChefToken)
                 .get(ENDPOINT_URL)
                 .then()
                 .statusCode(200)
@@ -88,6 +93,7 @@ class AllergenControllerTest
             Allergen gluten = (Allergen) seeded.get("allergen_gluten");
 
             given()
+                .header("Authorization", headChefToken)
                 .when()
                 .get(ENDPOINT_URL + "/" + gluten.getId())
                 .then()
@@ -105,6 +111,7 @@ class AllergenControllerTest
         void notFoundReturns404()
         {
             given()
+                .header("Authorization", lineChefToken)
                 .when()
                 .get(ENDPOINT_URL + "/9999")
                 .then()
@@ -116,6 +123,7 @@ class AllergenControllerTest
         void negativeIdReturns400()
         {
             given()
+                .header("Authorization", lineChefToken)
                 .when()
                 .get(ENDPOINT_URL + "/-1")
                 .then()
@@ -134,6 +142,7 @@ class AllergenControllerTest
             Allergen gluten = (Allergen) seeded.get("allergen_gluten");
 
             given()
+                .header("Authorization", lineChefToken)
                 .when()
                 .get(ENDPOINT_URL + "/name/" + gluten.getNameDA())
                 .then()
@@ -147,6 +156,7 @@ class AllergenControllerTest
         void unknownNameReturns404()
         {
             given()
+                .header("Authorization", lineChefToken)
                 .when()
                 .get(ENDPOINT_URL + "/name/Hvidløg")
                 .then()
@@ -162,8 +172,6 @@ class AllergenControllerTest
         @DisplayName("Should create allergen and return 201")
         void createsAllergen()
         {
-            User headChef = (User) seeded.get("user_gordon");
-
             AllergenCreateRequestDTO dto = new AllergenCreateRequestDTO(
                 "Hvidløg",
                 "Garlic",
@@ -173,7 +181,7 @@ class AllergenControllerTest
             );
 
             given()
-                .header(USER_HEADER, headChef.getId())
+                .header("Authorization", headChefToken)
                 .contentType(ContentType.JSON)
                 .body(dto)
                 .when()
@@ -190,8 +198,6 @@ class AllergenControllerTest
         @DisplayName("Should return 400 when nameDA is blank")
         void blankNameDAReturnsBadRequest()
         {
-            User headChef = (User) seeded.get("user_gordon");
-
             AllergenCreateRequestDTO dto = new AllergenCreateRequestDTO(
                 "",
                 "Garlic",
@@ -201,7 +207,7 @@ class AllergenControllerTest
             );
 
             given()
-                .header(USER_HEADER, headChef.getId())
+                .header("Authorization", headChefToken)
                 .contentType(ContentType.JSON)
                 .body(dto)
                 .when()
@@ -214,8 +220,6 @@ class AllergenControllerTest
         @DisplayName("Should return 400 when displayNumber is not positive")
         void invalidDisplayNumberReturnsBadRequest()
         {
-            User headChef = (User) seeded.get("user_gordon");
-
             AllergenCreateRequestDTO dto = new AllergenCreateRequestDTO(
                 "Hvidløg",
                 "Garlic",
@@ -225,7 +229,7 @@ class AllergenControllerTest
             );
 
             given()
-                .header(USER_HEADER, headChef.getId())
+                .header("Authorization", headChefToken)
                 .contentType(ContentType.JSON)
                 .body(dto)
                 .when()
@@ -238,7 +242,6 @@ class AllergenControllerTest
         @DisplayName("Should return 409 when allergen with same name already exists")
         void duplicateNameReturnsConflict()
         {
-            User headChef = (User) seeded.get("user_gordon");
             Allergen gluten = (Allergen) seeded.get("allergen_gluten");
 
             AllergenCreateRequestDTO dto = new AllergenCreateRequestDTO(
@@ -250,7 +253,7 @@ class AllergenControllerTest
             );
 
             given()
-                .header(USER_HEADER, headChef.getId())
+                .header("Authorization", headChefToken)
                 .contentType(ContentType.JSON)
                 .body(dto)
                 .when()
@@ -268,7 +271,6 @@ class AllergenControllerTest
         @DisplayName("Should update allergen and return updated fields")
         void updatesAllergen()
         {
-            User headChef = (User) seeded.get("user_gordon");
             Allergen milk = (Allergen) seeded.get("allergen_milk");
 
             AllergenUpdateRequestDTO dto = new AllergenUpdateRequestDTO(
@@ -280,7 +282,7 @@ class AllergenControllerTest
             );
 
             given()
-                .header(USER_HEADER, headChef.getId())
+                .header("Authorization", headChefToken)
                 .contentType(ContentType.JSON)
                 .body(dto)
                 .when()
@@ -295,8 +297,6 @@ class AllergenControllerTest
         @DisplayName("Should return 404 when updating unknown id")
         void unknownIdReturns404()
         {
-            User headChef = (User) seeded.get("user_gordon");
-
             AllergenUpdateRequestDTO dto = new AllergenUpdateRequestDTO(
                 "Hvidløg",
                 "Garlic",
@@ -306,7 +306,7 @@ class AllergenControllerTest
             );
 
             given()
-                .header(USER_HEADER, headChef.getId())
+                .header("Authorization", headChefToken)
                 .contentType(ContentType.JSON)
                 .body(dto)
                 .when()
@@ -319,7 +319,6 @@ class AllergenControllerTest
         @DisplayName("Should return 400 when nameEN is blank")
         void blankNameENReturnsBadRequest()
         {
-            User headChef = (User) seeded.get("user_gordon");
             Allergen milk = (Allergen) seeded.get("allergen_milk");
 
             AllergenUpdateRequestDTO dto = new AllergenUpdateRequestDTO(
@@ -331,7 +330,7 @@ class AllergenControllerTest
             );
 
             given()
-                .header(USER_HEADER, headChef.getId())
+                .header("Authorization", headChefToken)
                 .contentType(ContentType.JSON)
                 .body(dto)
                 .when()
@@ -349,17 +348,17 @@ class AllergenControllerTest
         @DisplayName("Should delete allergen and return 204")
         void deletesAllergen()
         {
-            User headChef = (User) seeded.get("user_gordon");
             Allergen nuts = (Allergen) seeded.get("allergen_nuts");
 
             given()
-                .header(USER_HEADER, headChef.getId())
+                .header("Authorization", headChefToken)
                 .when()
                 .delete(ENDPOINT_URL + "/" + nuts.getId())
                 .then()
                 .statusCode(204);
 
             given()
+                .header("Authorization", headChefToken)
                 .when()
                 .get(ENDPOINT_URL + "/" + nuts.getId())
                 .then()
@@ -370,10 +369,8 @@ class AllergenControllerTest
         @DisplayName("Should return 404 when deleting unknown id")
         void unknownIdReturns404()
         {
-            User headChef = (User) seeded.get("user_gordon");
-
             given()
-                .header(USER_HEADER, headChef.getId())
+                .header("Authorization", headChefToken)
                 .when()
                 .delete(ENDPOINT_URL + "/9999")
                 .then()
@@ -384,10 +381,8 @@ class AllergenControllerTest
         @DisplayName("Should return 400 for negative id")
         void negativeIdReturns400()
         {
-            User headChef = (User) seeded.get("user_gordon");
-
             given()
-                .header(USER_HEADER, headChef.getId())
+                .header("Authorization", headChefToken)
                 .when()
                 .delete(ENDPOINT_URL + "/-1")
                 .then()
@@ -403,10 +398,8 @@ class AllergenControllerTest
         @DisplayName("Second seed call should return 400 — already seeded")
         void secondSeedIsBlocked()
         {
-            User headChef = (User) seeded.get("user_gordon");
-
             given()
-                .header(USER_HEADER, headChef.getId())
+                .header("Authorization", headChefToken)
                 .when()
                 .post(ENDPOINT_URL + "/seed")
                 .then()
