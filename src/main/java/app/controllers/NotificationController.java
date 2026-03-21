@@ -1,6 +1,7 @@
 package app.controllers;
 
 import app.dtos.notification.AdminNotificationSnapshotDTO;
+import app.dtos.security.AuthenticatedUser;
 import app.enums.SessionType;
 import app.services.INotificationRegistry;
 import app.services.INotificationSnapshotService;
@@ -30,33 +31,23 @@ public class NotificationController implements INotificationController
         ws.onError(this::handleError);
     }
 
-
     @Override
     public void handleConnect(WsConnectContext ctx)
     {
         ctx.enableAutomaticPings();
 
-        String role = ctx.queryParam("role");
-        String userIdParam = ctx.queryParam("userId");
+        AuthenticatedUser authUser = SecurityUtil.getAuthenticatedUserWebSocket(ctx);
+        logger.info("WebSocket connecting: User: {} with role: {} with session: {}", authUser.userId(), authUser.userRole(), ctx.sessionId());
 
-        logger.info("WebSocket connecting: User: {} with role: {} with session: {}", userIdParam, role, ctx.sessionId);
-
-        if ("HEAD_CHEF".equals(role) || "SOUS_CHEF".equals(role))
+        if (authUser.isHeadChef() || authUser.isSousChef())
         {
             ctx.attribute("sessionType", SessionType.ADMIN.name());
             notificationRegistry.registerAdmin(ctx);
             return;
         }
 
-        if (userIdParam != null)
-        {
-            ctx.attribute("sessionType", SessionType.STAFF.name());
-            notificationRegistry.registerStaff(ctx, Long.parseLong(userIdParam));
-            return;
-        }
-
-        logger.warn("Closing websocket session={} due to missing/invalid registration params", ctx.sessionId());
-        ctx.closeSession(1008, "Invalid websocket registration");
+        ctx.attribute("sessionType", SessionType.STAFF.name());
+        notificationRegistry.registerStaff(ctx, authUser.userId());
     }
 
     @Override
@@ -77,8 +68,7 @@ public class NotificationController implements INotificationController
     @Override
     public void getSnapshot(Context ctx)
     {
-        Long userId = SecurityUtil.requireUserId(ctx);
-        AdminNotificationSnapshotDTO snapshot = notificationSnapshotService.getPendingSnapshot(userId);
+        AdminNotificationSnapshotDTO snapshot = notificationSnapshotService.getPendingSnapshot();
         ctx.status(200).json(snapshot);
     }
 
@@ -96,8 +86,7 @@ public class NotificationController implements INotificationController
         }
         else
         {
-            notificationRegistry.unregisterAdmin(ctx);
-            notificationRegistry.unregisterStaff(ctx);
+            logger.warn("Cleanup called on unregistered session: {}", ctx.sessionId());
         }
     }
 }

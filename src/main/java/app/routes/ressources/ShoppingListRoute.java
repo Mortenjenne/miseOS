@@ -15,7 +15,7 @@ public class ShoppingListRoute
         this.shoppingListController = shoppingListController;
     }
 
-    protected EndpointGroup getRoutes()
+    public EndpointGroup getRoutes()
     {
         return () -> path("/shopping-lists", () ->
         {

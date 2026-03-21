@@ -29,7 +29,7 @@ X-Dev-User-Id: {{headChefId}}
 ### Create dish-specific request
 POST {{url}}/ingredient-requests
 Content-Type: application/json
-X-Dev-User-Id: {{lineCookId}}
+Authorization: Bearer {{authTokenLineCook}}
 
 {
     "name": "Dild",
@@ -38,7 +38,7 @@ X-Dev-User-Id: {{lineCookId}}
     "preferredSupplier": "Grønttorvet",
     "note": "Til laks",
     "requestType": "DISH_SPECIFIC",
-    "deliveryDate": "2026-03-21",
+    "deliveryDate": "2026-03-28",
     "dishId": 1
 }
 
@@ -74,8 +74,8 @@ X-Dev-User-Id: {{lineCookId}}
 }
 
 ### Approve request (without adjustments)
-PATCH {{url}}/ingredient-requests/39/approve
-X-Dev-User-Id: {{headChefId}}
+PATCH {{url}}/ingredient-requests/40/approve
+Authorization: Bearer {{authTokenHeadChef}}}
 
 ### Approve request (with adjustments)
 PATCH {{url}}/ingredient-requests/4/approve
@@ -88,9 +88,9 @@ X-Dev-User-Id: {{headChefId}}
 }
 
 ### Reject request
-PATCH {{url}}/ingredient-requests/3/reject
-X-Dev-User-Id: {{headChefId}}
+PATCH {{url}}/ingredient-requests/40/reject
+Authorization: Bearer {{authTokenHeadChef}}}
 
 ### Delete pending request
 DELETE {{url}}/ingredient-requests/2
-X-Dev-User-Id: {{lineCookId}}
+Authorization: Bearer {{authTokenLineCook}}}

@@ -18,7 +18,7 @@ public class StationRoute
         this.stationController = stationController;
     }
 
-    protected EndpointGroup getRoutes()
+    public EndpointGroup getRoutes()
     {
         return () -> path("/stations", () ->
         {

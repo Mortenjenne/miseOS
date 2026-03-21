@@ -12,18 +12,27 @@ POST {{url}}/users
 Content-Type: application/json
 
 {
-    "firstName": "Morten",
-    "lastName": "Jensen",
+    "firstName": "Jeanette",
+    "lastName": "Nielsen",
     "password": "Morten123.",
-    "email": "morten@email.com"
+    "email": "jeanette@email.com"
 }
 
-### POST Login to get JWT Token
+### POST Login to get JWT Token(Head chef)
 POST {{url}}/auth/login
 Content-Type: application/json
 
 {
     "email": "morten@email.com",
+    "password": "Morten123."
+}
+
+### POST Login to get JWT Token(Line cook)
+POST {{url}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "jeanette@email.com",
     "password": "Morten123."
 }
 
@@ -80,8 +89,8 @@ Authorization: Bearer {{authToken}}
 
 
 ### PATCH Assign User(Anna) To Station
-PATCH {{url}}/users/1/station/3
-Authorization: Bearer {{authToken}}
+PATCH {{url}}/users/5/station/1
+Authorization: Bearer {{authTokenHeadChef}}
 
 ### DELETE Delete User
 DELETE {{url}}/users/2

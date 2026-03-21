@@ -19,7 +19,7 @@ public class SecurityRoute
         this.userController = userController;
     }
 
-    protected EndpointGroup getRoutes()
+    public EndpointGroup getRoutes()
     {
         return () -> path("auth", () ->
         {
@@ -27,6 +27,4 @@ public class SecurityRoute
             post("/register", userController::create, Role.ANYONE);
         });
     }
-
-
 }

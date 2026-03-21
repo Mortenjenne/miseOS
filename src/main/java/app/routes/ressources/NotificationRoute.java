@@ -19,7 +19,7 @@ public class NotificationRoute
     {
         return () ->
         {
-          ws("/notifications", notificationController::handleNotifications, Role.KITCHEN_STAFF);
+          ws("/notifications", notificationController::handleNotifications);
           get("/notifications/snapshot", notificationController::getSnapshot, Role.HEAD_CHEF, Role.SOUS_CHEF);
         };
     }

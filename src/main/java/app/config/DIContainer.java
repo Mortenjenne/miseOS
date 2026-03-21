@@ -112,7 +112,7 @@ public final class DIContainer
         this.stationDAO = new StationDAO(emf);
 
         this.notificationService = new NotificationService();
-        this.notificationSnapshotService = new NotificationSnapshotService(userDAO, dishSuggestionDAO, ingredientRequestDAO);
+        this.notificationSnapshotService = new NotificationSnapshotService(dishSuggestionDAO, ingredientRequestDAO);
         this.dishTranslationService = new DishTranslationService(translationClient);
         this.aiService = new AiService(objectMapper, aiClient);
         this.allergenService = new AllergenService(allergenDAO);

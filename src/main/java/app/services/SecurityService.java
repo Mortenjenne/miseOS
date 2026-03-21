@@ -13,12 +13,15 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.text.ParseException;
 import java.util.Date;
 
 public class SecurityService implements ISecurityService
 {
+    private static final Logger logger = LoggerFactory.getLogger(SecurityService.class);
     private final IUserReader userReader;
     private final String issuer;
     private final String secretKey;
@@ -43,6 +46,7 @@ public class SecurityService implements ISecurityService
 
         if (!user.verifyPassword(dto.password()))
         {
+            logger.warn("Login failed — wrong password for: {}", dto.email());
             throw new AuthenticationException("Invalid email or password");
         }
 
@@ -97,6 +101,7 @@ public class SecurityService implements ISecurityService
 
             if (userId == null || userId <= 0 || email == null || email.isBlank() || role == null || role.isBlank())
             {
+                logger.warn("Token claims invalid — possible tampering");
                 throw new AuthenticationException("Token claims invalid");
             }
 

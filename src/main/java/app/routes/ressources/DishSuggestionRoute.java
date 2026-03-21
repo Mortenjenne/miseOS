@@ -15,7 +15,7 @@ public class DishSuggestionRoute
         this.dishSuggestionController = dishSuggestionController;
     }
 
-    protected EndpointGroup getRoutes()
+    public EndpointGroup getRoutes()
     {
         return () -> path("dish-suggestions", () ->
         {

@@ -16,7 +16,7 @@ public class AllergenRoute
         this.allergenController = allergenController;
     }
 
-    protected EndpointGroup getRoutes()
+    public EndpointGroup getRoutes()
     {
         return () -> path("/allergens", () ->
         {

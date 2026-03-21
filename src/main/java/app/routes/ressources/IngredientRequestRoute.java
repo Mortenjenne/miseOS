@@ -15,7 +15,7 @@ public class IngredientRequestRoute
         this.ingredientRequestController = iIngredientRequestController;
     }
 
-    protected EndpointGroup getRoutes()
+    public EndpointGroup getRoutes()
     {
         return () -> path("ingredient-requests", () ->
         {

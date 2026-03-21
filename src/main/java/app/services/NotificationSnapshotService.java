@@ -10,25 +10,18 @@ import app.utils.ValidationUtil;
 
 public class NotificationSnapshotService implements INotificationSnapshotService
 {
-    private final IUserReader userReader;
     private final IDishSuggestionReader dishSuggestionReader;
     private final IIngredientRequestReader ingredientRequestReader;
 
-    public NotificationSnapshotService(IUserReader userReader, IDishSuggestionReader dishSuggestionReader, IIngredientRequestReader ingredientRequestReader)
+    public NotificationSnapshotService(IDishSuggestionReader dishSuggestionReader, IIngredientRequestReader ingredientRequestReader)
     {
-        this.userReader = userReader;
         this.dishSuggestionReader = dishSuggestionReader;
         this.ingredientRequestReader = ingredientRequestReader;
     }
 
     @Override
-    public AdminNotificationSnapshotDTO getPendingSnapshot(Long requesterId)
+    public AdminNotificationSnapshotDTO getPendingSnapshot()
     {
-        ValidationUtil.validateId(requesterId);
-
-        User user = userReader.getByID(requesterId);
-        requireHeadChefOrSousChef(user);
-
         int pendingSuggestions = dishSuggestionReader.getPendingSuggestionsCount();
         int pendingRequests = ingredientRequestReader.getPendingRequestCount();
 
@@ -37,13 +30,5 @@ public class NotificationSnapshotService implements INotificationSnapshotService
             pendingRequests,
             pendingSuggestions + pendingRequests
         );
-    }
-
-    private void requireHeadChefOrSousChef(User user)
-    {
-        if (!user.isHeadChef() && !user.isSousChef())
-        {
-            throw new UnauthorizedActionException("Only head chef or sous chef can view admin notification snapshot");
-        }
     }
 }

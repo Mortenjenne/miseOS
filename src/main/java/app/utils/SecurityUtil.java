@@ -3,6 +3,7 @@ package app.utils;
 import app.dtos.security.AuthenticatedUser;
 import app.exceptions.AuthenticationException;
 import io.javalin.http.Context;
+import io.javalin.websocket.WsContext;
 
 public class SecurityUtil
 {
@@ -11,7 +12,26 @@ public class SecurityUtil
     public static AuthenticatedUser getAuthenticatedUser(Context ctx)
     {
         AuthenticatedUser authUser = ctx.attribute("authUser");
+        validateAuthenticatedUser(authUser);
 
+        return authUser;
+    }
+
+    public static AuthenticatedUser getAuthenticatedUserWebSocket(WsContext wsCtx)
+    {
+        AuthenticatedUser authUser = wsCtx.attribute("authUser");
+        validateAuthenticatedUser(authUser);
+
+        return authUser;
+    }
+
+    public static AuthenticatedUser getOptionalAuthenticatedUser(Context ctx)
+    {
+        return ctx.attribute("authUser");
+    }
+
+    private static void validateAuthenticatedUser(AuthenticatedUser authUser)
+    {
         if (authUser == null)
         {
             throw new AuthenticationException("No authenticated user found");
@@ -25,12 +45,5 @@ public class SecurityUtil
         {
             throw new AuthenticationException("Authenticated user email is invalid");
         }
-
-        return authUser;
-    }
-
-    public static AuthenticatedUser getOptionalAuthenticatedUser(Context ctx)
-    {
-        return ctx.attribute("authUser");
     }
 }

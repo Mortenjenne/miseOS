@@ -48,6 +48,7 @@ public class ServerConfig
     {
         config.routes.beforeMatched(securityController::authenticate);
         config.routes.beforeMatched(securityController::authorize);
+        config.routes.wsBefore("/notifications", ws -> ws.onConnect(securityController::authenticateWebSocket));
     }
 
     private void configureMiddleWareLogging(JavalinConfig config)

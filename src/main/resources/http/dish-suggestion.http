@@ -71,14 +71,14 @@ GET {{url}}/dish-suggestions/current-week?status=APPROVED
 ### POST create suggestion (Salmon)
 POST {{url}}/dish-suggestions/
 Content-Type: application/json
-X-Dev-User-Id: {{lineCookId}}
+Authorization: Bearer {{authTokenLineCook}}}
 
 {
     "nameDA": "Laks med beurre blanc",
     "descriptionDA": "Færøsk laks bagt med fransk smør sauce",
     "stationId": 1,
     "allergenIds": [1, 4],
-    "targetWeek": 15,
+    "targetWeek": 16,
     "targetYear": 2026
 }
 
@@ -119,8 +119,8 @@ X-Dev-User-Id: {{lineCookId}}
 }
 
 ### PATCH approve suggestion
-PATCH {{url}}/dish-suggestions/6/approve
-X-Dev-User-Id: {{headChefId}}
+PATCH {{url}}/dish-suggestions/7/approve
+Authorization: Bearer {{authTokenHeadChef}}}
 
 
 ### PATCH reject suggestion

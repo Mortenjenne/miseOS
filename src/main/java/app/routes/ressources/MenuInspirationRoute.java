@@ -15,7 +15,7 @@ public class MenuInspirationRoute
         this.menuInspirationController = menuInspirationController;
     }
 
-    protected EndpointGroup getRoutes()
+    public EndpointGroup getRoutes()
     {
         return () -> path("/menu-inspirations", () ->
         {

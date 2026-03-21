@@ -15,7 +15,7 @@ public class WeeklyMenuRoute
         this.weeklyMenuController = weeklyMenuController;
     }
 
-    protected EndpointGroup getRoutes()
+    public EndpointGroup getRoutes()
     {
         return () -> path("/weekly-menus", () ->
         {

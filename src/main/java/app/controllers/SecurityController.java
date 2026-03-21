@@ -9,6 +9,7 @@ import app.exceptions.UnauthorizedActionException;
 import app.services.ISecurityService;
 import io.javalin.http.Context;
 import io.javalin.security.RouteRole;
+import io.javalin.websocket.WsConnectContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,7 +81,7 @@ public class SecurityController implements ISecurityController
 
         if (allowedRoles.contains("KITCHEN_STAFF"))
         {
-            if (!isKitchenStaff(authUser))
+            if (!authUser.isKitchenStaff())
             {
                 throw new UnauthorizedActionException("Kitchen staff only");
             }
@@ -94,17 +95,27 @@ public class SecurityController implements ISecurityController
         }
     }
 
+    @Override
+    public void authenticateWebSocket(WsConnectContext wsCtx)
+    {
+        String header = wsCtx.header("Authorization");
+        if (header == null || !header.startsWith("Bearer "))
+        {
+            wsCtx.closeSession(1008, "Missing or malformed Authorization header");
+            return;
+        }
+
+        String token = header.substring(7).trim();
+        AuthenticatedUser authUser = securityService.verifyAndExtract(token);
+        wsCtx.attribute("authUser", authUser);
+    }
+
     private static void requireUserNotNull(AuthenticatedUser authenticatedUser)
     {
         if (authenticatedUser == null)
         {
             throw new AuthenticationException("No authenticated user found");
         }
-    }
-
-    private boolean isKitchenStaff(AuthenticatedUser authenticatedUser)
-    {
-        return authenticatedUser.userRole() == UserRole.HEAD_CHEF || authenticatedUser.userRole() == UserRole.SOUS_CHEF || authenticatedUser.userRole() == UserRole.LINE_COOK;
     }
 
     private Set<String> getAllowedRoles(Context ctx)
