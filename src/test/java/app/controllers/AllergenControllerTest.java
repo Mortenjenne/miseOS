@@ -27,8 +27,8 @@ class AllergenControllerTest
     private static final int TEST_PORT = 7773;
     private static EntityManagerFactory emf;
     private static Javalin app;
-    private static Map<String, IEntity> seeded;
 
+    private Map<String, IEntity> seeded;
     private String headChefToken;
     private String lineChefToken;
 

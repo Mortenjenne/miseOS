@@ -8,7 +8,7 @@ import app.dtos.dish.DishOptionDTO;
 import app.persistence.entities.Dish;
 import app.persistence.entities.IEntity;
 import app.persistence.entities.Station;
-import app.persistence.entities.User;
+import app.testutils.TestAuthenticationUtil;
 import app.testutils.TestCleanDB;
 import app.testutils.TestPopulator;
 import io.javalin.Javalin;
@@ -30,11 +30,12 @@ class DishControllerTest
 {
     private static final String ENDPOINT_URL = "/dishes";
     private static final int TEST_PORT = 7775;
-    private static final String USER_HEADER = "X-Dev-User-Id";
-
     private static EntityManagerFactory emf;
     private static Javalin app;
-    private static Map<String, IEntity> seeded;
+
+    private Map<String, IEntity> seeded;
+    private String headChefToken;
+    private String lineChefToken;
 
     @BeforeAll
     static void startServer()
@@ -52,7 +53,10 @@ class DishControllerTest
         TestCleanDB.truncateTables(emf);
         TestPopulator populator = new TestPopulator(emf);
         populator.populate();
+
         seeded = populator.getSeededData();
+        headChefToken = TestAuthenticationUtil.bearerToken("gordon@kitchen.com", "Hash1");
+        lineChefToken  = TestAuthenticationUtil.bearerToken("claire@pastry.com", "Hash2");
     }
 
     @AfterAll
@@ -70,6 +74,7 @@ class DishControllerTest
         void searchReturnsMatch()
         {
             given()
+                .header("Authorization", headChefToken)
                 .queryParam("query", "laks")
                 .when()
                 .get(ENDPOINT_URL + "/search")
@@ -86,6 +91,7 @@ class DishControllerTest
         void searchMissingQueryReturns400()
         {
             given()
+                .header("Authorization", headChefToken)
                 .when()
                 .get(ENDPOINT_URL + "/search")
                 .then()
@@ -97,6 +103,7 @@ class DishControllerTest
         void searchBlankQueryReturns400()
         {
             given()
+                .header("Authorization", headChefToken)
                 .queryParam("query", " ")
                 .when()
                 .get(ENDPOINT_URL + "/search")
@@ -116,6 +123,7 @@ class DishControllerTest
             Dish salmon = (Dish) seeded.get("dish_salmon");
 
             given()
+                .header("Authorization", headChefToken)
                 .when()
                 .get(ENDPOINT_URL + "/" + salmon.getId())
                 .then()
@@ -135,6 +143,7 @@ class DishControllerTest
         void notFoundReturns404()
         {
             given()
+                .header("Authorization", headChefToken)
                 .when()
                 .get(ENDPOINT_URL + "/9999")
                 .then()
@@ -146,6 +155,7 @@ class DishControllerTest
         void negativeIdReturns400()
         {
             given()
+                .header("Authorization", headChefToken)
                 .when()
                 .get(ENDPOINT_URL + "/-1")
                 .then()
@@ -162,6 +172,7 @@ class DishControllerTest
         void getAllNoFiltersReturnsAll()
         {
             given()
+                .header("Authorization", headChefToken)
                 .when()
                 .get(ENDPOINT_URL)
                 .then()
@@ -174,6 +185,7 @@ class DishControllerTest
         void getAllActiveTrueReturnsOnlyActive()
         {
             given()
+                .header("Authorization", headChefToken)
                 .queryParam("active", true)
                 .when()
                 .get(ENDPOINT_URL)
@@ -190,6 +202,7 @@ class DishControllerTest
             Station hot = (Station) seeded.get("station_hot");
 
             given()
+                .header("Authorization", headChefToken)
                 .queryParam("stationId", hot.getId())
                 .when()
                 .get(ENDPOINT_URL)
@@ -204,6 +217,7 @@ class DishControllerTest
         void getAllInvalidActiveReturns400()
         {
             given()
+                .header("Authorization", headChefToken)
                 .queryParam("active", "sand")
                 .when()
                 .get(ENDPOINT_URL)
@@ -221,6 +235,7 @@ class DishControllerTest
         void returnsAvailableDishes()
         {
             AvailableDishesDTO dto = given()
+                .header("Authorization", headChefToken)
                 .queryParam("week", 7)
                 .queryParam("year", 2026)
                 .when()
@@ -243,6 +258,7 @@ class DishControllerTest
         void missingWeekReturns400()
         {
             given()
+                .header("Authorization", headChefToken)
                 .queryParam("year", 2026)
                 .when()
                 .get(ENDPOINT_URL + "/available")
@@ -255,6 +271,7 @@ class DishControllerTest
         void invalidWeekReturns400()
         {
             given()
+                .header("Authorization", headChefToken)
                 .queryParam("week", 60)
                 .queryParam("year", 2026)
                 .when()
@@ -273,6 +290,7 @@ class DishControllerTest
         void returnsGrouped()
         {
             Map<String, List<DishOptionDTO>> grouped = given()
+                .header("Authorization", headChefToken)
                 .when()
                 .get(ENDPOINT_URL + "/grouped")
                 .then()
@@ -296,11 +314,10 @@ class DishControllerTest
         @DisplayName("Should activate inactive dish (head chef)")
         void activatesDish()
         {
-            User headChef = (User) seeded.get("user_gordon");
             Dish inactive = (Dish) seeded.get("dish_old");
 
             given()
-                .header(USER_HEADER, headChef.getId())
+                .header("Authorization", headChefToken)
                 .when()
                 .patch(ENDPOINT_URL + "/" + inactive.getId() + "/activate")
                 .then()
@@ -318,11 +335,10 @@ class DishControllerTest
         @DisplayName("Should deactivate active dish (head chef)")
         void deactivatesDish()
         {
-            User headChef = (User) seeded.get("user_gordon");
             Dish dish = (Dish) seeded.get("dish_salmon");
 
             given()
-                .header(USER_HEADER, headChef.getId())
+                .header("Authorization", headChefToken)
                 .when()
                 .patch(ENDPOINT_URL + "/" + dish.getId() + "/deactivate")
                 .then()
@@ -340,8 +356,6 @@ class DishControllerTest
         @DisplayName("Should create dish and return 201 (head chef)")
         void createsDish()
         {
-            User headChef = (User) seeded.get("user_gordon");
-
             DishCreateDTO dto = new DishCreateDTO(
                 "Test ret",
                 "Test Beskrivelse",
@@ -350,7 +364,7 @@ class DishControllerTest
             );
 
             given()
-                .header(USER_HEADER, headChef.getId())
+                .header("Authorization", headChefToken)
                 .contentType(ContentType.JSON)
                 .body(dto)
                 .when()
@@ -393,7 +407,6 @@ class DishControllerTest
         @DisplayName("Should update dish")
         void updatesDish()
         {
-            User headChef = (User) seeded.get("user_gordon");
             Dish dish = (Dish) seeded.get("dish_salmon");
 
             String body = """
@@ -407,7 +420,7 @@ class DishControllerTest
             """;
 
             given()
-                .header(USER_HEADER, headChef.getId())
+                .header("Authorization", headChefToken)
                 .contentType(ContentType.JSON)
                 .body(body)
                 .when()
@@ -428,11 +441,10 @@ class DishControllerTest
         @DisplayName("Should delete dish that is not used in a menu")
         void deletesDish()
         {
-            User headChef = (User) seeded.get("user_gordon");
             Dish deletable = (Dish) seeded.get("dish_delete");
 
             given()
-                .header(USER_HEADER, headChef.getId())
+                .header("Authorization", headChefToken)
                 .when()
                 .delete(ENDPOINT_URL + "/" + deletable.getId())
                 .then()
@@ -440,6 +452,7 @@ class DishControllerTest
 
             given()
                 .when()
+                .header("Authorization", headChefToken)
                 .get(ENDPOINT_URL + "/" + deletable.getId())
                 .then()
                 .statusCode(404);
@@ -449,11 +462,10 @@ class DishControllerTest
         @DisplayName("Should return 400 when deleting dish used in menus")
         void deleteUsedDishReturns400()
         {
-            User headChef = (User) seeded.get("user_gordon");
             Dish used = (Dish) seeded.get("dish_roastbeef");
 
             given()
-                .header(USER_HEADER, headChef.getId())
+                .header("Authorization", headChefToken)
                 .when()
                 .delete(ENDPOINT_URL + "/" + used.getId())
                 .then()
