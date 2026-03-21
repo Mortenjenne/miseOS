@@ -5,6 +5,7 @@ import app.config.HibernateTestConfig;
 import app.dtos.dishsuggestion.DishSuggestionUpdateDTO;
 import app.dtos.dishsuggestion.RejectDishSuggestionDTO;
 import app.persistence.entities.*;
+import app.testutils.TestAuthenticationUtil;
 import app.testutils.TestCleanDB;
 import app.testutils.TestPopulator;
 import io.javalin.Javalin;
@@ -25,10 +26,12 @@ class DishSuggestionControllerTest
 {
     private static final String ENDPOINT_URL  = "/dish-suggestions";
     private static final int TEST_PORT = 7772;
-    private static final String HEAD_CHEF_HEADER = "X-Dev-User-Id";
     private static EntityManagerFactory emf;
     private static Javalin app;
-    private static Map<String, IEntity> seeded;
+
+    private Map<String, IEntity> seeded;
+    private String headChefToken;
+    private String lineChefToken;
 
     @BeforeAll
     static void startServer()
@@ -41,12 +44,15 @@ class DishSuggestionControllerTest
     }
 
     @BeforeEach
-    void resetDatabase()
+    void setup()
     {
         TestCleanDB.truncateTables(emf);
         TestPopulator populator = new TestPopulator(emf);
         populator.populate();
+
         seeded = populator.getSeededData();
+        headChefToken = TestAuthenticationUtil.bearerToken("gordon@kitchen.com", "Hash1");
+        lineChefToken  = TestAuthenticationUtil.bearerToken("claire@pastry.com", "Hash2");
     }
 
     @AfterAll
@@ -66,6 +72,7 @@ class DishSuggestionControllerTest
             DishSuggestion salmon = (DishSuggestion) seeded.get("suggestion_salmon");
 
             given()
+                .header("Authorization", headChefToken)
                 .when()
                 .get(ENDPOINT_URL + "/" + salmon.getId())
                 .then()
@@ -90,6 +97,7 @@ class DishSuggestionControllerTest
         void notFoundReturns404()
         {
             given()
+                .header("Authorization", lineChefToken)
                 .when()
                 .get(ENDPOINT_URL + "/9999")
                 .then()
@@ -101,6 +109,7 @@ class DishSuggestionControllerTest
         void negativeIdReturns400()
         {
             given()
+                .header("Authorization", lineChefToken)
                 .when()
                 .get(ENDPOINT_URL + "/-1")
                 .then()
@@ -123,6 +132,7 @@ class DishSuggestionControllerTest
                 .toList();
 
             given()
+                .header("Authorization", headChefToken)
                 .when()
                 .get(ENDPOINT_URL)
                 .then()
@@ -136,6 +146,7 @@ class DishSuggestionControllerTest
         void filterByStatusPending()
         {
             given()
+                .header("Authorization", headChefToken)
                 .queryParam("status", "PENDING")
                 .when()
                 .get(ENDPOINT_URL)
@@ -152,6 +163,7 @@ class DishSuggestionControllerTest
             DishSuggestion steak = (DishSuggestion) seeded.get("suggestion_steak");
 
             given()
+                .header("Authorization", headChefToken)
                 .queryParam("week", steak.getTargetWeek())
                 .queryParam("year", steak.getTargetYear())
                 .when()
@@ -168,6 +180,7 @@ class DishSuggestionControllerTest
         void filterByStatusAndWeek()
         {
             given()
+                .header("Authorization", headChefToken)
                 .queryParam("status", "PENDING")
                 .queryParam("week", 7)
                 .queryParam("year", 2026)
@@ -187,6 +200,7 @@ class DishSuggestionControllerTest
             Station cold = (Station) seeded.get("station_cold");
 
             given()
+                .header("Authorization", headChefToken)
                 .queryParam("stationId", cold.getId())
                 .when()
                 .get(ENDPOINT_URL)
@@ -200,6 +214,7 @@ class DishSuggestionControllerTest
         void weekWithoutYearReturnsBadRequest()
         {
             given()
+                .header("Authorization", headChefToken)
                 .queryParam("week", 7)
                 .when()
                 .get(ENDPOINT_URL)
@@ -212,6 +227,7 @@ class DishSuggestionControllerTest
         void invalidStatusReturnsBadRequest()
         {
             given()
+                .header("Authorization", headChefToken)
                 .queryParam("status", "NONSENSE")
                 .when()
                 .get(ENDPOINT_URL)
@@ -229,6 +245,7 @@ class DishSuggestionControllerTest
         void returnsListForCurrentWeek()
         {
             given()
+                .header("Authorization", headChefToken)
                 .when()
                 .get(ENDPOINT_URL + "/current-week")
                 .then()
@@ -241,6 +258,7 @@ class DishSuggestionControllerTest
         void invalidStatusReturnsBadRequest()
         {
             given()
+                .header("Authorization", headChefToken)
                 .queryParam("status", "BADVALUE")
                 .when()
                 .get(ENDPOINT_URL + "/current-week")
@@ -257,7 +275,6 @@ class DishSuggestionControllerTest
         @DisplayName("Should create suggestion and return 201 with allergens")
         void createReturnsSuggestionWithAllergens()
         {
-            User lineCook = (User) seeded.get("user_claire");
             Allergen gluten = (Allergen) seeded.get("allergen_gluten");
             Allergen milk = (Allergen) seeded.get("allergen_milk");
 
@@ -273,7 +290,7 @@ class DishSuggestionControllerTest
             """.formatted(gluten.getId(), milk.getId());
 
             given()
-                .header(HEAD_CHEF_HEADER, lineCook.getId())
+                .header("Authorization", lineChefToken)
                 .contentType(ContentType.JSON)
                 .body(body)
                 .when()
@@ -293,8 +310,6 @@ class DishSuggestionControllerTest
         @DisplayName("Should return 400 for blank nameDA")
         void blankNameReturnsBadRequest()
         {
-            User lineCook = (User) seeded.get("user_claire");
-
             String body = """
             {
               "nameDA": "",
@@ -307,7 +322,7 @@ class DishSuggestionControllerTest
             """;
 
             given()
-                .header(HEAD_CHEF_HEADER, lineCook.getId())
+                .header("Authorization", lineChefToken)
                 .contentType(ContentType.JSON)
                 .body(body)
                 .when()
@@ -326,8 +341,9 @@ class DishSuggestionControllerTest
         void kitchenStaffCanUpdate()
         {
             DishSuggestion steak = (DishSuggestion) seeded.get("suggestion_steak");
-            User lineCook = (User) seeded.get("user_claire");
             Allergen milk = (Allergen) seeded.get("allergen_milk");
+            User cookMarco = (User) seeded.get("user_marco");
+            String marcoToken = TestAuthenticationUtil.bearerToken("marco@grill.com", "Hash3");
 
             DishSuggestionUpdateDTO dto = new DishSuggestionUpdateDTO(
                 "Peberbøf",
@@ -336,7 +352,7 @@ class DishSuggestionControllerTest
             );
 
             given()
-                .header(HEAD_CHEF_HEADER, lineCook.getId())
+                .header("Authorization", marcoToken)
                 .contentType(ContentType.JSON)
                 .body(dto)
                 .when()
@@ -346,7 +362,9 @@ class DishSuggestionControllerTest
                 .body("nameDA", equalTo("Peberbøf"))
                 .body("descriptionDA", equalTo("Bøf af højreb serveret med med Madagascar peber sauce med cognac og fløde"))
                 .body("allergens", hasSize(1))
-                .body("allergens.id", hasItem(milk.getId().intValue()));
+                .body("allergens.id", hasItem(milk.getId().intValue()))
+                .body("createdBy.id", equalTo(cookMarco.getId().intValue()))
+                .body("createdBy.firstName", equalTo(cookMarco.getFirstName()));
         }
 
         @Test
@@ -354,7 +372,6 @@ class DishSuggestionControllerTest
         void invalidDescriptionReturnsBadRequest()
         {
             DishSuggestion steak = (DishSuggestion) seeded.get("suggestion_steak");
-            User lineCook = (User) seeded.get("user_claire");
 
             DishSuggestionUpdateDTO dto = new DishSuggestionUpdateDTO(
                 "Opdateret Peberbøf",
@@ -363,7 +380,7 @@ class DishSuggestionControllerTest
             );
 
             given()
-                .header(HEAD_CHEF_HEADER, lineCook.getId())
+                .header("Authorization", lineChefToken)
                 .contentType(ContentType.JSON)
                 .body(dto)
                 .when()
@@ -386,7 +403,7 @@ class DishSuggestionControllerTest
             User headChef = (User) seeded.get("user_gordon");
 
             given()
-                .header(HEAD_CHEF_HEADER, headChef.getId())
+                .header("Authorization", headChefToken)
                 .when()
                 .patch(ENDPOINT_URL + "/" + salmon.getId() + "/approve")
                 .then()
@@ -403,10 +420,9 @@ class DishSuggestionControllerTest
         void kitchenStaffCannotApprove()
         {
             DishSuggestion salmon = (DishSuggestion) seeded.get("suggestion_salmon");
-            User lineCook = (User) seeded.get("user_claire");
 
             given()
-                .header(HEAD_CHEF_HEADER, lineCook.getId())
+                .header("Authorization", lineChefToken)
                 .when()
                 .patch(ENDPOINT_URL + "/" + salmon.getId() + "/approve")
                 .then()
@@ -418,15 +434,14 @@ class DishSuggestionControllerTest
         void doubleApproveReturnsBadRequest()
         {
             DishSuggestion salmon = (DishSuggestion) seeded.get("suggestion_salmon");
-            User headChef = (User) seeded.get("user_gordon");
 
             given()
-                .header(HEAD_CHEF_HEADER, headChef.getId())
+                .header("Authorization", headChefToken)
                 .when()
                 .patch(ENDPOINT_URL + "/" + salmon.getId() + "/approve");
 
             given()
-                .header(HEAD_CHEF_HEADER, headChef.getId())
+                .header("Authorization", headChefToken)
                 .when()
                 .patch(ENDPOINT_URL + "/" + salmon.getId() + "/approve")
                 .then()
@@ -447,7 +462,7 @@ class DishSuggestionControllerTest
             RejectDishSuggestionDTO dto = new RejectDishSuggestionDTO("For tung ret til sommermenu");
 
             given()
-                .header(HEAD_CHEF_HEADER, headChef.getId())
+                .header("Authorization", headChefToken)
                 .contentType(ContentType.JSON)
                 .body(dto)
                 .when()
@@ -464,11 +479,10 @@ class DishSuggestionControllerTest
         void blankFeedbackReturnsBadRequest()
         {
             DishSuggestion salmon = (DishSuggestion) seeded.get("suggestion_salmon");
-            User headChef = (User) seeded.get("user_gordon");
             RejectDishSuggestionDTO dto = new RejectDishSuggestionDTO("");
 
             given()
-                .header(HEAD_CHEF_HEADER, headChef.getId())
+                .header("Authorization", headChefToken)
                 .contentType(ContentType.JSON)
                 .body(dto)
                 .when()
@@ -487,10 +501,9 @@ class DishSuggestionControllerTest
         void headChefCanDelete()
         {
             DishSuggestion roastbeef = (DishSuggestion) seeded.get("suggestion_roastbeef");
-            User headChef = (User) seeded.get("user_gordon");
 
             given()
-                .header(HEAD_CHEF_HEADER, headChef.getId())
+                .header("Authorization", headChefToken)
                 .when()
                 .delete(ENDPOINT_URL + "/" + roastbeef.getId())
                 .then()
@@ -498,6 +511,7 @@ class DishSuggestionControllerTest
 
 
             given()
+                .header("Authorization", headChefToken)
                 .when()
                 .get(ENDPOINT_URL + "/" + roastbeef.getId())
                 .then()
@@ -508,10 +522,8 @@ class DishSuggestionControllerTest
         @DisplayName("Should return 404 when deleting unknown id")
         void deleteUnknownReturns404()
         {
-            User headChef = (User) seeded.get("user_gordon");
-
             given()
-                .header(HEAD_CHEF_HEADER, headChef.getId())
+                .header("Authorization", headChefToken)
                 .when()
                 .delete(ENDPOINT_URL + "/9999")
                 .then()
