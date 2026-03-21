@@ -30,8 +30,8 @@ public class WeeklyMenuController implements IWeeklyMenuController
             .check(Objects::nonNull, "Add menu slot body cannot be null")
             .get();
 
-         WeeklyMenuDTO weeklyMenuDTO = weeklyMenuService.addMenuSlot(menuId, dto);
-         ctx.status(201).json(weeklyMenuDTO);
+        WeeklyMenuDTO weeklyMenuDTO = weeklyMenuService.addMenuSlot(menuId, dto);
+        ctx.status(201).json(weeklyMenuDTO);
     }
 
     @Override

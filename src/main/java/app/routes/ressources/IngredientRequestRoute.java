@@ -1,4 +1,4 @@
-package app.routes;
+package app.routes.ressources;
 
 import app.controllers.IIngredientRequestController;
 import app.enums.Role;

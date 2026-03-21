@@ -3,7 +3,7 @@ package app.config;
 import app.controllers.IExceptionController;
 import app.controllers.ISecurityController;
 import app.exceptions.*;
-import app.routes.Routes;
+import app.routes.ApiRoutes;
 import io.javalin.Javalin;
 import io.javalin.config.JavalinConfig;
 import io.javalin.http.Context;
@@ -19,13 +19,13 @@ public class ServerConfig
     private static final String START_TIME = "start-time";
     private static final String REQ_ID = "request-id";
 
-    private final Routes routes;
+    private final ApiRoutes apiRoutes;
     private final IExceptionController exceptionController;
     private final ISecurityController securityController;
 
-    public ServerConfig(Routes routes, IExceptionController exceptionController, ISecurityController securityController)
+    public ServerConfig(ApiRoutes apiRoutes, IExceptionController exceptionController, ISecurityController securityController)
     {
-        this.routes = routes;
+        this.apiRoutes = apiRoutes;
         this.exceptionController = exceptionController;
         this.securityController = securityController;
     }
@@ -37,7 +37,7 @@ public class ServerConfig
             config.startup.showJavalinBanner = false;
             config.router.contextPath = "/api/v1";
             config.bundledPlugins.enableRouteOverview("/routes");
-            config.routes.apiBuilder(routes.getRoutes());
+            config.routes.apiBuilder(apiRoutes.getRoutes());
             configureMiddleWareLogging(config);
             configureMiddleWareSecurity(config);
             configureExceptions(config);

@@ -1,4 +1,4 @@
-package app.routes;
+package app.routes.security;
 
 import app.controllers.ISecurityController;
 import app.controllers.IUserController;

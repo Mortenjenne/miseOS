@@ -1,4 +1,4 @@
-package app.routes;
+package app.routes.ressources;
 
 import app.controllers.IMenuInspirationController;
 import app.enums.Role;

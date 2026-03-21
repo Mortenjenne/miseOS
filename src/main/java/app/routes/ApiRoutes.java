@@ -1,8 +1,10 @@
 package app.routes;
 
+import app.routes.ressources.*;
+import app.routes.security.SecurityRoute;
 import io.javalin.apibuilder.EndpointGroup;
 
-public class Routes
+public class ApiRoutes
 {
     private final SecurityRoute securityRoute;
     private final AllergenRoute allergenRoute;
@@ -16,7 +18,7 @@ public class Routes
     private final ShoppingListRoute shoppingListRoute;
     private final NotificationRoute notificationRoute;
 
-    public Routes(SecurityRoute securityRoute, AllergenRoute allergenRoute, UserRoute userRoute, StationRoute stationRoute, MenuInspirationRoute menuInspirationRoute, DishSuggestionRoute dishSuggestionRoute, DishRoute dishRoute, WeeklyMenuRoute weeklyMenuRoute, IngredientRequestRoute ingredientRequestRoute, ShoppingListRoute shoppingListRoute, NotificationRoute notificationRoute)
+    public ApiRoutes(SecurityRoute securityRoute, AllergenRoute allergenRoute, UserRoute userRoute, StationRoute stationRoute, MenuInspirationRoute menuInspirationRoute, DishSuggestionRoute dishSuggestionRoute, DishRoute dishRoute, WeeklyMenuRoute weeklyMenuRoute, IngredientRequestRoute ingredientRequestRoute, ShoppingListRoute shoppingListRoute, NotificationRoute notificationRoute)
     {
         this.securityRoute = securityRoute;
         this.allergenRoute = allergenRoute;
