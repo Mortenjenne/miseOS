@@ -8,6 +8,7 @@ import app.persistence.daos.impl.*;
 import app.persistence.daos.interfaces.*;
 import app.persistence.entities.*;
 import app.utils.EUAllergens;
+import app.utils.PasswordUtil;
 import jakarta.persistence.EntityManagerFactory;
 
 import java.time.LocalDate;
@@ -79,10 +80,10 @@ public class TestPopulator
 
     private void populateUsers()
     {
-        User u1 = new User("Gordon", "Ramsay", "gordon@kitchen.com", "hash1", UserRole.HEAD_CHEF);
-        User u2 = new User("Claire", "Smyth", "claire@pastry.com", "hash2", UserRole.LINE_COOK);
-        User u3 = new User("Marco", "Pierre", "marco@grill.com", "hash3", UserRole.SOUS_CHEF);
-        User u4 = new User("Rene", "Redzepi", "rene@cold.com", "hash4", UserRole.LINE_COOK);
+        User u1 = new User("Gordon", "Ramsay", "gordon@kitchen.com", PasswordUtil.hashPassword("Hash1"), UserRole.HEAD_CHEF);
+        User u2 = new User("Claire", "Smyth", "claire@pastry.com", PasswordUtil.hashPassword("Hash2"), UserRole.LINE_COOK);
+        User u3 = new User("Marco", "Pierre", "marco@grill.com", PasswordUtil.hashPassword("Hash3"), UserRole.SOUS_CHEF);
+        User u4 = new User("Rene", "Redzepi", "rene@cold.com", PasswordUtil.hashPassword("Hash4"), UserRole.LINE_COOK);
 
         Station cold = (Station) seeded.get("station_cold");
         Station hot = (Station) seeded.get("station_hot");

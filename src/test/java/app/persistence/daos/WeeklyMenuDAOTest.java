@@ -125,7 +125,8 @@ class WeeklyMenuDAOTest
     void update()
     {
         WeeklyMenu seed = (WeeklyMenu) seeded.get("menu_draft");
-        seed.setMenuStatus(MenuStatus.PUBLISHED);
+        User gordon = (User) seeded.get("user_gordon");
+        seed.publish(gordon);
 
         WeeklyMenu updated = weeklyMenuDAO.update(seed);
         assertThat(updated.getMenuStatus(), is(MenuStatus.PUBLISHED));
