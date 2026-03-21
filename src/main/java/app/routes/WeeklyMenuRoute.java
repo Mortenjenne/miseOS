@@ -20,7 +20,7 @@ public class WeeklyMenuRoute
         return () -> path("/weekly-menus", () ->
         {
             get("/", weeklyMenuController::getAll, Role.HEAD_CHEF, Role.SOUS_CHEF);
-            get("/current", weeklyMenuController::getCurrentWeekMenu, Role.KITCHEN_STAFF, Role.ANYONE);
+            get("/current", weeklyMenuController::getCurrentWeekMenu, Role.ANYONE);
             get("/by-week", weeklyMenuController::getByWeekAndYear, Role.KITCHEN_STAFF, Role.ANYONE);
             post("/", weeklyMenuController::create, Role.HEAD_CHEF, Role.SOUS_CHEF);
             get("/{id}", weeklyMenuController::getById, Role.HEAD_CHEF, Role.SOUS_CHEF);

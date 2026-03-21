@@ -1,10 +1,10 @@
 package app.persistence.entities;
 
 import app.enums.DayOfWeek;
+import app.utils.ValidationUtil;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @NoArgsConstructor
 @Getter
@@ -28,7 +28,6 @@ public class WeeklyMenuSlot implements IEntity
     @JoinColumn(name = "station_id", nullable = false)
     private Station station;
 
-    @Setter
     @ManyToOne
     @JoinColumn(name = "weekly_menu_id")
     private WeeklyMenu weeklyMenu;
@@ -42,6 +41,23 @@ public class WeeklyMenuSlot implements IEntity
         this.dish = dish;
         this.station = station;
         this.isEmpty = (dish == null);
+    }
+
+    void setWeeklyMenu(WeeklyMenu weeklyMenu)
+    {
+        this.weeklyMenu = weeklyMenu;
+    }
+
+    public void assignDish(Dish dish)
+    {
+        this.dish = dish;
+        this.isEmpty = (dish == null);
+    }
+
+    public void clearDish()
+    {
+        this.dish = null;
+        this.isEmpty = true;
     }
 
     @Override

@@ -88,7 +88,7 @@ public class WeeklyMenuController implements IWeeklyMenuController
     @Override
     public void getByWeekAndYear(Context ctx)
     {
-        AuthenticatedUser authUser = SecurityUtil.getAuthenticatedUser(ctx);
+        AuthenticatedUser authUser = SecurityUtil.getOptionalAuthenticatedUser(ctx);
         Integer week = RequestUtil.requireQueryInt(ctx, "week");
         Integer year = RequestUtil.requireQueryInt(ctx, "year");
 
