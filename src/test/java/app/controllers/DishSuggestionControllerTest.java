@@ -530,4 +530,47 @@ class DishSuggestionControllerTest
                 .statusCode(404);
         }
     }
+
+    @Nested
+    @DisplayName("Security & Authorization Tests")
+    class Security
+    {
+        @Test
+        @DisplayName("Should return 401 when no Authorization header is provided")
+        void missingTokenReturns401()
+        {
+            given()
+                .when()
+                .get(ENDPOINT_URL)
+                .then()
+                .statusCode(401)
+                .body("message", equalToIgnoringCase("Missing or malformed Authorization header"));
+        }
+
+        @Test
+        @DisplayName("Should return 401 when Authorization header is invalid")
+        void invalidTokenReturns401()
+        {
+            given()
+                .header("Authorization", "Bearer not-a-real-jwt-token")
+                .when()
+                .get(ENDPOINT_URL)
+                .then()
+                .statusCode(401)
+                .body("message", equalToIgnoringCase("Token could not be verified"));
+        }
+
+        @Test
+        @DisplayName("Should return 403 when token expired")
+        void invalidExpiredTokenReturns403()
+        {
+            given()
+                .header("Authorization", "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqZWFuZXR0ZUBlbWFpbC5jb20iLCJyb2xlIjoiTElORV9DT09LIiwiaXNzIjoibWlzZU9TIiwiZXhwIjoxNzc0MDg4MjExLCJ1c2VySWQiOjUsImlhdCI6MTc3NDA4NzMxMSwiZW1haWwiOiJqZWFuZXR0ZUBlbWFpbC5jb20ifQ.8RyVKeyplMEMBZZ5rrOa2_-T2TZGaofR9d0GMHf36sU")
+                .when()
+                .get(ENDPOINT_URL)
+                .then()
+                .statusCode(401)
+                .body("message", equalToIgnoringCase("Token has expired"));
+        }
+    }
 }
