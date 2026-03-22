@@ -3,6 +3,7 @@ package app.services.impl;
 import app.dtos.security.AuthenticatedUser;
 import app.dtos.user.*;
 import app.enums.UserRole;
+import app.exceptions.ConflictException;
 import app.exceptions.UnauthorizedActionException;
 import app.exceptions.ValidationException;
 import app.mappers.UserMapper;
@@ -42,7 +43,7 @@ public class UserService implements IUserService
             dto.lastName(),
             dto.email(),
             hashedPassword,
-            UserRole.LINE_COOK
+            UserRole.CUSTOMER
         );
 
         User created = userDAO.create(user);
@@ -137,7 +138,7 @@ public class UserService implements IUserService
 
         if (!user.verifyPassword(dto.currentPassword()))
         {
-            throw new IllegalArgumentException("Current password is incorrect");
+            throw new ValidationException("Current password is incorrect");
         }
 
         String hashed = PasswordUtil.hashPassword(dto.newPassword());
@@ -169,7 +170,7 @@ public class UserService implements IUserService
 
         if (!isOwner && !isHeadChef)
         {
-            throw new UnauthorizedActionException("Access Denied: You can only modify your own data or must be a Head Chef.");
+            throw new UnauthorizedActionException("You can only modify your own data or must be a Head Chef.");
         }
     }
 
@@ -208,7 +209,7 @@ public class UserService implements IUserService
 
         if (user.isPresent())
         {
-            throw new ValidationException("A user with this email already exists");
+            throw new ConflictException("A user with this email already exists");
         }
     }
 
