@@ -875,6 +875,36 @@ class ShoppingListControllerTest
         }
     }
 
+    @Nested
+    @DisplayName("Security & Authorization Tests")
+    class Security
+    {
+        @Test
+        @DisplayName("Should return 401 when no Authorization header is provided")
+        void missingTokenReturns401()
+        {
+            given()
+                .when()
+                .get(ENDPOINT_URL)
+                .then()
+                .statusCode(401)
+                .body("message", equalToIgnoringCase("Missing or malformed Authorization header"));
+        }
+
+        @Test
+        @DisplayName("Should return 401 when Authorization header is invalid")
+        void invalidTokenReturns401()
+        {
+            given()
+                .header("Authorization", "Bearer not-a-real-jwt-token")
+                .when()
+                .get(ENDPOINT_URL)
+                .then()
+                .statusCode(401)
+                .body("message", equalToIgnoringCase("Token could not be verified"));
+        }
+    }
+
     private String getCreateListPayload(LocalDate date)
     {
         return  """
