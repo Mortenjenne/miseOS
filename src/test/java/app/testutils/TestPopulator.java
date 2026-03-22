@@ -80,10 +80,12 @@ public class TestPopulator
 
     private void populateUsers()
     {
-        User u1 = new User("Gordon", "Ramsay", "gordon@kitchen.com", PasswordUtil.hashPassword("Hash1"), UserRole.HEAD_CHEF);
-        User u2 = new User("Claire", "Smyth", "claire@pastry.com", PasswordUtil.hashPassword("Hash2"), UserRole.LINE_COOK);
-        User u3 = new User("Marco", "Pierre", "marco@grill.com", PasswordUtil.hashPassword("Hash3"), UserRole.SOUS_CHEF);
-        User u4 = new User("Rene", "Redzepi", "rene@cold.com", PasswordUtil.hashPassword("Hash4"), UserRole.LINE_COOK);
+        int bcryptRounds = 4;
+
+        User u1 = new User("Gordon", "Ramsay", "gordon@kitchen.com", PasswordUtil.hashPassword("Hash1", bcryptRounds), UserRole.HEAD_CHEF);
+        User u2 = new User("Claire", "Smyth", "claire@pastry.com", PasswordUtil.hashPassword("Hash2", bcryptRounds), UserRole.LINE_COOK);
+        User u3 = new User("Marco", "Pierre", "marco@grill.com", PasswordUtil.hashPassword("Hash3", bcryptRounds), UserRole.SOUS_CHEF);
+        User u4 = new User("Rene", "Redzepi", "rene@cold.com", PasswordUtil.hashPassword("Hash4", bcryptRounds), UserRole.LINE_COOK);
 
         Station cold = (Station) seeded.get("station_cold");
         Station hot = (Station) seeded.get("station_hot");

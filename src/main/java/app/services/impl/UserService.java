@@ -23,6 +23,7 @@ public class UserService implements IUserService
 {
     private final IUserDAO userDAO;
     private final IStationReader stationReader;
+    private static final int BCRYPT_COST = 12;
 
     public UserService(IUserDAO userDAO, IStationReader stationReader)
     {
@@ -36,7 +37,7 @@ public class UserService implements IUserService
         validateCreateInput(dto);
         requireUniqueEmail(dto.email());
 
-        String hashedPassword = PasswordUtil.hashPassword(dto.password());
+        String hashedPassword = PasswordUtil.hashPassword(dto.password(), BCRYPT_COST);
 
         User user = new User(
             dto.firstName(),
@@ -141,7 +142,7 @@ public class UserService implements IUserService
             throw new ValidationException("Current password is incorrect");
         }
 
-        String hashed = PasswordUtil.hashPassword(dto.newPassword());
+        String hashed = PasswordUtil.hashPassword(dto.newPassword(), BCRYPT_COST);
         user.changePassword(hashed);
 
         User updated = userDAO.update(user);
