@@ -52,7 +52,7 @@ class DishSuggestionControllerTest
 
         seeded = populator.getSeededData();
         headChefToken = TestAuthenticationUtil.bearerToken("gordon@kitchen.com", "Hash1");
-        lineChefToken  = TestAuthenticationUtil.bearerToken("claire@pastry.com", "Hash2");
+        lineChefToken = TestAuthenticationUtil.bearerToken("claire@pastry.com", "Hash2");
     }
 
     @AfterAll
