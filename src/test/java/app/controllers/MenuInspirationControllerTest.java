@@ -48,7 +48,7 @@ class MenuInspirationControllerTest
     }
 
     @Test
-    @DisplayName("GET /menu-inspirations/daily - Should give 10 dish suggestion from ai client")
+    @DisplayName("GET /menu-inspirations/daily - Should give 10 dish suggestion from ai integration")
     void getDailyInspiration()
     {
         given()
@@ -63,7 +63,7 @@ class MenuInspirationControllerTest
     }
 
     @Test
-    @DisplayName("GET /menu-inspirations/daily - Should fail with 401 Unauthorized with expired token")
+    @DisplayName("GET /menu-inspirations/daily - Should fail with 401 Unauthorized, with expired token")
     void getDailyInspirationShouldFailWithWrongToken()
     {
         given()
@@ -76,7 +76,7 @@ class MenuInspirationControllerTest
     }
 
     @Test
-    @DisplayName("GET /menu-inspirations/daily - Should fail with 401 Unauthorized with missing header")
+    @DisplayName("GET /menu-inspirations/daily - Should fail with 401 Unauthorized, with missing header")
     void getDailyInspirationShouldFailWitMissingHeader()
     {
         given()
