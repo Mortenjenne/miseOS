@@ -5,7 +5,7 @@ Authorization: Bearer {{authToken}}
 
 ### GET all users
 GET {{url}}/users/
-Authorization: Bearer {{authToken}}
+Authorization: Bearer {{authTokenHeadChef}}
 
 ### POST Register a new User
 POST {{url}}/users
