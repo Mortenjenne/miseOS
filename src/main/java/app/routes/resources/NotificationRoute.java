@@ -19,8 +19,8 @@ public class NotificationRoute
     {
         return () ->
         {
-          ws("/notifications", notificationController::handleNotifications);
-          get("/notifications/snapshot", notificationController::getSnapshot, Role.HEAD_CHEF, Role.SOUS_CHEF);
+          ws("notifications", notificationController::handleNotifications);
+          get("notifications/snapshot", notificationController::getSnapshot, Role.HEAD_CHEF, Role.SOUS_CHEF);
         };
     }
 }

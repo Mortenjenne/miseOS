@@ -19,8 +19,8 @@ public class MenuInspirationRoute
     {
         return () -> path("/menu-inspirations", () ->
         {
-            get("/daily", menuInspirationController::getDailyInspiration, Role.KITCHEN_STAFF);
-            sse("/stream", menuInspirationController::getStreamingSuggestions, Role.KITCHEN_STAFF);
+            get("daily", menuInspirationController::getDailyInspiration, Role.KITCHEN_STAFF);
+            sse("stream", menuInspirationController::getStreamingSuggestions, Role.KITCHEN_STAFF);
         });
     }
 }

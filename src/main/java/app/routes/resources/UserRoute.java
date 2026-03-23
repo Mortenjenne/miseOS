@@ -23,16 +23,16 @@ public class UserRoute
         return () ->
             path("users", () ->
             {
-                get("/", userController::getAll, Role.HEAD_CHEF);
-                get("/me", userController::getMe, Role.KITCHEN_STAFF);
-                get("/{id}", userController::getById, Role.HEAD_CHEF, Role.SOUS_CHEF);
-                post("/", userController::create, Role.ANYONE);
-                put("/{id}", userController::update, Role.KITCHEN_STAFF);
-                patch("/{id}/station/{stationId}", userController::assignToStation, Role.HEAD_CHEF, Role.SOUS_CHEF);
-                patch("/{id}/role", userController::changeRole, Role.HEAD_CHEF);
-                patch("/{id}/email", userController::changeEmail, Role.KITCHEN_STAFF);
-                patch("/{id}/password", userController::changePassword, Role.KITCHEN_STAFF);
-                delete("/{id}", userController::delete, Role.HEAD_CHEF);
+                get("", userController::getAll, Role.HEAD_CHEF);
+                get("me", userController::getMe, Role.KITCHEN_STAFF);
+                get("{id}", userController::getById, Role.HEAD_CHEF, Role.SOUS_CHEF);
+                post("", userController::create, Role.ANYONE);
+                put("{id}", userController::update, Role.KITCHEN_STAFF);
+                patch("{id}/station/{stationId}", userController::assignToStation, Role.HEAD_CHEF, Role.SOUS_CHEF);
+                patch("{id}/role", userController::changeRole, Role.HEAD_CHEF);
+                patch("{id}/email", userController::changeEmail, Role.KITCHEN_STAFF);
+                patch("{id}/password", userController::changePassword, Role.KITCHEN_STAFF);
+                delete("{id}", userController::delete, Role.HEAD_CHEF);
             });
     }
 }

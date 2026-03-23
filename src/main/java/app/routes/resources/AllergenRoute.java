@@ -20,13 +20,13 @@ public class AllergenRoute
     {
         return () -> path("/allergens", () ->
         {
-            get("/", allergenController::getAll, Role.KITCHEN_STAFF);
-            get("/name/{name}", allergenController::getByName, Role.KITCHEN_STAFF);
-            get("/{id}", allergenController::getById, Role.KITCHEN_STAFF);
-            post("/", allergenController::create, Role.HEAD_CHEF);
-            post("/seed", allergenController::seedEUAllergens, Role.HEAD_CHEF);
-            put("/{id}", allergenController::update, Role.HEAD_CHEF);
-            delete("/{id}", allergenController::delete, Role.HEAD_CHEF);
+            get("", allergenController::getAll, Role.KITCHEN_STAFF);
+            get("name/{name}", allergenController::getByName, Role.KITCHEN_STAFF);
+            get("{id}", allergenController::getById, Role.KITCHEN_STAFF);
+            post("", allergenController::create, Role.HEAD_CHEF);
+            post("seed", allergenController::seedEUAllergens, Role.HEAD_CHEF);
+            put("{id}", allergenController::update, Role.HEAD_CHEF);
+            delete("{id}", allergenController::delete, Role.HEAD_CHEF);
         });
     }
 }
