@@ -1,5 +1,6 @@
-package app.controllers;
+package app.controllers.impl;
 
+import app.controllers.IAllergenController;
 import app.dtos.allergen.AllergenCreateRequestDTO;
 import app.dtos.allergen.AllergenDTO;
 import app.dtos.allergen.AllergenUpdateRequestDTO;

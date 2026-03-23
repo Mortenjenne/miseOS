@@ -1,5 +1,6 @@
-package app.controllers;
+package app.controllers.impl;
 
+import app.controllers.IUserController;
 import app.dtos.security.AuthenticatedUser;
 import app.dtos.user.*;
 import app.services.IUserService;

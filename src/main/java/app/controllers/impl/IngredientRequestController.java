@@ -1,5 +1,6 @@
-package app.controllers;
+package app.controllers.impl;
 
+import app.controllers.IIngredientRequestController;
 import app.dtos.ingredient.ApproveIngredientRequestDTO;
 import app.dtos.ingredient.CreateIngredientRequestDTO;
 import app.dtos.ingredient.IngredientRequestDTO;

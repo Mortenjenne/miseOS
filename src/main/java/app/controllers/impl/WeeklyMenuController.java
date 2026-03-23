@@ -1,5 +1,6 @@
-package app.controllers;
+package app.controllers.impl;
 
+import app.controllers.IWeeklyMenuController;
 import app.dtos.menu.*;
 import app.dtos.security.AuthenticatedUser;
 import app.enums.MenuStatus;

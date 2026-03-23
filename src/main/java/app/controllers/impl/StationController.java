@@ -1,5 +1,6 @@
-package app.controllers;
+package app.controllers.impl;
 
+import app.controllers.IStationController;
 import app.dtos.station.StationDTO;
 import app.dtos.station.StationRequestDTO;
 import app.services.IStationService;

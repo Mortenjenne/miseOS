@@ -1,5 +1,6 @@
-package app.controllers;
+package app.controllers.impl;
 
+import app.controllers.IExceptionController;
 import app.dtos.exception.ErrorResponseDTO;
 import app.exceptions.*;
 import io.javalin.http.Context;

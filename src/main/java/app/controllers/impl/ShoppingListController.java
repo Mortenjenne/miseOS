@@ -1,5 +1,6 @@
-package app.controllers;
+package app.controllers.impl;
 
+import app.controllers.IShoppingListController;
 import app.dtos.security.AuthenticatedUser;
 import app.dtos.shopping.*;
 import app.enums.ShoppingListStatus;

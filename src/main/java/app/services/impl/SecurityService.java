@@ -1,4 +1,4 @@
-package app.services;
+package app.services.impl;
 
 import app.dtos.security.LoginRequestDTO;
 import app.dtos.security.LoginResponseDTO;
@@ -7,6 +7,7 @@ import app.enums.UserRole;
 import app.exceptions.AuthenticationException;
 import app.persistence.daos.interfaces.readers.IUserReader;
 import app.persistence.entities.User;
+import app.services.ISecurityService;
 import app.utils.ValidationUtil;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;

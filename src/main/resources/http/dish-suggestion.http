@@ -1,6 +1,3 @@
-### Variables
-@headChefId = 1
-@lineCookId = 3
 
 ### GET by ID
 GET {{url}}/dish-suggestions/1
@@ -144,5 +141,5 @@ Authorization: Bearer {{authTokenHeadChef}}
 }
 
 ### DELETE - Delete suggestions
-DELETE {{local}}/dish-suggestions/3
+DELETE {{url}}/dish-suggestions/3
 Authorization: Bearer {{authTokenHeadChef}}

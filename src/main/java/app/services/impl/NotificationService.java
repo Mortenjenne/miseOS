@@ -1,10 +1,12 @@
-package app.services;
+package app.services.impl;
 
 import app.dtos.notification.AdminNotificationMessageDTO;
 import app.dtos.notification.StaffNotificationMessageDTO;
 import app.dtos.user.UserReferenceDTO;
 import app.enums.NotificationCategory;
 import app.enums.NotificationType;
+import app.services.INotificationRegistry;
+import app.services.INotificationSender;
 import io.javalin.websocket.WsContext;
 
 import java.time.LocalDateTime;

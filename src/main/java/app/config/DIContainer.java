@@ -1,6 +1,7 @@
 package app.config;
 
 import app.controllers.*;
+import app.controllers.impl.*;
 import app.integrations.ai.GeminiClient;
 import app.integrations.ai.IAiClient;
 import app.integrations.translation.DeepLTranslationClient;

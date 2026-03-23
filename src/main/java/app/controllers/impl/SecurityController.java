@@ -1,9 +1,9 @@
-package app.controllers;
+package app.controllers.impl;
 
+import app.controllers.ISecurityController;
 import app.dtos.security.AuthenticatedUser;
 import app.dtos.security.LoginRequestDTO;
 import app.dtos.security.LoginResponseDTO;
-import app.enums.UserRole;
 import app.exceptions.AuthenticationException;
 import app.exceptions.UnauthorizedActionException;
 import app.services.ISecurityService;

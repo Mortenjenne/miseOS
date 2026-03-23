@@ -1,5 +1,6 @@
-package app.controllers;
+package app.controllers.impl;
 
+import app.controllers.IDishController;
 import app.dtos.dish.*;
 import app.dtos.security.AuthenticatedUser;
 import app.services.IDishService;

@@ -1,5 +1,6 @@
-package app.controllers;
+package app.controllers.impl;
 
+import app.controllers.IMenuInspirationController;
 import app.dtos.gemini.AiDishSuggestionDTO;
 import app.dtos.security.AuthenticatedUser;
 import app.services.IMenuInspirationService;

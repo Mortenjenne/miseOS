@@ -1,12 +1,9 @@
-package app.services;
+package app.services.impl;
 
 import app.dtos.notification.AdminNotificationSnapshotDTO;
-import app.exceptions.UnauthorizedActionException;
 import app.persistence.daos.interfaces.readers.IDishSuggestionReader;
 import app.persistence.daos.interfaces.readers.IIngredientRequestReader;
-import app.persistence.daos.interfaces.readers.IUserReader;
-import app.persistence.entities.User;
-import app.utils.ValidationUtil;
+import app.services.INotificationSnapshotService;
 
 public class NotificationSnapshotService implements INotificationSnapshotService
 {

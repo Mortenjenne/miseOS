@@ -1,5 +1,6 @@
-package app.controllers;
+package app.controllers.impl;
 
+import app.controllers.INotificationController;
 import app.dtos.notification.AdminNotificationSnapshotDTO;
 import app.dtos.security.AuthenticatedUser;
 import app.enums.SessionType;

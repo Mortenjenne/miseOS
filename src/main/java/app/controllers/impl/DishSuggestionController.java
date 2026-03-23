@@ -1,5 +1,6 @@
-package app.controllers;
+package app.controllers.impl;
 
+import app.controllers.IDishSuggestionController;
 import app.dtos.dishsuggestion.*;
 import app.dtos.security.AuthenticatedUser;
 import app.enums.Status;
