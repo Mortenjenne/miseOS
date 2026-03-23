@@ -1,5 +1,6 @@
 package app.dtos.user;
 
+import app.dtos.station.StationReferenceDTO;
 import app.enums.UserRole;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
@@ -11,9 +12,7 @@ public record UserDTO(
     String lastName,
     String email,
     UserRole userRole,
-    Long stationId,
-    String stationName,
-
+    StationReferenceDTO station,
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     LocalDateTime createdAt
 )

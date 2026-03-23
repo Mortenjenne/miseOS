@@ -10,6 +10,9 @@ public class ApiConfig
     private final String geminiUrl;
     private final String geminiApiKey;
     private final String openMeteoUrl;
+    private final String issuer;
+    private final String secretKey;
+    private final long expirationMs;
 
     public ApiConfig()
     {
@@ -18,5 +21,8 @@ public class ApiConfig
         this.geminiUrl = AppProperties.get("GEMINI_URL");
         this.geminiApiKey = System.getenv("GEMINI_API_KEY");
         this.openMeteoUrl = AppProperties.get("OPEN_METEO_URL");
+        this.issuer = AppProperties.get("ISSUER");
+        this.secretKey = System.getenv("SECRET_KEY");
+        this.expirationMs = Long.parseLong(AppProperties.get("EXPIRATION_MS"));
     }
 }

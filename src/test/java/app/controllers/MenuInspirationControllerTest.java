@@ -2,8 +2,7 @@ package app.controllers;
 
 import app.config.ApplicationConfig;
 import app.config.HibernateTestConfig;
-import app.persistence.entities.IEntity;
-import app.persistence.entities.User;
+import app.testutils.TestAuthenticationUtil;
 import app.testutils.TestCleanDB;
 import app.testutils.TestPopulator;
 import io.javalin.Javalin;
@@ -11,21 +10,17 @@ import io.restassured.RestAssured;
 import jakarta.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.*;
 
-import java.util.Map;
-
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class MenuInspirationControllerTest
 {
+    private static final String ENDPOINT_URL  = "/menu-inspirations";
     private static final int TEST_PORT = 7774;
-    private static final String USER_HEADER = "X-Dev-User-Id";
-
     private static EntityManagerFactory emf;
     private static Javalin app;
-    private static Map<String, IEntity> seeded;
+    private String lineChefToken;
 
     @BeforeAll
     static void startServer()
@@ -34,16 +29,16 @@ class MenuInspirationControllerTest
         app = ApplicationConfig.startServer(TEST_PORT, emf);
         RestAssured.baseURI = "http://localhost";
         RestAssured.port = TEST_PORT;
-        RestAssured.basePath = "/api/v1/menu-inspirations";
+        RestAssured.basePath = "/api/v1";
     }
 
     @BeforeEach
-    void resetDatabase()
+    void setup()
     {
         TestCleanDB.truncateTables(emf);
         TestPopulator populator = new TestPopulator(emf);
         populator.populate();
-        seeded = populator.getSeededData();
+        lineChefToken = TestAuthenticationUtil.bearerToken("claire@pastry.com", "Hash2");
     }
 
     @AfterAll
@@ -53,15 +48,13 @@ class MenuInspirationControllerTest
     }
 
     @Test
-    @DisplayName("GET /menu-inspirations/daily - Should give 10 dish suggestion from ai client")
+    @DisplayName("GET /menu-inspirations/daily - Should give 10 dish suggestion from ai integration")
     void getDailyInspiration()
     {
-        User claire = (User) seeded.get("user_claire");
-
         given()
-            .header(USER_HEADER, claire.getId())
+            .header("Authorization", lineChefToken)
             .when()
-            .get("/daily")
+            .get(ENDPOINT_URL + "/daily")
             .then()
             .statusCode(200)
             .body(".", hasSize(10))
@@ -70,15 +63,27 @@ class MenuInspirationControllerTest
     }
 
     @Test
-    @DisplayName("GET /menu-inspirations/daily - Should fail with 404 user not found with id not existing in db")
-    void getDailyInspirationShouldFailWithNonStaffId()
+    @DisplayName("GET /menu-inspirations/daily - Should fail with 401 Unauthorized, with expired token")
+    void getDailyInspirationShouldFailWithWrongToken()
     {
         given()
-            .header(USER_HEADER, 999)
+            .header("Authorization", "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqZWFuZXR0ZUBlbWFpbC5jb20iLCJyb2xlIjoiTElORV9DT09LIiwiaXNzIjoibWlzZU9TIiwiZXhwIjoxNzc0MDg4MjExLCJ1c2VySWQiOjUsImlhdCI6MTc3NDA4NzMxMSwiZW1haWwiOiJqZWFuZXR0ZUBlbWFpbC5jb20ifQ.8RyVKeyplMEMBZZ5rrOa2_-T2TZGaofR9d0GMHf36sU")
             .when()
-            .get("/daily")
+            .get(ENDPOINT_URL + "/daily")
             .then()
-            .statusCode(404)
-            .body("message", equalToIgnoringCase("User with ID 999 was not found."));
+            .statusCode(401)
+            .body("message", equalToIgnoringCase("Token has expired"));
+    }
+
+    @Test
+    @DisplayName("GET /menu-inspirations/daily - Should fail with 401 Unauthorized, with missing header")
+    void getDailyInspirationShouldFailWitMissingHeader()
+    {
+        given()
+            .when()
+            .get(ENDPOINT_URL + "/daily")
+            .then()
+            .statusCode(401)
+            .body("message", equalToIgnoringCase("Missing or malformed Authorization header"));
     }
 }

@@ -1,6 +1,7 @@
 package app.services;
 
 import app.dtos.menu.*;
+import app.dtos.security.AuthenticatedUser;
 import app.enums.MenuStatus;
 import app.enums.SupportedLanguage;
 
@@ -8,27 +9,27 @@ import java.util.List;
 
 public interface IWeeklyMenuService
 {
-    WeeklyMenuDTO createMenu(Long creatorId, CreateWeeklyMenuDTO dto);
+    WeeklyMenuDTO createMenu(CreateWeeklyMenuDTO dto);
 
-    WeeklyMenuDTO addMenuSlot(Long editorId, Long menuId, AddMenuSlotDTO dto);
+    WeeklyMenuDTO addMenuSlot(Long menuId, AddMenuSlotDTO dto);
 
-    WeeklyMenuDTO removeSlot(Long editorId, Long menuId, Long slotId);
+    WeeklyMenuDTO removeSlot(Long menuId, Long slotId);
 
-    WeeklyMenuDTO updateSlot(Long editorId, Long menuId, Long slotId, UpdateMenuSlotDTO dto);
+    WeeklyMenuDTO updateSlot(Long menuId, Long slotId, UpdateMenuSlotDTO dto);
 
-    WeeklyMenuDTO translateSlot(Long userId, Long menuId, Long slotId, SupportedLanguage language);
+    WeeklyMenuDTO translateSlot(Long menuId, Long slotId, SupportedLanguage language);
 
-    WeeklyMenuDTO translateMenu(Long editorId, Long menuId, SupportedLanguage language);
+    WeeklyMenuDTO translateMenu(Long menuId, SupportedLanguage language);
 
-    WeeklyMenuDTO publishMenu(Long publisherId, Long menuId);
+    WeeklyMenuDTO publishMenu(AuthenticatedUser authUser, Long menuId);
 
-    WeeklyMenuDTO getByWeekAndYear(Long userId, int week, int year);
+    WeeklyMenuDTO getByWeekAndYear(AuthenticatedUser authUser, int week, int year);
 
     WeeklyMenuDTO getCurrentWeekMenu();
 
-    WeeklyMenuDTO getById(Long id);
+    WeeklyMenuDTO getById(Long menuId);
 
-    List<WeeklyMenuOverviewDTO> getOverview(Long userId, MenuStatus menuStatus, Integer year, Integer week);
+    List<WeeklyMenuOverviewDTO> getOverview(MenuStatus menuStatus, Integer year, Integer week);
 
-    boolean deleteMenu(Long userId, Long menuId);
+    boolean deleteMenu(AuthenticatedUser authUser, Long menuId);
 }

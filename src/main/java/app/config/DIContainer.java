@@ -1,6 +1,7 @@
 package app.config;
 
 import app.controllers.*;
+import app.controllers.impl.*;
 import app.integrations.ai.GeminiClient;
 import app.integrations.ai.IAiClient;
 import app.integrations.translation.DeepLTranslationClient;
@@ -51,6 +52,7 @@ public final class DIContainer
     private final IMenuInspirationService menuInspirationService;
     private final NotificationService notificationService;
     private final INotificationSnapshotService notificationSnapshotService;
+    private final ISecurityService securityService;
 
     @Getter
     private final IAllergenController allergenController;
@@ -82,6 +84,12 @@ public final class DIContainer
     @Getter
     private final INotificationController notificationController;
 
+    @Getter
+    private final IExceptionController exceptionController;
+
+    @Getter
+    private final ISecurityController securityController;
+
 
     private DIContainer(EntityManagerFactory emf)
     {
@@ -105,11 +113,11 @@ public final class DIContainer
         this.stationDAO = new StationDAO(emf);
 
         this.notificationService = new NotificationService();
-        this.notificationSnapshotService = new NotificationSnapshotService(userDAO, dishSuggestionDAO, ingredientRequestDAO);
+        this.notificationSnapshotService = new NotificationSnapshotService(dishSuggestionDAO, ingredientRequestDAO);
         this.dishTranslationService = new DishTranslationService(translationClient);
         this.aiService = new AiService(objectMapper, aiClient);
-        this.allergenService = new AllergenService(allergenDAO, userDAO);
-        this.stationService = new StationService(stationDAO, userDAO);
+        this.allergenService = new AllergenService(allergenDAO);
+        this.stationService = new StationService(stationDAO);
         this.dishService = new DishService(dishDAO, allergenDAO, stationDAO, userDAO);
         this.dishSuggestionService = new DishSuggestionService(dishSuggestionDAO, dishDAO, userDAO, stationDAO, allergenDAO, notificationService);
         this.userService = new UserService(userDAO, stationDAO);
@@ -117,7 +125,7 @@ public final class DIContainer
         this.ingredientRequestService = new IngredientRequestService(ingredientRequestDAO, dishDAO, userDAO, notificationService);
         this.shoppingListService = new ShoppingListService(shoppingListDAO, ingredientRequestDAO, userDAO, aiService);
         this.menuInspirationService = new MenuInspirationService(aiService, userDAO, weatherClient);
-
+        this.securityService = new SecurityService(userDAO, apiConfig.getIssuer(), apiConfig.getSecretKey(), apiConfig.getExpirationMs());
 
         this.allergenController = new AllergenController(allergenService);
         this.stationController = new StationController(stationService);
@@ -129,6 +137,8 @@ public final class DIContainer
         this.ingredientRequestController = new IngredientRequestController(ingredientRequestService);
         this.shoppingListController = new ShoppingListController(shoppingListService);
         this.notificationController = new NotificationController(notificationService, notificationSnapshotService);
+        this.exceptionController = new ExceptionController();
+        this.securityController = new SecurityController(securityService);
     }
 
     public static DIContainer getInstance()

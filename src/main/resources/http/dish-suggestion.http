@@ -1,91 +1,90 @@
-### Variables
-@headChefId = 1
-@lineCookId = 3
 
 ### GET by ID
 GET {{url}}/dish-suggestions/1
-X-Dev-User-Id: {{headChefId}}
+Authorization: Bearer {{authTokenHeadChef}}
 
 ### GET all - no filters
 GET {{url}}/dish-suggestions
-X-Dev-User-Id: {{headChefId}}
+Authorization: Bearer {{authTokenHeadChef}}
 
 ### GET all - status PENDING
 GET {{url}}/dish-suggestions?status=PENDING
-X-Dev-User-Id: {{headChefId}}
+Authorization: Bearer {{authTokenHeadChef}}
 
 ### GET all - status APPROVED
 GET {{url}}/dish-suggestions?status=APPROVED
+Authorization: Bearer {{authTokenHeadChef}}
 
 ### GET all - status REJECTED
 GET {{url}}/dish-suggestions?status=REJECTED
+Authorization: Bearer {{authTokenHeadChef}}
 
 ### GET all - invalid status → 400
 GET {{url}}/dish-suggestions?status=INVALID
+Authorization: Bearer {{authTokenHeadChef}}
 
 ### GET all - week + year
 GET {{url}}/dish-suggestions?week=12&year=2026
+Authorization: Bearer {{authTokenHeadChef}}
 
 ### GET all - week + year + status PENDING
 GET {{url}}/dish-suggestions?week=12&year=2026&status=PENDING
+Authorization: Bearer {{authTokenHeadChef}}
 
 ### GET all - week + year + status APPROVED
 GET {{url}}/dish-suggestions?week=12&year=2026&status=APPROVED
-
-### GET all - week without year → 400 (must come together)
-GET {{url}}/dish-suggestions?week=10
-
-### GET all - year without week → 400 (must come together)
-GET {{url}}/dish-suggestions?year=2026
-
-### GET all - week out of range → 400
-GET {{url}}/dish-suggestions?week=99&year=2026
-
-### GET all - year out of range → 400
-GET {{url}}/dish-suggestions?week=10&year=1800
+Authorization: Bearer {{authTokenHeadChef}}
 
 ### GET all - stationId filter
 GET {{url}}/dish-suggestions?stationId=1
+Authorization: Bearer {{authTokenHeadChef}}
 
 ### GET all - stationId + status PENDING
 GET {{url}}/dish-suggestions?stationId=2&status=PENDING
+Authorization: Bearer {{authTokenHeadChef}}
 
 ### GET all - full filter: status + week + year + stationId + orderBy
 GET {{url}}/dish-suggestions?status=PENDING&week=13&year=2026&stationId=1&orderBy=status
+Authorization: Bearer {{authTokenHeadChef}}
 
 ### GET all - orderBy station
 GET {{url}}/dish-suggestions?orderBy=station
+Authorization: Bearer {{authTokenHeadChef}}
 
 ### GET all - orderBy unknown value → falls back to default order (no error)
 GET {{url}}/dish-suggestions?orderBy=invalid_column
+Authorization: Bearer {{authTokenHeadChef}}
 
 ### GET current week - all statuses
 GET {{url}}/dish-suggestions/current-week
+Authorization: Bearer {{authTokenHeadChef}}
 
 ### GET current week - PENDING only
 GET {{url}}/dish-suggestions/current-week?status=PENDING
+Authorization: Bearer {{authTokenHeadChef}}
 
 ### GET current week - APPROVED only
 GET {{url}}/dish-suggestions/current-week?status=APPROVED
+Authorization: Bearer {{authTokenHeadChef}}
 
 ### POST create suggestion (Salmon)
 POST {{url}}/dish-suggestions/
 Content-Type: application/json
-X-Dev-User-Id: {{lineCookId}}
+Authorization: Bearer {{authTokenLineCook}}}
 
 {
     "nameDA": "Laks med beurre blanc",
     "descriptionDA": "Færøsk laks bagt med fransk smør sauce",
     "stationId": 1,
     "allergenIds": [1, 4],
-    "targetWeek": 15,
+    "targetWeek": 16,
     "targetYear": 2026
 }
 
 ### POST create suggestion (Butter chicken)
 POST {{url}}/dish-suggestions
 Content-Type: application/json
-X-Dev-User-Id: {{lineCookId}}
+Authorization: Bearer {{authTokenLineCook}}
 
 {
     "nameDA": "Butter Chicken",
@@ -99,7 +98,7 @@ X-Dev-User-Id: {{lineCookId}}
 ### PUT update suggestion
 PUT {{url}}/dish-suggestions/1
 Content-Type: application/json
-X-Dev-User-Id: {{lineCookId}}
+Authorization: Bearer {{authTokenLineCook}}
 
 {
     "nameDA": "Laks med citron og kapers",
@@ -110,7 +109,7 @@ X-Dev-User-Id: {{lineCookId}}
 ### PUT update suggestion allergens
 PUT {{url}}/dish-suggestions/1
 Content-Type: application/json
-X-Dev-User-Id: {{lineCookId}}
+Authorization: Bearer {{authTokenLineCook}}
 
 {
     "nameDA": "Laks med citron og kapers",
@@ -119,29 +118,28 @@ X-Dev-User-Id: {{lineCookId}}
 }
 
 ### PATCH approve suggestion
-PATCH {{url}}/dish-suggestions/6/approve
-X-Dev-User-Id: {{headChefId}}
+PATCH {{url}}/dish-suggestions/7/approve
+Authorization: Bearer {{authTokenHeadChef}}}
 
 
 ### PATCH reject suggestion
 PATCH {{url}}/dish-suggestions/5/reject
 Content-Type: application/json
-X-Dev-User-Id: {{headChefId}}
+Authorization: Bearer {{authTokenHeadChef}}
 
 {
     "feedback": "Retten passer ikke til menuen - for tung til forår"
 }
 
-
 ### PATCH reject - blank feedback
 PATCH {{url}}/dish-suggestions/2/reject
 Content-Type: application/json
-X-Dev-User-Id: {{headChefId}}
+Authorization: Bearer {{authTokenHeadChef}}
 
 {
     "feedback": ""
 }
 
 ### DELETE - Delete suggestions
-DELETE {{local}}/dish-suggestions/3
-X-Dev-User-Id: {{headChefId}}
+DELETE {{url}}/dish-suggestions/3
+Authorization: Bearer {{authTokenHeadChef}}

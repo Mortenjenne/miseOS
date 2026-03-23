@@ -1,5 +1,6 @@
 package app.mappers;
 
+import app.dtos.station.StationReferenceDTO;
 import app.dtos.user.UserDTO;
 import app.dtos.user.UserReferenceDTO;
 import app.persistence.entities.User;
@@ -10,14 +11,15 @@ public class UserMapper
 
     public static UserDTO toDTO(User user)
     {
+        StationReferenceDTO stationReferenceDTO = StationMapper.toReferenceDTO(user.getStation());
+
         return new UserDTO(
             user.getId(),
             user.getFirstName(),
             user.getLastName(),
             user.getEmail(),
             user.getUserRole(),
-            user.getStation() != null ? user.getStation().getId() : null,
-            user.getStation() != null ? user.getStation().getStationName() : null,
+            stationReferenceDTO,
             user.getCreatedAt()
         );
     }
@@ -28,6 +30,7 @@ public class UserMapper
         {
             return null;
         }
+
         return new UserReferenceDTO(
             user.getId(),
             user.getFirstName(),

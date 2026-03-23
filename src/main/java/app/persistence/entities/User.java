@@ -8,7 +8,7 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
-@NoArgsConstructor
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 @Entity
 @Table(name = "users")
 public class User implements IEntity
@@ -19,15 +19,15 @@ public class User implements IEntity
     private Long id;
 
     @Getter
-    @Column(name = "first_name", nullable = false)
+    @Column(name = "first_name", nullable = false, length = 50)
     private String firstName;
 
     @Getter
-    @Column(name = "last_name", nullable = false)
+    @Column(name = "last_name", nullable = false, length = 50)
     private String lastName;
 
     @Getter
-    @Column(name = "email", nullable = false, unique = true)
+    @Column(name = "email", nullable = false, unique = true, length = 100)
     private String email;
 
     @Column(name = "hashed_password", nullable = false)
@@ -72,7 +72,6 @@ public class User implements IEntity
         this.firstName = firstName.trim();
         this.lastName = lastName.trim();
         this.station = station;
-        this.updatedAt = LocalDateTime.now();
     }
 
     public void changeRole(UserRole newRole)
@@ -83,6 +82,7 @@ public class User implements IEntity
 
     public void assignToStation(Station station)
     {
+        ValidationUtil.validateNotNull(station, "Station");
         this.station = station;
     }
 

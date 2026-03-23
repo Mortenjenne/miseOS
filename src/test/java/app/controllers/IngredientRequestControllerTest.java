@@ -6,6 +6,7 @@ import app.dtos.ingredient.IngredientRequestDTO;
 import app.enums.RequestType;
 import app.enums.Status;
 import app.persistence.entities.*;
+import app.testutils.TestAuthenticationUtil;
 import app.testutils.TestCleanDB;
 import app.testutils.TestPopulator;
 import io.javalin.Javalin;
@@ -27,14 +28,12 @@ class IngredientRequestControllerTest
 {
     private static final String ENDPOINT_URL = "/ingredient-requests";
     private static final int TEST_PORT = 7778;
-    private static final String USER_HEADER = "X-Dev-User-Id";
-
     private static EntityManagerFactory emf;
     private static Javalin app;
 
     private Map<String, IEntity> seeded;
-    private long headChefId;
-    private long lineCookId;
+    private String headChefToken;
+    private String lineCookToken;
     private long reqDillId;
     private long reqTruffleId;
 
@@ -49,17 +48,18 @@ class IngredientRequestControllerTest
     }
 
     @BeforeEach
-    void resetDatabase()
+    void setup()
     {
         TestCleanDB.truncateTables(emf);
         TestPopulator populator = new TestPopulator(emf);
         populator.populate();
 
         seeded = populator.getSeededData();
-        headChefId = seeded.get("user_gordon").getId();
-        lineCookId = seeded.get("user_claire").getId();
         reqDillId = seeded.get("req_dill").getId();
         reqTruffleId = seeded.get("req_truffle").getId();
+
+        headChefToken = TestAuthenticationUtil.bearerToken("gordon@kitchen.com", "Hash1");
+        lineCookToken  = TestAuthenticationUtil.bearerToken("claire@pastry.com", "Hash2");
     }
 
     @AfterAll
@@ -73,7 +73,7 @@ class IngredientRequestControllerTest
     class Approve
     {
         @Test
-        @DisplayName("Approve request with payload - ok")
+        @DisplayName("Approve request with payload")
         void approveWithPayload()
         {
             String payload = """
@@ -85,7 +85,7 @@ class IngredientRequestControllerTest
             IngredientRequest dill = (IngredientRequest) seeded.get("req_dill");
 
             IngredientRequestDTO response = given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .contentType(ContentType.JSON)
                 .body(payload)
                 .when()
@@ -109,7 +109,7 @@ class IngredientRequestControllerTest
             IngredientRequest dill = (IngredientRequest) seeded.get("req_dill");
 
             IngredientRequestDTO response = given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .contentType(ContentType.JSON)
                 .when()
                 .patch(ENDPOINT_URL + "/" + dill.getId() + "/approve")
@@ -130,7 +130,7 @@ class IngredientRequestControllerTest
         void lineCookCannotApproveReturns403()
         {
             given()
-                .header(USER_HEADER, lineCookId)
+                .header("Authorization", lineCookToken)
                 .when()
                 .patch(ENDPOINT_URL + "/" + reqDillId + "/approve")
                 .then()
@@ -138,15 +138,15 @@ class IngredientRequestControllerTest
         }
 
         @Test
-        @DisplayName("Already approved request returns 409")
+        @DisplayName("Already approved request - returns 409")
         void alreadyApprovedReturns409()
         {
 
-            given().header(USER_HEADER, headChefId)
+            given().header("Authorization", headChefToken)
                 .patch(ENDPOINT_URL + "/" + reqDillId + "/approve");
 
             given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .when()
                 .patch(ENDPOINT_URL + "/" + reqDillId + "/approve")
                 .then()
@@ -154,11 +154,11 @@ class IngredientRequestControllerTest
         }
 
         @Test
-        @DisplayName("Unknown request returns 404")
+        @DisplayName("Unknown request - returns 404")
         void unknownRequestReturns404()
         {
             given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .when()
                 .patch(ENDPOINT_URL + "/9999/approve")
                 .then()
@@ -177,7 +177,7 @@ class IngredientRequestControllerTest
             IngredientRequest truffle = (IngredientRequest) seeded.get("req_truffle");
 
             IngredientRequestDTO response = given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .when()
                 .patch(ENDPOINT_URL + "/" + truffle.getId() + "/reject")
                 .then()
@@ -196,13 +196,13 @@ class IngredientRequestControllerTest
     class GetById
     {
         @Test
-        @DisplayName("Get by id should return Ingredient request")
+        @DisplayName("Get by id should return correct ingredient request")
         void getById()
         {
             IngredientRequest dill = (IngredientRequest) seeded.get("req_dill");
 
             IngredientRequestDTO response = given()
-                .header(USER_HEADER, lineCookId)
+                .header("Authorization", lineCookToken)
                 .when()
                 .get(ENDPOINT_URL + "/" + dill.getId())
                 .then()
@@ -228,7 +228,7 @@ class IngredientRequestControllerTest
             String deliveryDate = LocalDate.now().plusDays(2).toString();
 
             List<IngredientRequestDTO> response = given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .queryParam("status", "PENDING")
                 .queryParam("deliveryDate", deliveryDate)
                 .when()
@@ -252,7 +252,7 @@ class IngredientRequestControllerTest
             IngredientRequest dill = (IngredientRequest) seeded.get("req_dill");
 
             List<IngredientRequestDTO> response = given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .queryParam("status", "PENDING")
                 .queryParam("stationId", cold.getId())
                 .when()
@@ -279,7 +279,7 @@ class IngredientRequestControllerTest
         void invalidStatusReturns400()
         {
             given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .queryParam("status", "PEN")
                 .when()
                 .get(ENDPOINT_URL)
@@ -292,7 +292,7 @@ class IngredientRequestControllerTest
         void invalidDateFormatReturns400()
         {
             given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .queryParam("deliveryDate", "not-a-date")
                 .when()
                 .get(ENDPOINT_URL)
@@ -305,7 +305,7 @@ class IngredientRequestControllerTest
         void headChefSeesAllRequests()
         {
             List<IngredientRequestDTO> response = given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .when()
                 .get(ENDPOINT_URL)
                 .then()
@@ -348,7 +348,7 @@ class IngredientRequestControllerTest
                 """.formatted(LocalDate.now().plusDays(3), boeuf.getId());
 
             IngredientRequestDTO response = given()
-                .header(USER_HEADER, lineCookId)
+                .header("Authorization", lineCookToken)
                 .contentType(ContentType.JSON)
                 .body(payload)
                 .when()
@@ -383,7 +383,7 @@ class IngredientRequestControllerTest
             """.formatted(LocalDate.now().plusDays(3), salmon.getId());
 
             given()
-                .header(USER_HEADER, lineCookId)
+                .header("Authorization", lineCookToken)
                 .contentType(ContentType.JSON)
                 .body(payload)
                 .when()
@@ -410,7 +410,7 @@ class IngredientRequestControllerTest
         void deliveryDateTooFarReturns400()
         {
             given()
-                .header(USER_HEADER, lineCookId)
+                .header("Authorization", lineCookToken)
                 .contentType(ContentType.JSON)
                 .body("""
                 {
@@ -432,7 +432,7 @@ class IngredientRequestControllerTest
         void dishSpecificWithoutDishIdReturns400()
         {
             given()
-                .header(USER_HEADER, lineCookId)
+                .header("Authorization", lineCookToken)
                 .contentType(ContentType.JSON)
                 .body("""
                 {
@@ -475,7 +475,7 @@ class IngredientRequestControllerTest
                 """.formatted(LocalDate.now().plusDays(4), salmon.getId());
 
             IngredientRequestDTO response = given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .contentType(ContentType.JSON)
                 .body(payload)
                 .when()
@@ -497,7 +497,7 @@ class IngredientRequestControllerTest
         @DisplayName("Cannot update approved request — returns 409")
         void cannotUpdateApprovedRequestReturns409()
         {
-            given().header(USER_HEADER, headChefId)
+            given().header("Authorization", headChefToken)
                 .patch(ENDPOINT_URL + "/" + reqTruffleId + "/approve");
 
             String payload = """
@@ -511,7 +511,7 @@ class IngredientRequestControllerTest
             """.formatted(LocalDate.now().plusDays(2));
 
             given()
-                .header(USER_HEADER, lineCookId)
+                .header("Authorization", lineCookToken)
                 .contentType(ContentType.JSON)
                 .body(payload)
                 .when()
@@ -532,14 +532,14 @@ class IngredientRequestControllerTest
             IngredientRequest dill = (IngredientRequest) seeded.get("req_dill");
 
             given()
-                .header(USER_HEADER, lineCookId)
+                .header("Authorization", lineCookToken)
                 .when()
                 .delete(ENDPOINT_URL + "/" + dill.getId())
                 .then()
                 .statusCode(204);
 
             given()
-                .header(USER_HEADER, lineCookId)
+                .header("Authorization", lineCookToken)
                 .when()
                 .get(ENDPOINT_URL + "/" + dill.getId())
                 .then()
@@ -550,14 +550,57 @@ class IngredientRequestControllerTest
         @DisplayName("Line cook cannot delete another cook's request")
         void cannotDeleteOthersRequestReturns403()
         {
-            Long reneId = seeded.get("user_rene").getId();
+            String reneToken = TestAuthenticationUtil.bearerToken("rene@cold.com", "Hash4");
 
             given()
-                .header(USER_HEADER, reneId)
+                .header("Authorization", reneToken)
                 .when()
                 .delete(ENDPOINT_URL + "/" + reqDillId)
                 .then()
                 .statusCode(403);
+        }
+    }
+
+    @Nested
+    @DisplayName("Security & Authorization Tests")
+    class Security
+    {
+        @Test
+        @DisplayName("Should return 401 when no Authorization header is provided")
+        void missingTokenReturns401()
+        {
+            given()
+                .when()
+                .get(ENDPOINT_URL)
+                .then()
+                .statusCode(401)
+                .body("message", equalToIgnoringCase("Missing or malformed Authorization header"));
+        }
+
+        @Test
+        @DisplayName("Should return 401 when Authorization header is invalid")
+        void invalidTokenReturns401()
+        {
+            given()
+                .header("Authorization", "Bearer not-a-real-jwt-token")
+                .when()
+                .get(ENDPOINT_URL)
+                .then()
+                .statusCode(401)
+                .body("message", equalToIgnoringCase("Token could not be verified"));
+        }
+
+        @Test
+        @DisplayName("Should return 403 when token expired")
+        void invalidExpiredTokenReturns403()
+        {
+            given()
+                .header("Authorization", "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqZWFuZXR0ZUBlbWFpbC5jb20iLCJyb2xlIjoiTElORV9DT09LIiwiaXNzIjoibWlzZU9TIiwiZXhwIjoxNzc0MDg4MjExLCJ1c2VySWQiOjUsImlhdCI6MTc3NDA4NzMxMSwiZW1haWwiOiJqZWFuZXR0ZUBlbWFpbC5jb20ifQ.8RyVKeyplMEMBZZ5rrOa2_-T2TZGaofR9d0GMHf36sU")
+                .when()
+                .get(ENDPOINT_URL)
+                .then()
+                .statusCode(401)
+                .body("message", equalToIgnoringCase("Token has expired"));
         }
     }
 }

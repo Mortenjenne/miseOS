@@ -1,19 +1,39 @@
 
 ### GET by ID
-GET {{url}}/users/2
+GET {{url}}/users/4
+Authorization: Bearer {{authTokenHeadChef}}}
 
 ### GET all users
 GET {{url}}/users/
+Authorization: Bearer {{authTokenHeadChef}}
 
-### POST Create User
-POST {{url}}/users/
+### POST Register a new User
+POST {{url}}/users
 Content-Type: application/json
 
 {
-"firstName": "Morten",
-"lastName": "Jensen",
-"password": "Morten123.",
-"email": "test@email.com"
+    "firstName": "Jeanette",
+    "lastName": "Nielsen",
+    "password": "Morten123.",
+    "email": "jeanette@email.com"
+}
+
+### POST Login to get JWT Token(Head chef)
+POST {{url}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "morten@email.com",
+    "password": "Morten123."
+}
+
+### POST Login to get JWT Token(Line cook)
+POST {{url}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "jeanette@email.com",
+    "password": "Morten123."
 }
 
 ### POST Create Another User
@@ -30,6 +50,7 @@ Content-Type: application/json
 ### PUT Update User
 PUT {{url}}/users/1
 Content-Type: application/json
+Authorization: Bearer {{authToken}}
 
 {
     "firstName": "Morten",
@@ -41,12 +62,16 @@ Content-Type: application/json
 ### PATCH Change Email
 PATCH {{url}}/users/1/email
 Content-Type: application/json
+Authorization: Bearer {{authToken}}
 
-"newemail@email.com"
+{
+    "email": "test@email.com"
+}
 
 ### PATCH Change Password
 PATCH {{url}}/users/1/password
 Content-Type: application/json
+Authorization: Bearer {{authToken}}
 
 {
     "currentPassword": "Morten123.",
@@ -54,16 +79,20 @@ Content-Type: application/json
 }
 
 ### PATCH Change Role
-PATCH {{url}}/users/2/role
+PATCH {{url}}/users/1/role
 Content-Type: application/json
+Authorization: Bearer {{authToken}}
 
-"SOUS_CHEF"
+{
+    "userRole": "SOUS_CHEF"
+}
 
 ### PATCH Assign User(Anna) To Station
-PATCH {{url}}/users/3/station/1
-
+PATCH {{url}}/users/5/station/1
+Authorization: Bearer {{authTokenHeadChef}}
 
 ### DELETE Delete User
 DELETE {{url}}/users/2
+Authorization: Bearer {{authToken}}
 
 ###

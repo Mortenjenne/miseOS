@@ -1,13 +1,13 @@
 package app.persistence.entities;
 
 import app.enums.Status;
+import app.exceptions.ConflictException;
 import app.exceptions.UnauthorizedActionException;
 import app.exceptions.ValidationException;
 import app.utils.ValidationUtil;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -15,7 +15,7 @@ import java.time.temporal.WeekFields;
 import java.util.HashSet;
 import java.util.Set;
 
-@NoArgsConstructor
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 @Getter
 @Entity
 @Table(name = "dish_suggestion")
@@ -25,27 +25,22 @@ public class DishSuggestion implements IEntity
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Setter
-    @Column(name = "name_da", nullable = false)
+    @Column(name = "name_da", nullable = false, length = 100)
     private String nameDA;
 
-    @Setter
-    @Column(name = "description_da", nullable = false)
+    @Column(name = "description_da", nullable = false, length = 150)
     private String descriptionDA;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "dish_status", nullable = false)
     private Status dishStatus;
 
-    @Setter
     @Column(name = "feedback")
     private String feedback;
 
-    @Setter
     @Column(name = "target_year", nullable = false)
     private Integer targetYear;
 
-    @Setter
     @Column(name = "target_week", nullable = false)
     private Integer targetWeek;
 
@@ -70,6 +65,9 @@ public class DishSuggestion implements IEntity
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
     public DishSuggestion(String nameDA, String descriptionDA, Integer targetWeek, Integer targetYear, Station station, User createdBy, Set<Allergen> allergens)
     {
@@ -129,9 +127,19 @@ public class DishSuggestion implements IEntity
 
     public void addAllergen(Allergen allergen)
     {
+        ensurePending();
         if(allergen != null)
         {
             this.allergens.add(allergen);
+        }
+    }
+
+    public void removeAllergen(Allergen allergen)
+    {
+        ensurePending();
+        if(allergen != null)
+        {
+            this.allergens.remove(allergen);
         }
     }
 
@@ -149,7 +157,7 @@ public class DishSuggestion implements IEntity
     {
         if (!today.isBefore(getDeadlineDate()))
         {
-            throw new IllegalStateException("Deadline passed. Last chance was " + getDeadlineDate());
+            throw new ConflictException("Deadline passed. Last chance was " + getDeadlineDate());
         }
     }
 
@@ -158,14 +166,6 @@ public class DishSuggestion implements IEntity
         LocalDate deadline = getDeadlineDate();
 
         return !today.isBefore(deadline);
-    }
-
-    public void removeAllergen(Allergen allergen)
-    {
-        if(allergen != null)
-        {
-            this.allergens.remove(allergen);
-        }
     }
 
     public LocalDate getDeadlineDate()
@@ -186,11 +186,17 @@ public class DishSuggestion implements IEntity
         this.createdAt = LocalDateTime.now();
     }
 
+    @PreUpdate
+    private void onUpdate()
+    {
+        this.updatedAt = LocalDateTime.now();
+    }
+
     private void ensurePending()
     {
         if (this.dishStatus != Status.PENDING)
         {
-            throw new IllegalStateException("Only pending suggestions allowed here");
+            throw new ConflictException("Only pending suggestions allowed here");
         }
     }
 

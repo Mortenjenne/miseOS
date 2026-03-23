@@ -24,6 +24,7 @@
         <jbcrypt.version>0.4</jbcrypt.version>
         <jackson.version>2.21.1</jackson.version>
         <javalin.version>7.0.1</javalin.version>
+        <jwt.version>10.7</jwt.version>
     </properties>
 
     <dependencies>
@@ -164,10 +165,12 @@
             <version>6.5.0</version>
         </dependency>
 
+        <!-- Nimbus JOSE+JWT -->
+
         <dependency>
-            <groupId>org.thymeleaf</groupId>
-            <artifactId>thymeleaf</artifactId>
-            <version>3.1.2.RELEASE</version>
+            <groupId>com.nimbusds</groupId>
+            <artifactId>nimbus-jose-jwt</artifactId>
+            <version>${jwt.version}</version>
         </dependency>
 
     </dependencies>

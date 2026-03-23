@@ -4,44 +4,30 @@ import app.dtos.allergen.AllergenCreateRequestDTO;
 import app.dtos.allergen.AllergenDTO;
 import app.dtos.allergen.AllergenUpdateRequestDTO;
 import app.exceptions.ConflictException;
-import app.exceptions.UnauthorizedActionException;
 import app.exceptions.ValidationException;
 import app.mappers.AllergenMapper;
 import app.persistence.daos.interfaces.IAllergenDAO;
-import app.persistence.daos.interfaces.readers.IUserReader;
 import app.persistence.entities.Allergen;
-import app.persistence.entities.User;
 import app.services.IAllergenService;
 import app.utils.EUAllergens;
 import app.utils.ValidationUtil;
 import jakarta.persistence.EntityNotFoundException;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.*;
 
 public class AllergenService implements IAllergenService
 {
     private final IAllergenDAO allergenDAO;
-    private final IUserReader userReader;
 
-    public AllergenService(IAllergenDAO allergenDAO, IUserReader userReader)
+    public AllergenService(IAllergenDAO allergenDAO)
     {
         this.allergenDAO = allergenDAO;
-        this.userReader = userReader;
     }
 
     @Override
-    public AllergenDTO registerAllergen(Long creatorId, AllergenCreateRequestDTO dto)
+    public AllergenDTO registerAllergen(AllergenCreateRequestDTO dto)
     {
-        ValidationUtil.validateId(creatorId);
         validateCreateInput(dto);
-
-        User creator = userReader.getByID(creatorId);
-        requireHeadChef(creator);
-
         requireUniqueNameDA(dto.nameDA());
         requireUniqueNameEN(dto.nameEN());
         requireUniqueDisplayNumber(dto.displayNumber());
@@ -59,14 +45,10 @@ public class AllergenService implements IAllergenService
     }
 
     @Override
-    public AllergenDTO updateAllergen(Long allergenId, Long editorId, AllergenUpdateRequestDTO dto)
+    public AllergenDTO updateAllergen(Long allergenId, AllergenUpdateRequestDTO dto)
     {
         ValidationUtil.validateId(allergenId);
-        ValidationUtil.validateId(editorId);
         validateUpdateInput(dto);
-
-        User editor = userReader.getByID(editorId);
-        requireHeadChef(editor);
 
         Allergen allergen = allergenDAO.getByID(allergenId);
 
@@ -98,13 +80,9 @@ public class AllergenService implements IAllergenService
     }
 
     @Override
-    public boolean deleteAllergen(Long allergenId, Long requesterId)
+    public boolean deleteAllergen(Long allergenId)
     {
-        ValidationUtil.validateId(requesterId);
         ValidationUtil.validateId(allergenId);
-
-        User user = userReader.getByID(requesterId);
-        requireHeadChef(user);
 
         Allergen allergen = allergenDAO.getByID(allergenId);
 
@@ -126,11 +104,12 @@ public class AllergenService implements IAllergenService
     }
 
     @Override
-    public Set<AllergenDTO> getAllAllergens()
+    public List<AllergenDTO> getAllAllergens()
     {
         return allergenDAO.getAll().stream()
             .map(AllergenMapper::toDTO)
-            .collect(Collectors.toCollection(LinkedHashSet::new));
+            .sorted(Comparator.comparing(AllergenDTO::displayNumber))
+            .toList();
     }
 
     @Override
@@ -144,13 +123,8 @@ public class AllergenService implements IAllergenService
     }
 
     @Override
-    public List<AllergenDTO> seedEUAllergens(Long headChefId)
+    public List<AllergenDTO> seedEUAllergens()
     {
-        ValidationUtil.validateId(headChefId);
-
-        User headChef = userReader.getByID(headChefId);
-        requireHeadChef(headChef);
-
         long numberOfAllergensInDB = allergenDAO.count();
 
         if (numberOfAllergensInDB> 0)
@@ -233,14 +207,6 @@ public class AllergenService implements IAllergenService
         if (displayNumber < 1 || displayNumber > 99)
         {
             throw new ValidationException("Display number must be between 1 and 99");
-        }
-    }
-
-    private void requireHeadChef(User user)
-    {
-        if (!user.isHeadChef())
-        {
-            throw new UnauthorizedActionException("Only head chef can manage allergens");
         }
     }
 }

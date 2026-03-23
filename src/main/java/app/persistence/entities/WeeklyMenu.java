@@ -1,11 +1,11 @@
 package app.persistence.entities;
 
 import app.enums.MenuStatus;
+import app.exceptions.ConflictException;
 import app.exceptions.UnauthorizedActionException;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -21,15 +21,12 @@ public class WeeklyMenu implements IEntity
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Setter
     @Column(name = "week_number", nullable = false)
     private int weekNumber;
 
-    @Setter
     @Column(name = "year", nullable = false)
     private int year;
 
-    @Setter
     @Enumerated(EnumType.STRING)
     @Column(name = "menu_status", nullable = false)
     private MenuStatus menuStatus;
@@ -51,21 +48,21 @@ public class WeeklyMenu implements IEntity
         this.menuStatus = MenuStatus.DRAFT;
     }
 
-    public void publish(User headChef)
+    public void publish(User publisher)
     {
-        if (!headChef.isHeadChef())
+        if (!publisher.isHeadChef() && !publisher.isSousChef())
         {
-            throw new UnauthorizedActionException("Only head chefs can publish menus");
+            throw new UnauthorizedActionException("Only head chefs or souschefs can publish menus");
         }
 
         if (this.menuStatus == MenuStatus.PUBLISHED)
         {
-            throw new IllegalStateException("Menu is already published");
+            throw new ConflictException("Menu is already published");
         }
 
         this.menuStatus = MenuStatus.PUBLISHED;
         this.publishedAt = LocalDateTime.now();
-        this.publishedBy = headChef;
+        this.publishedBy = publisher;
     }
 
     public void addMenuSlot(WeeklyMenuSlot weeklyMenuSlot)
@@ -86,16 +83,16 @@ public class WeeklyMenu implements IEntity
         }
     }
 
-    public void delete(User requestingUser)
+    public void delete(User user)
     {
-        if (!requestingUser.isHeadChef())
+        if (!user.isHeadChef() && !user.isSousChef())
         {
-            throw new UnauthorizedActionException("Only head chefs can delete menus");
+            throw new UnauthorizedActionException("Only head chefs or sous chefs can delete menus");
         }
 
         if (this.menuStatus == MenuStatus.PUBLISHED)
         {
-            throw new IllegalStateException("Cannot delete a published menu — archive it instead");
+            throw new ConflictException("Cannot delete a published menu — archive it instead");
         }
     }
 
@@ -113,5 +110,4 @@ public class WeeklyMenu implements IEntity
     {
         return getClass().hashCode();
     }
-
 }

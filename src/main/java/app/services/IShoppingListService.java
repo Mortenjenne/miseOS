@@ -1,5 +1,6 @@
 package app.services;
 
+import app.dtos.security.AuthenticatedUser;
 import app.dtos.shopping.*;
 import app.enums.ShoppingListStatus;
 
@@ -8,25 +9,25 @@ import java.util.List;
 
 public interface IShoppingListService
 {
-    ShoppingListDTO generateShoppingList(Long userId, CreateShoppingListDTO dto);
+    ShoppingListDTO generateShoppingList(AuthenticatedUser authUser, CreateShoppingListDTO dto);
 
-    ShoppingListDTO finalizeShoppingList(Long userId, Long shoppingListId);
+    ShoppingListDTO finalizeShoppingList(Long shoppingListId);
 
-    boolean deleteShoppingList(Long userId, Long shoppingListId);
+    boolean deleteShoppingList(AuthenticatedUser authUser, Long shoppingListId);
 
-    List<ShoppingListDTO> getShoppingLists(Long userId, ShoppingListStatus status, LocalDate deliveryDate);
+    List<ShoppingListDTO> getShoppingLists(ShoppingListStatus status, LocalDate deliveryDate);
 
-    ShoppingListDTO markItemOrdered(Long userId, Long shoppingListId, Long itemId);
+    ShoppingListDTO markItemOrdered(Long shoppingListId, Long itemId);
 
-    ShoppingListDTO markAllItemsOrdered(Long shoppingListId, Long userId);
+    ShoppingListDTO markAllItemsOrdered(Long shoppingListId);
 
-    ShoppingListDTO addItemToShoppingList(Long userId, Long shoppingListId, CreateShoppingListItemDTO dto);
+    ShoppingListDTO addItemToShoppingList(AuthenticatedUser authUser, Long shoppingListId, CreateShoppingListItemDTO dto);
 
-    ShoppingListDTO removeItem(Long userId, Long shoppingListId, Long itemId);
+    ShoppingListDTO removeItem(Long shoppingListId, Long itemId);
 
-    ShoppingListDTO updateItem(Long userId, Long shoppingListId, Long itemId, UpdateShoppingListItemDTO dto);
+    ShoppingListDTO updateItem(Long shoppingListId, Long itemId, UpdateShoppingListItemDTO dto);
 
     ShoppingListDTO getById(Long shoppingListId);
 
-    ShoppingListDTO updateDeliveryDate(Long userId, Long shoppingListId, UpdateShoppingListDTO dto);
+    ShoppingListDTO updateDeliveryDate(Long shoppingListId, UpdateShoppingListDTO dto);
 }

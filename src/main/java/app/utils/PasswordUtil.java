@@ -6,13 +6,13 @@ public class PasswordUtil
 {
     private PasswordUtil(){}
 
-    public static String hashPassword(String plainPassword)
+    public static String hashPassword(String plainPassword, int salt)
     {
         if (plainPassword == null || plainPassword.isEmpty())
         {
             throw new IllegalArgumentException("Password kan ikke være tomt");
         }
-        return BCrypt.hashpw(plainPassword, BCrypt.gensalt());
+        return BCrypt.hashpw(plainPassword, BCrypt.gensalt(salt));
     }
 
     public static boolean verifyPassword(String plainPassword, String hashedPassword)

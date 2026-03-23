@@ -9,4 +9,6 @@ public interface IDishSuggestionController extends ICrudController
     void approveSuggestion(Context ctx);
 
     void rejectSuggestion(Context ctx);
+
+    void removeAllergen(Context ctx);
 }

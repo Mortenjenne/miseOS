@@ -1,0 +1,80 @@
+package app.services.impl;
+
+import app.dtos.notification.AdminNotificationMessageDTO;
+import app.dtos.notification.StaffNotificationMessageDTO;
+import app.dtos.user.UserReferenceDTO;
+import app.enums.NotificationCategory;
+import app.enums.NotificationType;
+import app.services.INotificationRegistry;
+import app.services.INotificationSender;
+import io.javalin.websocket.WsContext;
+
+import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+public class NotificationService implements INotificationSender, INotificationRegistry
+{
+    private final Set<WsContext> adminSessions = ConcurrentHashMap.newKeySet();
+    private final Map<Long, WsContext> staffSessions = new ConcurrentHashMap<>();
+
+
+    @Override
+    public void registerAdmin(WsContext ctx)
+    {
+        adminSessions.add(ctx);
+    }
+
+    @Override
+    public void registerStaff(WsContext ctx, Long userId)
+    {
+        staffSessions.put(userId, ctx);
+    }
+
+    @Override
+    public void unregisterAdmin(WsContext ctx)
+    {
+        adminSessions.remove(ctx);
+    }
+
+    @Override
+    public void unregisterStaff(WsContext ctx)
+    {
+        staffSessions.entrySet()
+            .removeIf(entry -> entry.getValue().session.equals(ctx.session));
+    }
+
+    @Override
+    public void broadcastPendingUpdate(NotificationType notificationType, NotificationCategory category, int count)
+    {
+        AdminNotificationMessageDTO message = new AdminNotificationMessageDTO(
+            notificationType,
+            category,
+            count,
+            LocalDateTime.now()
+        );
+
+        adminSessions.removeIf(session -> !session.session.isOpen());
+        adminSessions.forEach(session -> session.send(message));
+    }
+
+    @Override
+    public void notifyStaff(Long userId, NotificationType notificationType, NotificationCategory category, Long requestId, String itemName, UserReferenceDTO reviewedBy)
+    {
+        StaffNotificationMessageDTO message = new StaffNotificationMessageDTO(
+            notificationType,
+            category,
+            requestId,
+            itemName,
+            reviewedBy,
+            LocalDateTime.now()
+        );
+
+        WsContext session = staffSessions.get(userId);
+        if (session != null && session.session.isOpen())
+        {
+            session.send(message);
+        }
+    }
+}

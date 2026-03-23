@@ -3,13 +3,9 @@ package app.services.impl;
 import app.dtos.station.StationRequestDTO;
 import app.dtos.station.StationDTO;
 import app.exceptions.ConflictException;
-import app.exceptions.UnauthorizedActionException;
-import app.exceptions.ValidationException;
 import app.mappers.StationMapper;
 import app.persistence.daos.interfaces.IStationDAO;
-import app.persistence.daos.interfaces.readers.IUserReader;
 import app.persistence.entities.Station;
-import app.persistence.entities.User;
 import app.services.IStationService;
 import app.utils.ValidationUtil;
 import jakarta.persistence.EntityNotFoundException;
@@ -21,22 +17,16 @@ import java.util.stream.Collectors;
 public class StationService implements IStationService
 {
     private final IStationDAO stationDAO;
-    private final IUserReader userReader;
 
-    public StationService(IStationDAO stationDAO, IUserReader userReader)
+    public StationService(IStationDAO stationDAO)
     {
         this.stationDAO = stationDAO;
-        this.userReader = userReader;
     }
 
     @Override
-    public StationDTO createStation(Long creatorID, StationRequestDTO dto)
+    public StationDTO createStation(StationRequestDTO dto)
     {
-        ValidationUtil.validateId(creatorID);
         validateInput(dto);
-
-        User creator = userReader.getByID(creatorID);
-        requireHeadChefOrSousChef(creator);
         validateStationNameUnique(dto.name());
 
         Station station = new Station(dto.name(), dto.description());
@@ -46,15 +36,12 @@ public class StationService implements IStationService
     }
 
     @Override
-    public StationDTO updateStation(Long editorId, Long stationId, StationRequestDTO dto)
+    public StationDTO updateStation(Long stationId, StationRequestDTO dto)
     {
-        ValidationUtil.validateId(editorId);
         ValidationUtil.validateId(stationId);
         validateInput(dto);
 
-        User editor = userReader.getByID(editorId);
         Station station = stationDAO.getByID(stationId);
-        requireHeadChefOrSousChef(editor);
 
         if (!station.getStationName().equalsIgnoreCase(dto.name()))
         {
@@ -71,22 +58,18 @@ public class StationService implements IStationService
     }
 
     @Override
-    public boolean deleteStation(Long userId, Long stationId)
+    public boolean deleteStation(Long stationId)
     {
         ValidationUtil.validateId(stationId);
-        ValidationUtil.validateId(userId);
 
         boolean isStationUsed = stationDAO.isUsedByAnyDish(stationId);
 
         if (isStationUsed)
         {
-            throw new ValidationException("Cannot delete station, it is currently assigned to one or more dishes");
+            throw new ConflictException("Cannot delete station, it is currently assigned to one or more dishes");
         }
 
         Station station = stationDAO.getByID(stationId);
-        User user = userReader.getByID(userId);
-        requireHeadChefOrSousChef(user);
-
         return stationDAO.delete(station.getId());
     }
 
@@ -117,14 +100,6 @@ public class StationService implements IStationService
         return stationDAO.findByName(name)
             .map(StationMapper::toDTO)
             .orElseThrow(() -> new EntityNotFoundException("Station not found: " + name));
-    }
-
-    private void requireHeadChefOrSousChef(User user)
-    {
-        if (!user.isHeadChef() && !user.isSousChef())
-        {
-            throw new UnauthorizedActionException("Only head chef or sous chef can manage stations");
-        }
     }
 
     private void validateInput(StationRequestDTO dto)

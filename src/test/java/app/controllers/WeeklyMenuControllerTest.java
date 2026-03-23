@@ -9,6 +9,7 @@ import app.enums.DayOfWeek;
 import app.persistence.entities.IEntity;
 import app.persistence.entities.WeeklyMenu;
 import app.persistence.entities.WeeklyMenuSlot;
+import app.testutils.TestAuthenticationUtil;
 import app.testutils.TestCleanDB;
 import app.testutils.TestPopulator;
 import io.javalin.Javalin;
@@ -30,14 +31,13 @@ class WeeklyMenuControllerTest
 {
     private static final String ENDPOINT_URL = "/weekly-menus";
     private static final int TEST_PORT = 7776;
-    private static final String USER_HEADER = "X-Dev-User-Id";
-
     private static EntityManagerFactory emf;
     private static Javalin app;
-    private static Map<String, IEntity> seeded;
 
-    private long headChefId;
-    private long lineCookId;
+    private Map<String, IEntity> seeded;
+    private String headChefToken;
+    private String sousChefToken;
+    private String lineChefToken;
     private long fullMenuId;
     private long draftMenuId;
     private long slotsMenuId;
@@ -63,18 +63,16 @@ class WeeklyMenuControllerTest
         TestCleanDB.truncateTables(emf);
         TestPopulator populator = new TestPopulator(emf);
         populator.populate();
+
         seeded = populator.getSeededData();
-
-        headChefId = seeded.get("user_gordon").getId();
-        lineCookId = seeded.get("user_claire").getId();
-
+        headChefToken = TestAuthenticationUtil.bearerToken("gordon@kitchen.com", "Hash1");
+        lineChefToken = TestAuthenticationUtil.bearerToken("claire@pastry.com", "Hash2");
+        sousChefToken = TestAuthenticationUtil.bearerToken("marco@grill.com", "Hash3");
         fullMenuId = seeded.get("menu_full").getId();
         draftMenuId = seeded.get("menu_draft").getId();
         slotsMenuId = seeded.get("menu_slots").getId();
-
         hotStationId = seeded.get("station_hot").getId();
         coldStationId = seeded.get("station_cold").getId();
-
         boeufDishId = seeded.get("dish_boeuf").getId();
         salmonDishId = seeded.get("dish_salmon").getId();
 
@@ -107,7 +105,7 @@ class WeeklyMenuControllerTest
             """;
 
             given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .contentType(ContentType.JSON)
                 .body(body)
                 .when()
@@ -133,13 +131,35 @@ class WeeklyMenuControllerTest
             """;
 
             given()
-                .header(USER_HEADER, lineCookId)
+                .header("Authorization", lineChefToken)
                 .contentType(ContentType.JSON)
                 .body(body)
                 .when()
                 .post(ENDPOINT_URL)
                 .then()
                 .statusCode(403);
+        }
+
+        @Test
+        @DisplayName("Should return 409 when creating a menu for a week that already exists")
+        void duplicateWeekConflict()
+        {
+            String body = """
+        {
+          "week": 7,
+          "year": 2026
+        }
+        """;
+
+            given()
+                .header("Authorization", headChefToken)
+                .contentType(ContentType.JSON)
+                .body(body)
+                .when()
+                .post(ENDPOINT_URL)
+                .then()
+                .statusCode(409)
+                .body("message", containsString("already exists"));
         }
     }
 
@@ -152,6 +172,7 @@ class WeeklyMenuControllerTest
         void getById()
         {
             WeeklyMenuDTO response = given()
+                .header("Authorization", headChefToken)
                 .when()
                 .get(ENDPOINT_URL + "/" + fullMenuId)
                 .then()
@@ -181,6 +202,7 @@ class WeeklyMenuControllerTest
         void getByIdNotFound()
         {
             given()
+                .header("Authorization", headChefToken)
                 .when()
                 .get(ENDPOINT_URL + "/999999")
                 .then()
@@ -193,11 +215,11 @@ class WeeklyMenuControllerTest
     class GetByWeekAndYear
     {
         @Test
-        @DisplayName("Should return menu by week/year for head chef")
-        void getByWeekAndYearSuccess()
+        @DisplayName("Should return menu by week/year")
+        void getByWeekAndYear()
         {
             given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .queryParam("week", 7)
                 .queryParam("year", 2026)
                 .when()
@@ -211,11 +233,23 @@ class WeeklyMenuControllerTest
         }
 
         @Test
+        @DisplayName("Should work without any Authorization header for guests when menu is published")
+        void byWeekIsPublic() {
+            given()
+                .queryParam("week", 7)
+                .queryParam("year", 2026)
+                .when()
+                .get(ENDPOINT_URL + "/by-week")
+                .then()
+                .statusCode(200);
+        }
+
+        @Test
         @DisplayName("Should return 400 when week/year are missing")
         void getByWeekAndYearMissingParams()
         {
             given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .when()
                 .get(ENDPOINT_URL + "/by-week")
                 .then()
@@ -231,14 +265,22 @@ class WeeklyMenuControllerTest
         @DisplayName("Should return 200 with current published menu or 404 when none exists")
         void getCurrentWeekMenu()
         {
-            int status = given()
+            given()
+                .header("Authorization", headChefToken)
                 .when()
                 .get(ENDPOINT_URL + "/current")
                 .then()
-                .extract()
-                .statusCode();
+                .statusCode(anyOf(is(200), is(404)));
+        }
 
-            assertTrue(status == 200 || status == 404);
+        @Test
+        @DisplayName("Should work without any Authorization header for public viewing")
+        void currentMenuIsPublic() {
+            given()
+                .when()
+                .get(ENDPOINT_URL + "/current")
+                .then()
+                .statusCode(anyOf(is(200), is(404)));
         }
     }
 
@@ -247,11 +289,11 @@ class WeeklyMenuControllerTest
     class GetAll
     {
         @Test
-        @DisplayName("Should return overview list for head chef")
+        @DisplayName("Should return overview list")
         void getAllOverview()
         {
             given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .when()
                 .get(ENDPOINT_URL)
                 .then()
@@ -269,7 +311,7 @@ class WeeklyMenuControllerTest
         void getAllWithFilters()
         {
             given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", sousChefToken)
                 .queryParam("status", "PUBLISHED")
                 .queryParam("year", 2026)
                 .queryParam("week", 7)
@@ -288,7 +330,7 @@ class WeeklyMenuControllerTest
         void getAllUnauthorized()
         {
             given()
-                .header(USER_HEADER, lineCookId)
+                .header("Authorization", lineChefToken)
                 .when()
                 .get(ENDPOINT_URL)
                 .then()
@@ -313,7 +355,7 @@ class WeeklyMenuControllerTest
             """.formatted(hotStationId, boeufDishId);
 
             WeeklyMenuDTO response = given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .contentType(ContentType.JSON)
                 .body(body)
                 .when()
@@ -346,7 +388,7 @@ class WeeklyMenuControllerTest
             """.formatted(coldStationId, boeufDishId);
 
             given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .contentType(ContentType.JSON)
                 .body(body)
                 .when()
@@ -371,7 +413,7 @@ class WeeklyMenuControllerTest
             """.formatted(salmonDishId);
 
             WeeklyMenuDTO response = given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", sousChefToken)
                 .contentType(ContentType.JSON)
                 .body(body)
                 .when()
@@ -402,6 +444,7 @@ class WeeklyMenuControllerTest
         void removeMenuSlotFromMenu()
         {
             WeeklyMenuDTO before = given()
+                .header("Authorization", sousChefToken)
                 .when()
                 .get(ENDPOINT_URL + "/" + slotsMenuId)
                 .then()
@@ -412,7 +455,7 @@ class WeeklyMenuControllerTest
             int beforeSize = before.menuSlots().size();
 
             WeeklyMenuDTO after = given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", sousChefToken)
                 .when()
                 .delete(ENDPOINT_URL + "/" + slotsMenuId + "/slots/" + slotIdFromSlotMenu)
                 .then()
@@ -434,7 +477,7 @@ class WeeklyMenuControllerTest
         void publishMenuUntranslatedReturnsConflict()
         {
             given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .when()
                 .post(ENDPOINT_URL + "/" + fullMenuId + "/publish")
                 .then()
@@ -447,7 +490,7 @@ class WeeklyMenuControllerTest
         void publishUnauthorizedUser()
         {
             given()
-                .header(USER_HEADER, lineCookId)
+                .header("Authorization", lineChefToken)
                 .when()
                 .post(ENDPOINT_URL + "/" + fullMenuId + "/publish")
                 .then()
@@ -460,17 +503,18 @@ class WeeklyMenuControllerTest
     class Delete
     {
         @Test
-        @DisplayName("Should delete draft menu and return 404 on subsequent get")
+        @DisplayName("Should delete draft menu and return 404 on next request: GET")
         void deleteAndNotFoundAfter()
         {
             given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .when()
                 .delete(ENDPOINT_URL + "/" + draftMenuId)
                 .then()
                 .statusCode(204);
 
             given()
+                .header("Authorization", headChefToken)
                 .when()
                 .get(ENDPOINT_URL + "/" + draftMenuId)
                 .then()
@@ -482,7 +526,7 @@ class WeeklyMenuControllerTest
         void deleteUnauthorizedUser()
         {
             given()
-                .header(USER_HEADER, lineCookId)
+                .header("Authorization", lineChefToken)
                 .when()
                 .delete(ENDPOINT_URL + "/" + draftMenuId)
                 .then()
