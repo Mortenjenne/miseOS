@@ -10,7 +10,7 @@ public class PasswordUtil
     {
         if (plainPassword == null || plainPassword.isEmpty())
         {
-            throw new IllegalArgumentException("Password kan ikke være tomt");
+            throw new IllegalArgumentException("Password cannot be empty or null");
         }
         return BCrypt.hashpw(plainPassword, BCrypt.gensalt(salt));
     }
