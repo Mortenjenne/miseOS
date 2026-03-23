@@ -20,7 +20,6 @@ import jakarta.persistence.EntityNotFoundException;
 
 import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class ShoppingListService implements IShoppingListService
 {
@@ -28,15 +27,15 @@ public class ShoppingListService implements IShoppingListService
     private final IIngredientRequestDAO ingredientRequestDAO;
     private final IUserReader userReader;
     private final IAiService aiService;
+    private final IShoppingListAggregator shoppingListAggregator;
 
-    private static final String DEFAULT_SUPPLIER = "AB Catering";
-
-    public ShoppingListService(IShoppingListDAO shoppingListDAO, IIngredientRequestDAO ingredientRequestDAO, IUserReader userReader, IAiService aiService)
+    public ShoppingListService(IShoppingListDAO shoppingListDAO, IIngredientRequestDAO ingredientRequestDAO, IUserReader userReader, IAiService aiService, IShoppingListAggregator shoppingListAggregator)
     {
         this.shoppingListDAO = shoppingListDAO;
         this.ingredientRequestDAO = ingredientRequestDAO;
         this.userReader = userReader;
         this.aiService = aiService;
+        this.shoppingListAggregator = shoppingListAggregator;
     }
 
     @Override
@@ -49,32 +48,13 @@ public class ShoppingListService implements IShoppingListService
         List<IngredientRequest> approvedRequests = ingredientRequestDAO.findByFilter(Status.APPROVED, dto.deliveryDate(),null,null, null);
         checkRequestNotEmpty(approvedRequests, dto.deliveryDate());
 
-        List<String> uniqueIngredientNames = getUniqueIngredientNames(approvedRequests);
+        List<String> uniqueIngredientNames = shoppingListAggregator.getUniqueIngredientNames(approvedRequests);
         Map<String, String> normalizedNames = aiService.normalizeIngredientList(uniqueIngredientNames, dto.targetLanguage());
-        Map<AggregationKey, List<IngredientRequest>> grouped = getIngredientsGrouped(approvedRequests, normalizedNames);
+        List<ShoppingListItem> shoppingListItems = shoppingListAggregator.aggregateAndGetShoppingListItems(approvedRequests, normalizedNames);
 
         User creator = userReader.getByID(authUser.userId());
         ShoppingList shoppingList = new ShoppingList(dto.deliveryDate(), creator);
-
-        grouped.forEach((aggregationKey, requests) -> {
-
-            Double total = requests.stream()
-                .map(IngredientRequest::getQuantity)
-                .reduce(0.0, Double::sum);
-
-            String supplier = getMostCommonSupplier(requests);
-
-            String notes = requests.stream()
-                .map(req -> String.format("%s (%s: %s %s)",
-                    req.getCreatedBy().getFirstName(),
-                    req.getName(),
-                    req.getQuantity(),
-                    req.getUnit()))
-                .collect(Collectors.joining(" | "));
-
-            ShoppingListItem item = new ShoppingListItem(aggregationKey.normalizedName(), total, aggregationKey.unit(), supplier, notes);
-            shoppingList.addItem(item);
-        });
+        shoppingListItems.forEach(shoppingList::addItem);
 
         ShoppingList saved = shoppingListDAO.create(shoppingList);
         ShoppingList fetchedWithItems = shoppingListDAO.getByID(saved.getId());
@@ -222,35 +202,6 @@ public class ShoppingListService implements IShoppingListService
 
         ShoppingList updated = shoppingListDAO.update(list);
         return ShoppingListMapper.toDTO(updated);
-    }
-
-    private String getMostCommonSupplier(List<IngredientRequest> requests)
-    {
-        return requests.stream()
-            .map(IngredientRequest::getPreferredSupplier)
-            .filter(Objects::nonNull)
-            .collect(Collectors.groupingBy(s -> s, Collectors.counting()))
-            .entrySet().stream()
-            .max(Map.Entry.comparingByValue())
-            .map(Map.Entry::getKey)
-            .orElse(DEFAULT_SUPPLIER);
-    }
-
-    private Map<AggregationKey, List<IngredientRequest>> getIngredientsGrouped(List<IngredientRequest> approved, Map<String, String> normalizedNames)
-    {
-        return approved.stream()
-            .collect(Collectors.groupingBy(req -> new AggregationKey(
-                normalizedNames.getOrDefault(req.getName(), req.getName()), req.getUnit())
-            ));
-    }
-
-    private List<String> getUniqueIngredientNames(List<IngredientRequest> ingredientRequests)
-    {
-        return ingredientRequests.stream()
-            .map(IngredientRequest::getName)
-            .filter(Objects::nonNull)
-            .distinct()
-            .toList();
     }
 
     private void checkRequestNotEmpty(List<IngredientRequest> requests, LocalDate deliveryDate)
