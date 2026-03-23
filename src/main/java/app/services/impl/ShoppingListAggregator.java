@@ -4,7 +4,6 @@ import app.dtos.shopping.AggregationKey;
 import app.persistence.entities.IngredientRequest;
 import app.persistence.entities.ShoppingListItem;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -85,5 +84,4 @@ public class ShoppingListAggregator implements IShoppingListAggregator
             .map(Map.Entry::getKey)
             .orElse(DEFAULT_SUPPLIER);
     }
-
 }
