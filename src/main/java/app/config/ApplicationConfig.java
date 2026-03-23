@@ -1,7 +1,7 @@
 package app.config;
 
 import app.routes.*;
-import app.routes.ressources.*;
+import app.routes.resources.*;
 import app.routes.security.SecurityRoute;
 import io.javalin.Javalin;
 import jakarta.persistence.EntityManagerFactory;

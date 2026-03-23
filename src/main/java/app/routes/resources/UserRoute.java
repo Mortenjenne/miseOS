@@ -1,4 +1,4 @@
-package app.routes.ressources;
+package app.routes.resources;
 
 import app.controllers.IUserController;
 import app.enums.Role;

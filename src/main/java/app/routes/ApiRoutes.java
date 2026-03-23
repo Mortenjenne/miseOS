@@ -1,6 +1,6 @@
 package app.routes;
 
-import app.routes.ressources.*;
+import app.routes.resources.*;
 import app.routes.security.SecurityRoute;
 import io.javalin.apibuilder.EndpointGroup;
 
