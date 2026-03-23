@@ -7,6 +7,7 @@ import app.persistence.daos.interfaces.IIngredientRequestDAO;
 import app.persistence.entities.IngredientRequest;
 import app.utils.DBValidator;
 import app.utils.TransactionUtil;
+import app.utils.ValidationUtil;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
@@ -89,7 +90,7 @@ public class IngredientRequestDAO implements IIngredientRequestDAO
     @Override
     public IngredientRequest create(IngredientRequest ingredientRequest)
     {
-        DBValidator.validateNotNull(ingredientRequest, "IngredientRequest");
+        ValidationUtil.validateNotNull(ingredientRequest, "IngredientRequest");
 
         try(EntityManager em = emf.createEntityManager())
         {
@@ -111,7 +112,7 @@ public class IngredientRequestDAO implements IIngredientRequestDAO
     @Override
     public IngredientRequest getByID(Long id)
     {
-        DBValidator.validateId(id);
+        ValidationUtil.validateId(id);
 
         try(EntityManager em = emf.createEntityManager())
         {
@@ -134,8 +135,8 @@ public class IngredientRequestDAO implements IIngredientRequestDAO
     @Override
     public IngredientRequest update(IngredientRequest ingredientRequest)
     {
-        DBValidator.validateNotNull(ingredientRequest, "IngredientRequest");
-        DBValidator.validateId(ingredientRequest.getId());
+        ValidationUtil.validateNotNull(ingredientRequest, "IngredientRequest");
+        ValidationUtil.validateId(ingredientRequest.getId());
 
         try (EntityManager em = emf.createEntityManager())
         {
@@ -164,7 +165,7 @@ public class IngredientRequestDAO implements IIngredientRequestDAO
     @Override
     public boolean delete(Long id)
     {
-        DBValidator.validateId(id);
+        ValidationUtil.validateId(id);
 
         try (EntityManager em = emf.createEntityManager())
         {

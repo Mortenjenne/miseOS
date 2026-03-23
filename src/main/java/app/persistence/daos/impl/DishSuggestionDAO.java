@@ -6,6 +6,7 @@ import app.persistence.daos.interfaces.IDishSuggestionDAO;
 import app.persistence.entities.DishSuggestion;
 import app.utils.DBValidator;
 import app.utils.TransactionUtil;
+import app.utils.ValidationUtil;
 import jakarta.persistence.*;
 
 import java.util.LinkedHashSet;
@@ -88,7 +89,7 @@ public class DishSuggestionDAO implements IDishSuggestionDAO
     @Override
     public DishSuggestion getByID(Long id)
     {
-        DBValidator.validateId(id);
+        ValidationUtil.validateId(id);
 
         try(EntityManager em = emf.createEntityManager())
         {
@@ -115,7 +116,7 @@ public class DishSuggestionDAO implements IDishSuggestionDAO
     @Override
     public DishSuggestion create(DishSuggestion dishSuggestion)
     {
-        DBValidator.validateNotNull(dishSuggestion, "DishSuggestion");
+        ValidationUtil.validateNotNull(dishSuggestion, "DishSuggestion");
 
         try(EntityManager em = emf.createEntityManager())
         {
@@ -137,8 +138,8 @@ public class DishSuggestionDAO implements IDishSuggestionDAO
     @Override
     public DishSuggestion update(DishSuggestion dishSuggestion)
     {
-        DBValidator.validateNotNull(dishSuggestion, "DishSuggestion");
-        DBValidator.validateId(dishSuggestion.getId());
+        ValidationUtil.validateNotNull(dishSuggestion, "DishSuggestion");
+        ValidationUtil.validateId(dishSuggestion.getId());
 
         try (EntityManager em = emf.createEntityManager())
         {
@@ -167,7 +168,7 @@ public class DishSuggestionDAO implements IDishSuggestionDAO
     @Override
     public boolean delete(Long id)
     {
-        DBValidator.validateId(id);
+        ValidationUtil.validateId(id);
 
         try (EntityManager em = emf.createEntityManager())
         {

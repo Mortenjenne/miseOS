@@ -6,6 +6,7 @@ import app.persistence.daos.interfaces.IShoppingListDAO;
 import app.persistence.entities.ShoppingList;
 import app.utils.DBValidator;
 import app.utils.TransactionUtil;
+import app.utils.ValidationUtil;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
@@ -25,7 +26,7 @@ public class ShoppingListDAO implements IShoppingListDAO
     @Override
     public ShoppingList create(ShoppingList shoppingList)
     {
-        DBValidator.validateNotNull(shoppingList, "ShoppingList");
+        ValidationUtil.validateNotNull(shoppingList, "ShoppingList");
 
         try (EntityManager em = emf.createEntityManager())
         {
@@ -47,7 +48,7 @@ public class ShoppingListDAO implements IShoppingListDAO
     @Override
     public ShoppingList getByID(Long id)
     {
-        DBValidator.validateId(id);
+        ValidationUtil.validateId(id);
 
         try (EntityManager em = emf.createEntityManager())
         {
@@ -77,8 +78,8 @@ public class ShoppingListDAO implements IShoppingListDAO
     @Override
     public ShoppingList update(ShoppingList shoppingList)
     {
-        DBValidator.validateNotNull(shoppingList, "ShoppingList");
-        DBValidator.validateId(shoppingList.getId());
+        ValidationUtil.validateNotNull(shoppingList, "ShoppingList");
+        ValidationUtil.validateId(shoppingList.getId());
 
         try (EntityManager em = emf.createEntityManager())
         {
@@ -109,7 +110,7 @@ public class ShoppingListDAO implements IShoppingListDAO
     @Override
     public Optional<ShoppingList> findByDeliveryDate(LocalDate deliveryDate)
     {
-        DBValidator.validateNotNull(deliveryDate, "DeliveryDate");
+        ValidationUtil.validateNotNull(deliveryDate, "DeliveryDate");
 
         try (EntityManager em = emf.createEntityManager())
         {
@@ -171,7 +172,7 @@ public class ShoppingListDAO implements IShoppingListDAO
     @Override
     public boolean delete(Long id)
     {
-        DBValidator.validateId(id);
+        ValidationUtil.validateId(id);
 
         try (EntityManager em = emf.createEntityManager())
         {

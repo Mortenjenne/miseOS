@@ -5,6 +5,7 @@ import app.persistence.daos.interfaces.IDishDAO;
 import app.persistence.entities.Dish;
 import app.utils.DBValidator;
 import app.utils.TransactionUtil;
+import app.utils.ValidationUtil;
 import jakarta.persistence.*;
 
 import java.util.LinkedHashSet;
@@ -23,8 +24,8 @@ public class DishDAO implements IDishDAO
     @Override
     public Set<Dish> findByOriginWeekAndYear(int week, int year)
     {
-        DBValidator.validateRange(week, 1, 53, "Week");
-        DBValidator.validateRange(year, 2020, 2100, "Year");
+        ValidationUtil.validateRange(week, 1, 53, "Week");
+        ValidationUtil.validateRange(year, 2020, 2100, "Year");
 
         try (EntityManager em = emf.createEntityManager())
         {
@@ -50,8 +51,8 @@ public class DishDAO implements IDishDAO
     @Override
     public Set<Dish> findFromPreviousWeeks(int currentWeek, int currentYear)
     {
-        DBValidator.validateRange(currentWeek, 1, 53, "Week");
-        DBValidator.validateRange(currentYear, 2020, 2100, "Year");
+        ValidationUtil.validateRange(currentWeek, 1, 53, "Week");
+        ValidationUtil.validateRange(currentYear, 2020, 2100, "Year");
 
         try (EntityManager em = emf.createEntityManager())
         {
@@ -77,7 +78,7 @@ public class DishDAO implements IDishDAO
     @Override
     public Set<Dish> searchByName(String nameQuery)
     {
-        DBValidator.validateNotBlank(nameQuery, "Search query");
+        ValidationUtil.validateNotBlank(nameQuery, "Search query");
 
         try (EntityManager em = emf.createEntityManager())
         {
@@ -104,7 +105,7 @@ public class DishDAO implements IDishDAO
     @Override
     public Dish create(Dish dish)
     {
-        DBValidator.validateNotNull(dish, "Dish");
+        ValidationUtil.validateNotNull(dish, "Dish");
 
         try (EntityManager em = emf.createEntityManager())
         {
@@ -128,7 +129,7 @@ public class DishDAO implements IDishDAO
     {
         if (stationId != null)
         {
-            DBValidator.validateId(stationId);
+            ValidationUtil.validateId(stationId);
         }
 
         try (EntityManager em = emf.createEntityManager())
@@ -156,7 +157,7 @@ public class DishDAO implements IDishDAO
     @Override
     public Dish getByID(Long id)
     {
-        DBValidator.validateId(id);
+        ValidationUtil.validateId(id);
 
         try (EntityManager em = emf.createEntityManager())
         {
@@ -181,8 +182,8 @@ public class DishDAO implements IDishDAO
     @Override
     public Dish update(Dish dish)
     {
-        DBValidator.validateNotNull(dish, "Dish");
-        DBValidator.validateId(dish.getId());
+        ValidationUtil.validateNotNull(dish, "Dish");
+        ValidationUtil.validateId(dish.getId());
 
         try (EntityManager em = emf.createEntityManager())
         {
@@ -212,7 +213,7 @@ public class DishDAO implements IDishDAO
 
     public void updateAll(Set<Dish> dishes)
     {
-        DBValidator.validateNotNull(dishes, "Dishes");
+        ValidationUtil.validateNotNull(dishes, "Dishes");
 
         try (EntityManager em = emf.createEntityManager())
         {
@@ -222,7 +223,7 @@ public class DishDAO implements IDishDAO
 
                 for (Dish dish : dishes)
                 {
-                    DBValidator.validateId(dish.getId());
+                    ValidationUtil.validateId(dish.getId());
                     em.merge(dish);
                 }
                 em.getTransaction().commit();
@@ -243,7 +244,7 @@ public class DishDAO implements IDishDAO
     @Override
     public boolean delete(Long id)
     {
-        DBValidator.validateId(id);
+        ValidationUtil.validateId(id);
 
         try (EntityManager em = emf.createEntityManager())
         {
