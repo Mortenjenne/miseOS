@@ -1,7 +1,7 @@
 
 ### GET by ID
 GET {{url}}/users/4
-Authorization: Bearer {{authToken}}
+Authorization: Bearer {{authTokenHeadChef}}}
 
 ### GET all users
 GET {{url}}/users/
@@ -86,7 +86,6 @@ Authorization: Bearer {{authToken}}
 {
     "userRole": "SOUS_CHEF"
 }
-
 
 ### PATCH Assign User(Anna) To Station
 PATCH {{url}}/users/5/station/1

@@ -2,6 +2,7 @@
 ### Create Cold Section
 POST {{url}}/stations/
 Content-Type: application/json
+Authorization: Bearer {{authTokenHeadChef}}}
 
 {
     "name": "Cold Section",
@@ -11,6 +12,7 @@ Content-Type: application/json
 ### Create Hot Station
 POST {{url}}/stations/
 Content-Type: application/json
+Authorization: Bearer {{authTokenHeadChef}}}
 
 {
     "name": "Hot Station",
@@ -20,6 +22,7 @@ Content-Type: application/json
 ### Create Sandwich Station
 POST {{url}}/stations/
 Content-Type: application/json
+Authorization: Bearer {{authTokenHeadChef}}}
 
 {
     "name": "Sandwich Station",
@@ -28,16 +31,20 @@ Content-Type: application/json
 
 ### Get all stations
 GET {{url}}/stations/
+Authorization: Bearer {{authTokenHeadChef}}}
 
 ### Get by ID (Station 1)
 GET {{url}}/stations/1
+Authorization: Bearer {{authTokenHeadChef}}}
 
 ### Get station by Name (Hot)
 GET {{url}}/stations/name/Hot%20Station
+Authorization: Bearer {{authTokenHeadChef}}}
 
 ### Update Hot Station
 PUT {{url}}/stations/2
 Content-Type: application/json
+Authorization: Bearer {{authTokenHeadChef}}}
 
 {
     "name": "Hot Station & Buffet",
@@ -46,3 +53,4 @@ Content-Type: application/json
 
 ### Delete a station (by ID)
 DELETE {{url}}/stations/1
+Authorization: Bearer {{authTokenHeadChef}}}
