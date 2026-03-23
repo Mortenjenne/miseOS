@@ -207,7 +207,7 @@ public class ShoppingListService implements IShoppingListService
     {
         ValidationUtil.validateId(shoppingListId);
         ValidationUtil.validateNotNull(dto.deliveryDate(), "Delivery date");
-        ValidationUtil.validateFutureDate(dto.deliveryDate(), "Delivery date");
+        ValidationUtil.validateNotPastDate(dto.deliveryDate(), "Delivery date");
 
         shoppingListDAO.findByDeliveryDate(dto.deliveryDate()).ifPresent(existing ->
         {
