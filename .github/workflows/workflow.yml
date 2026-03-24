@@ -23,6 +23,13 @@ jobs:
           cache: 'maven'
 
       - name: Run tests
+        env:
+          DEEPL_APIKEY: ${{ secrets.DEEPL_APIKEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          ISSUER: ${{ secrets.ISSUER }}
+          TOKEN_EXPIRE_TIME: ${{ secrets.TOKEN_EXPIRE_TIME }}
         run: mvn --batch-mode test
 
   deploy:
