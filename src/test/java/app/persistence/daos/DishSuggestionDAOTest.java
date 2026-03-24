@@ -76,7 +76,7 @@ class DishSuggestionDAOTest {
     @DisplayName("Get All - should retrieve all seeded dishes")
     void getAll()
     {
-        Set<DishSuggestion> dishes = dishSuggestionDAO.findByFilter(null, null, null, null, null);
+        Set<DishSuggestion> dishes = dishSuggestionDAO.findByFilter(null, null,null, null, null, null);
         assertThat(dishes, hasSize((5)));
     }
 
@@ -115,8 +115,11 @@ class DishSuggestionDAOTest {
     void update()
     {
         DishSuggestion seed = (DishSuggestion) seeded.get("suggestion_salmon");
-        seed.setNameDA("Torsk");
-        seed.setDescriptionDA("Updated Description");
+        seed.updateContent(
+            "Torsk",
+            "Updated Description",
+            seed.getAllergens()
+        );
 
         DishSuggestion updated = dishSuggestionDAO.update(seed);
 
@@ -197,7 +200,7 @@ class DishSuggestionDAOTest {
     @DisplayName("Filter: Status Only - should return only PENDING suggestions")
     void filterStatusOnly()
     {
-        Set<DishSuggestion> result = dishSuggestionDAO.findByFilter(Status.PENDING, null, null, null, null);
+        Set<DishSuggestion> result = dishSuggestionDAO.findByFilter(Status.PENDING, null, null, null, null, null);
 
         assertThat(result, not(empty()));
         result.forEach(ds -> assertThat(ds.getDishStatus(), is(Status.PENDING)));
@@ -207,7 +210,7 @@ class DishSuggestionDAOTest {
     @DisplayName("Filter: Week and Year - should return suggestions for specific period")
     void filterWeekAndYear()
     {
-        Set<DishSuggestion> result = dishSuggestionDAO.findByFilter(null, 7, 2026, null, null);
+        Set<DishSuggestion> result = dishSuggestionDAO.findByFilter(null, null, 7, 2026, null, null);
 
         assertThat(result, not(empty()));
         result.forEach(ds -> {
@@ -223,7 +226,7 @@ class DishSuggestionDAOTest {
         Station hotStation = (Station) seeded.get("station_hot");
         Long stationId = hotStation.getId();
 
-        Set<DishSuggestion> result = dishSuggestionDAO.findByFilter(null, null, null, stationId, null);
+        Set<DishSuggestion> result = dishSuggestionDAO.findByFilter(null, null, null, null, stationId, null);
 
         assertThat(result, not(empty()));
         result.forEach(ds -> assertThat(ds.getStation().getId(), is(stationId)));
@@ -235,7 +238,7 @@ class DishSuggestionDAOTest {
     {
         Station hotStation = (Station) seeded.get("station_hot");
 
-        Set<DishSuggestion> result = dishSuggestionDAO.findByFilter(Status.PENDING, 7, 2026, hotStation.getId(), null);
+        Set<DishSuggestion> result = dishSuggestionDAO.findByFilter(Status.PENDING, null, 7, 2026, hotStation.getId(), null);
 
         assertThat(result, hasSize(2));
 
@@ -251,7 +254,7 @@ class DishSuggestionDAOTest {
     @DisplayName("Filter: Empty Results - should return empty set when no match exists")
     void filterNoMatchReturnsEmpty()
     {
-        Set<DishSuggestion> result = dishSuggestionDAO.findByFilter(Status.APPROVED, 52, 2099, null, null);
+        Set<DishSuggestion> result = dishSuggestionDAO.findByFilter(Status.APPROVED, null,52, 2099, null, null);
         assertThat(result, is(empty()));
     }
 
@@ -259,7 +262,7 @@ class DishSuggestionDAOTest {
     @DisplayName("Filter - Find suggestions for specific week (Week 8)")
     void filterSpecificWeekReturnsOnlyWeek8()
     {
-        Set<DishSuggestion> result = dishSuggestionDAO.findByFilter(null, 8, 2026, null, null);
+        Set<DishSuggestion> result = dishSuggestionDAO.findByFilter(null, null, 8, 2026, null, null);
 
         assertThat(result, hasSize(1));
         assertThat(result.iterator().next().getNameDA(), is("Sushi"));
@@ -271,7 +274,7 @@ class DishSuggestionDAOTest {
     {
         Station hot = (Station) seeded.get("station_hot");
 
-        Set<DishSuggestion> result = dishSuggestionDAO.findByFilter(null, 7, 2026, hot.getId(), null);
+        Set<DishSuggestion> result = dishSuggestionDAO.findByFilter(null, null,  7, 2026, hot.getId(), null);
 
         assertThat(result, hasSize(2));
         result.forEach(ds -> assertThat(ds.getStation().getId(), is(hot.getId())));
@@ -281,7 +284,7 @@ class DishSuggestionDAOTest {
     @DisplayName("Filter - Sorting by CreatedAt (Newest first)")
     void filterOrderByCreatedAtReturnsSorted()
     {
-        Set<DishSuggestion> result = dishSuggestionDAO.findByFilter(null, null, null, null, "createdAt");
+        Set<DishSuggestion> result = dishSuggestionDAO.findByFilter(null, null, null, null, null, "createdAt");
 
         assertThat(result, hasSize(5));
         List<DishSuggestion> list = new ArrayList<>(result);
@@ -292,7 +295,15 @@ class DishSuggestionDAOTest {
     @DisplayName("Filter - Search for non-existent station")
     void filterNonExistentStationReturnsEmpty()
     {
-        Set<DishSuggestion> result = dishSuggestionDAO.findByFilter(null, 7, 2026, 999L, null);
+        Set<DishSuggestion> result = dishSuggestionDAO.findByFilter(null, null,7, 2026, 999L, null);
         assertThat(result, is(empty()));
+    }
+
+    @Test
+    @DisplayName("Count pending dishes - Should return correct number of pending dish suggestions")
+    void countPendingDishes()
+    {
+        int numberOfPendingDishes = dishSuggestionDAO.getPendingSuggestionsCount();
+        assertThat(numberOfPendingDishes, is(5));
     }
 }

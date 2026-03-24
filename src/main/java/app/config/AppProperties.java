@@ -10,18 +10,18 @@ public class AppProperties
 
     static
     {
-        try (
-            InputStream input = ApplicationConfig.class
-                .getClassLoader()
-                .getResourceAsStream("config.properties"))
+        try (InputStream input = AppProperties.class.getClassLoader().getResourceAsStream("config.properties"))
         {
+            if (input == null)
+            {
+                throw new IllegalStateException("Missing config.properties on classpath (expected in src/main/resources).");
+            }
 
             properties.load(input);
-
-        } catch (
-            IOException e)
+        }
+        catch (IOException e)
         {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Failed loading config.properties", e);
         }
     }
 
@@ -30,4 +30,3 @@ public class AppProperties
         return properties.getProperty(key);
     }
 }
-

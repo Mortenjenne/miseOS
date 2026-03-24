@@ -6,6 +6,7 @@ import app.persistence.daos.interfaces.IUserDAO;
 import app.persistence.entities.User;
 import app.utils.DBValidator;
 import app.utils.TransactionUtil;
+import app.utils.ValidationUtil;
 import jakarta.persistence.*;
 
 import java.util.HashSet;
@@ -24,7 +25,7 @@ public class UserDAO implements IUserDAO
     @Override
     public User create(User user)
     {
-        DBValidator.validateNotNull(user, "User");
+        ValidationUtil.validateNotNull(user, "User");
 
         try(EntityManager em = emf.createEntityManager())
         {
@@ -63,7 +64,7 @@ public class UserDAO implements IUserDAO
     @Override
     public User getByID(Long id)
     {
-        DBValidator.validateId(id);
+        ValidationUtil.validateId(id);
 
         try(EntityManager em = emf.createEntityManager())
         {
@@ -86,8 +87,8 @@ public class UserDAO implements IUserDAO
     @Override
     public User update(User user)
     {
-        DBValidator.validateNotNull(user, "User");
-        DBValidator.validateId(user.getId());
+        ValidationUtil.validateNotNull(user, "User");
+        ValidationUtil.validateId(user.getId());
 
         try (EntityManager em = emf.createEntityManager())
         {
@@ -116,7 +117,7 @@ public class UserDAO implements IUserDAO
     @Override
     public boolean delete(Long id)
     {
-        DBValidator.validateId(id);
+        ValidationUtil.validateId(id);
 
         try (EntityManager em = emf.createEntityManager())
         {
@@ -145,7 +146,7 @@ public class UserDAO implements IUserDAO
     @Override
     public Optional<User> findByEmail(String email)
     {
-        DBValidator.validateNotNull(email, "Email");
+        ValidationUtil.validateNotNull(email, "Email");
 
         try(EntityManager em = emf.createEntityManager())
         {
@@ -169,7 +170,7 @@ public class UserDAO implements IUserDAO
     @Override
     public Set<User> findByRole(UserRole role)
     {
-        DBValidator.validateNotNull(role, "UserRole");
+        ValidationUtil.validateNotNull(role, "UserRole");
 
         try(EntityManager em = emf.createEntityManager())
         {
@@ -189,7 +190,7 @@ public class UserDAO implements IUserDAO
     @Override
     public boolean existsByEmail(String email)
     {
-        DBValidator.validateNotNull(email, "Email");
+        ValidationUtil.validateNotNull(email, "Email");
 
         try (EntityManager em = emf.createEntityManager())
         {

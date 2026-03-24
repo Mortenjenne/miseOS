@@ -5,6 +5,7 @@ import app.persistence.daos.interfaces.IStationDAO;
 import app.persistence.entities.Station;
 import app.utils.DBValidator;
 import app.utils.TransactionUtil;
+import app.utils.ValidationUtil;
 import jakarta.persistence.*;
 
 import java.util.LinkedHashSet;
@@ -23,7 +24,7 @@ public class StationDAO implements IStationDAO
     @Override
     public Station create(Station station)
     {
-        DBValidator.validateNotNull(station, "Station");
+        ValidationUtil.validateNotNull(station, "Station");
 
         try(EntityManager em = emf.createEntityManager())
         {
@@ -62,7 +63,7 @@ public class StationDAO implements IStationDAO
     @Override
     public Station getByID(Long id)
     {
-        DBValidator.validateId(id);
+        ValidationUtil.validateId(id);
 
         try(EntityManager em = emf.createEntityManager())
         {
@@ -85,8 +86,8 @@ public class StationDAO implements IStationDAO
     @Override
     public Station update(Station station)
     {
-        DBValidator.validateNotNull(station, "Station");
-        DBValidator.validateId(station.getId());
+        ValidationUtil.validateNotNull(station, "Station");
+        ValidationUtil.validateId(station.getId());
 
         try (EntityManager em = emf.createEntityManager())
         {
@@ -115,7 +116,7 @@ public class StationDAO implements IStationDAO
     @Override
     public boolean delete(Long id)
     {
-        DBValidator.validateId(id);
+        ValidationUtil.validateId(id);
 
         try (EntityManager em = emf.createEntityManager())
         {
@@ -144,7 +145,7 @@ public class StationDAO implements IStationDAO
     @Override
     public Optional<Station> findByName(String name)
     {
-        DBValidator.validateNotNull(name, "Name");
+        ValidationUtil.validateNotNull(name, "Name");
 
         try(EntityManager em = emf.createEntityManager())
         {
@@ -168,7 +169,7 @@ public class StationDAO implements IStationDAO
     @Override
     public boolean isUsedByAnyDish(Long stationId)
     {
-        DBValidator.validateId(stationId);
+        ValidationUtil.validateId(stationId);
 
         try (EntityManager em = emf.createEntityManager())
         {

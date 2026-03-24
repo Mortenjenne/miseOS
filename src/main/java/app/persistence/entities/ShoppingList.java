@@ -3,19 +3,17 @@ package app.persistence.entities;
 import app.enums.ShoppingListStatus;
 import app.exceptions.ConflictException;
 import app.exceptions.UnauthorizedActionException;
-import app.exceptions.ValidationException;
 import app.utils.ValidationUtil;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
-@NoArgsConstructor
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 @Getter
 @Entity
 @Table(name = "shopping_list")
@@ -31,7 +29,6 @@ public class ShoppingList implements IEntity
     @Column(name = "shopping_list_status", nullable = false)
     private ShoppingListStatus shoppingListStatus;
 
-    @Setter
     @ManyToOne
     @JoinColumn(name = "created_by_user_id", nullable = false)
     private User createdBy;

@@ -1,26 +1,50 @@
 package app.utils;
 
+import app.dtos.security.AuthenticatedUser;
+import app.exceptions.AuthenticationException;
 import io.javalin.http.Context;
-import io.javalin.http.UnauthorizedResponse;
+import io.javalin.websocket.WsContext;
 
 public class SecurityUtil
 {
     private SecurityUtil(){}
 
-    //TODO REMOVE OR REFACTOR when JWT is implemented
-    public static Long requireUserId(Context ctx)
+    public static AuthenticatedUser getAuthenticatedUser(Context ctx)
     {
-        String headerId = ctx.header("X-Dev-User-Id");
-        if (headerId != null)
+        AuthenticatedUser authUser = ctx.attribute("authUser");
+        validateAuthenticatedUser(authUser);
+
+        return authUser;
+    }
+
+    public static AuthenticatedUser getAuthenticatedUserWebSocket(WsContext wsCtx)
+    {
+        AuthenticatedUser authUser = wsCtx.attribute("authUser");
+        validateAuthenticatedUser(authUser);
+
+        return authUser;
+    }
+
+    public static AuthenticatedUser getOptionalAuthenticatedUser(Context ctx)
+    {
+        return ctx.attribute("authUser");
+    }
+
+    private static void validateAuthenticatedUser(AuthenticatedUser authUser)
+    {
+        if (authUser == null)
         {
-            return Long.parseLong(headerId);
+            throw new AuthenticationException("No authenticated user found");
         }
 
-        Long userId = ctx.attribute("userId");
-        if (userId == null)
+        if (authUser.userId() == null || authUser.userId() <= 0)
         {
-            userId = 1L;
+            throw new AuthenticationException("Authenticated user id is invalid");
         }
-        return userId;
+
+        if (authUser.email() == null || authUser.email().isBlank())
+        {
+            throw new AuthenticationException("Authenticated user email is invalid");
+        }
     }
 }

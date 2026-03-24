@@ -8,6 +8,7 @@ import app.enums.ShoppingListStatus;
 import app.persistence.entities.IEntity;
 import app.persistence.entities.ShoppingList;
 import app.persistence.entities.ShoppingListItem;
+import app.testutils.TestAuthenticationUtil;
 import app.testutils.TestCleanDB;
 import app.testutils.TestPopulator;
 import io.javalin.Javalin;
@@ -29,15 +30,13 @@ class ShoppingListControllerTest
 {
     private static final String ENDPOINT_URL = "/shopping-lists";
     private static final int TEST_PORT = 7777;
-    private static final String USER_HEADER = "X-Dev-User-Id";
-
     private static EntityManagerFactory emf;
     private static Javalin app;
 
     private Map<String, IEntity> seeded;
-    private long headChefId;
-    private long sousChefId;
-    private long lineCookId;
+    private String headChefToken;
+    private String sousChefToken;
+    private String lineChefToken;
     private long draftListId;
     private long finalizedListId;
 
@@ -52,16 +51,16 @@ class ShoppingListControllerTest
     }
 
     @BeforeEach
-    void resetDatabase()
+    void setup()
     {
         TestCleanDB.truncateTables(emf);
         TestPopulator populator = new TestPopulator(emf);
         populator.populate();
 
         seeded = populator.getSeededData();
-        headChefId = seeded.get("user_gordon").getId();
-        sousChefId = seeded.get("user_marco").getId();
-        lineCookId = seeded.get("user_claire").getId();
+        headChefToken = TestAuthenticationUtil.bearerToken("gordon@kitchen.com", "Hash1");
+        lineChefToken = TestAuthenticationUtil.bearerToken("claire@pastry.com", "Hash2");
+        sousChefToken = TestAuthenticationUtil.bearerToken("marco@grill.com", "Hash3");
         draftListId = seeded.get("shopping_list_draft").getId();
         finalizedListId = seeded.get("shopping_list_finalized").getId();
     }
@@ -84,7 +83,7 @@ class ShoppingListControllerTest
             String payload = getCreateListPayload(date);
 
             ShoppingListDTO response = given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .contentType(ContentType.JSON)
                 .body(payload)
                 .when()
@@ -109,7 +108,7 @@ class ShoppingListControllerTest
             String payload = getCreateListPayload(draft.getDeliveryDate());
 
             given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .contentType(ContentType.JSON)
                 .body(payload)
                 .when()
@@ -125,7 +124,7 @@ class ShoppingListControllerTest
             String payload = getCreateListPayload(LocalDate.now().plusDays(20));
 
             given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .contentType(ContentType.JSON)
                 .body(payload)
                 .when()
@@ -135,13 +134,13 @@ class ShoppingListControllerTest
         }
 
         @Test
-        @DisplayName("Line cook cannot generate — returns 403")
+        @DisplayName("Line cook cannot generate — returns 403 Forbidden")
         void lineCookCannotGenerate()
         {
             String payload = getCreateListPayload(LocalDate.now().plusDays(7));
 
             given()
-                .header(USER_HEADER, lineCookId)
+                .header("Authorization", lineChefToken)
                 .contentType(ContentType.JSON)
                 .body(payload)
                 .when()
@@ -155,7 +154,7 @@ class ShoppingListControllerTest
         void missingDeliveryDateReturns400()
         {
             given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .contentType(ContentType.JSON)
                 .body("""
                 {
@@ -178,7 +177,7 @@ class ShoppingListControllerTest
         void returnsListWithItems()
         {
             ShoppingListDTO response = given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .when()
                 .get(ENDPOINT_URL + "/" + draftListId)
                 .then()
@@ -196,7 +195,7 @@ class ShoppingListControllerTest
         void unknownIdReturns404()
         {
             given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .when()
                 .get(ENDPOINT_URL + "/9999")
                 .then()
@@ -208,7 +207,7 @@ class ShoppingListControllerTest
         void negativeIdReturns400()
         {
             given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .when()
                 .get(ENDPOINT_URL + "/-1")
                 .then()
@@ -225,14 +224,14 @@ class ShoppingListControllerTest
         void headChefDeletesDraftList()
         {
             given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .when()
                 .delete(ENDPOINT_URL + "/" + draftListId)
                 .then()
                 .statusCode(204);
 
             given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .when()
                 .get(ENDPOINT_URL + "/" + draftListId)
                 .then()
@@ -244,7 +243,7 @@ class ShoppingListControllerTest
         void sousChefCanDelete()
         {
             given()
-                .header(USER_HEADER, sousChefId)
+                .header("Authorization", headChefToken)
                 .when()
                 .delete(ENDPOINT_URL + "/" + draftListId)
                 .then()
@@ -252,15 +251,16 @@ class ShoppingListControllerTest
         }
 
         @Test
-        @DisplayName("Line cook cannot delete — returns 403")
+        @DisplayName("Line cook cannot delete — returns 403 Forbidden")
         void lineCookCannotDelete()
         {
             given()
-                .header(USER_HEADER, lineCookId)
+                .header("Authorization", lineChefToken)
                 .when()
                 .delete(ENDPOINT_URL + "/" + draftListId)
                 .then()
-                .statusCode(403);
+                .statusCode(403)
+                .body("message", containsString("Insufficient role. Required:"));
         }
 
         @Test
@@ -268,11 +268,12 @@ class ShoppingListControllerTest
         void cannotDeleteFinalizedList()
         {
             given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .when()
                 .delete(ENDPOINT_URL + "/" + finalizedListId)
                 .then()
-                .statusCode(409);
+                .statusCode(409)
+                .body("message", equalToIgnoringCase("Cannot delete a finalized shopping list"));
         }
 
         @Test
@@ -280,7 +281,7 @@ class ShoppingListControllerTest
         void unknownIdReturns404()
         {
             given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .when()
                 .delete(ENDPOINT_URL + "/9999")
                 .then()
@@ -305,7 +306,7 @@ class ShoppingListControllerTest
                 """.formatted(newDate);
 
             ShoppingListDTO response = given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .contentType(ContentType.JSON)
                 .body(payload)
                 .when()
@@ -330,13 +331,14 @@ class ShoppingListControllerTest
                """.formatted(LocalDate.now().minusDays(1));
 
             given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .contentType(ContentType.JSON)
                 .body(payload)
                 .when()
                 .patch(ENDPOINT_URL + "/" + draftListId + "/delivery-date")
                 .then()
-                .statusCode(400);
+                .statusCode(400)
+                .body("message", equalToIgnoringCase("Delivery date must be in the future"));
         }
 
         @Test
@@ -352,7 +354,7 @@ class ShoppingListControllerTest
                """.formatted(finalized.getDeliveryDate());
 
             given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .contentType(ContentType.JSON)
                 .body(payload)
                 .when()
@@ -373,7 +375,7 @@ class ShoppingListControllerTest
                """.formatted(LocalDate.now().plusDays(10));
 
             given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .contentType(ContentType.JSON)
                 .body(payload)
                 .when()
@@ -392,7 +394,7 @@ class ShoppingListControllerTest
         void returnsAll()
         {
             given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .when()
                 .get(ENDPOINT_URL)
                 .then()
@@ -405,7 +407,7 @@ class ShoppingListControllerTest
         void filterByDraft()
         {
             given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .queryParam("status", "DRAFT")
                 .when()
                 .get(ENDPOINT_URL)
@@ -420,7 +422,7 @@ class ShoppingListControllerTest
         void filterByFinalized()
         {
             given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", sousChefToken)
                 .queryParam("status", "FINALIZED")
                 .when()
                 .get(ENDPOINT_URL)
@@ -437,7 +439,7 @@ class ShoppingListControllerTest
             ShoppingList list = (ShoppingList) seeded.get("shopping_list_draft");
 
             List<ShoppingListDTO> response = given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", sousChefToken)
                 .queryParam("deliveryDate", list.getDeliveryDate().toString())
                 .when()
                 .get(ENDPOINT_URL)
@@ -457,7 +459,7 @@ class ShoppingListControllerTest
         void invalidStatusReturns400()
         {
             given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .queryParam("status", "INVALID")
                 .when()
                 .get(ENDPOINT_URL)
@@ -470,7 +472,7 @@ class ShoppingListControllerTest
         void invalidDateReturns400()
         {
             given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .queryParam("deliveryDate", "not-a-date")
                 .when()
                 .get(ENDPOINT_URL)
@@ -503,7 +505,7 @@ class ShoppingListControllerTest
             String payload = getAddItemPayload();
 
             ShoppingListDTO response = given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .contentType(ContentType.JSON)
                 .body(payload)
                 .when()
@@ -532,7 +534,7 @@ class ShoppingListControllerTest
                 """;
 
             given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .contentType(ContentType.JSON)
                 .body(payload)
                 .when()
@@ -548,7 +550,7 @@ class ShoppingListControllerTest
             String payload = getAddItemPayload();
 
             given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .contentType(ContentType.JSON)
                 .body(payload)
                 .when()
@@ -564,7 +566,7 @@ class ShoppingListControllerTest
             String payload = getAddItemPayload();
 
             given()
-                .header(USER_HEADER, lineCookId)
+                .header("Authorization", lineChefToken)
                 .contentType(ContentType.JSON)
                 .body(payload)
                 .when()
@@ -587,7 +589,7 @@ class ShoppingListControllerTest
             int draftItemSize = draft.getItemCount();
 
             ShoppingListDTO response = given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", sousChefToken)
                 .when()
                 .delete(ENDPOINT_URL + "/" + draftListId + "/items/" + itemId)
                 .then()
@@ -606,7 +608,7 @@ class ShoppingListControllerTest
             Long itemId = finalized.getShoppingListItems().iterator().next().getId();
 
             given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .when()
                 .delete(ENDPOINT_URL + "/" + finalizedListId + "/items/" + itemId)
                 .then()
@@ -626,7 +628,7 @@ class ShoppingListControllerTest
             String payload = getItemUpdatePayload();
 
             ShoppingListDTO response = given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .contentType(ContentType.JSON)
                 .body(payload)
                 .when()
@@ -652,7 +654,7 @@ class ShoppingListControllerTest
             String payload = getItemUpdatePayload();
 
             given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .contentType(ContentType.JSON)
                 .body(payload)
                 .when()
@@ -669,7 +671,7 @@ class ShoppingListControllerTest
             Long itemId = finalized.getShoppingListItems().iterator().next().getId();
 
             given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .contentType(ContentType.JSON)
                 .body("""
                     { "quantity": 5.0, "unit": "KG" }
@@ -694,9 +696,8 @@ class ShoppingListControllerTest
             ShoppingListItem item = draft.getShoppingListItems().iterator().next();
             Long itemId = item.getId();
 
-
             ShoppingListDTO response = given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .when()
                 .patch(ENDPOINT_URL + "/" + draftListId + "/items/" + itemId + "/ordered")
                 .then()
@@ -719,11 +720,15 @@ class ShoppingListControllerTest
         {
             long itemId = getFirstItemId();
 
-            given().header(USER_HEADER, headChefId)
-                .patch(ENDPOINT_URL + "/" + draftListId + "/items/" + itemId + "/ordered");
+            given()
+                .header("Authorization", headChefToken)
+                .when()
+                .patch(ENDPOINT_URL + "/" + draftListId + "/items/" + itemId + "/ordered")
+                .then()
+                .statusCode(200);
 
             given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .when()
                 .patch(ENDPOINT_URL + "/" + draftListId + "/items/" + itemId + "/ordered")
                 .then()
@@ -735,7 +740,7 @@ class ShoppingListControllerTest
         void unknownItemReturns404()
         {
             given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .when()
                 .patch(ENDPOINT_URL + "/" + draftListId + "/items/9999/ordered")
                 .then()
@@ -752,7 +757,7 @@ class ShoppingListControllerTest
         void marksAllOrdered()
         {
             ShoppingListDTO response = given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .when()
                 .patch(ENDPOINT_URL + "/" + draftListId + "/items/ordered")
                 .then()
@@ -768,11 +773,11 @@ class ShoppingListControllerTest
         }
 
         @Test
-        @DisplayName("Line cook cannot mark all — returns 403")
+        @DisplayName("Line cook cannot mark all — returns 401")
         void lineCookCannotMarkAll()
         {
             given()
-                .header(USER_HEADER, lineCookId)
+                .header("Authorization", lineChefToken)
                 .when()
                 .patch(ENDPOINT_URL + "/" + draftListId + "/items/ordered")
                 .then()
@@ -788,11 +793,12 @@ class ShoppingListControllerTest
         @DisplayName("Head chef finalizes when all items are ordered")
         void finalizesWhenAllOrdered()
         {
-            given().header(USER_HEADER, headChefId)
+            given()
+                .header("Authorization", headChefToken)
                 .patch(ENDPOINT_URL + "/" + draftListId + "/items/ordered");
 
             given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .when()
                 .post(ENDPOINT_URL + "/" + draftListId + "/finalize")
                 .then()
@@ -806,7 +812,7 @@ class ShoppingListControllerTest
         void cannotFinalizeWithUnorderedItems()
         {
             given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .when()
                 .post(ENDPOINT_URL + "/" + draftListId + "/finalize")
                 .then()
@@ -818,7 +824,7 @@ class ShoppingListControllerTest
         void cannotFinalizeAlreadyFinalized()
         {
             given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", headChefToken)
                 .when()
                 .post(ENDPOINT_URL + "/" + finalizedListId + "/finalize")
                 .then()
@@ -829,11 +835,15 @@ class ShoppingListControllerTest
         @DisplayName("Sous chef can finalize")
         void sousChefCanFinalize()
         {
-            given().header(USER_HEADER, headChefId)
-                .patch(ENDPOINT_URL + "/" + draftListId + "/items/ordered");
+            given()
+                .header("Authorization", sousChefToken)
+                .when()
+                .patch(ENDPOINT_URL + "/" + draftListId + "/items/ordered")
+                .then()
+                .statusCode(200);
 
             given()
-                .header(USER_HEADER, sousChefId)
+                .header("Authorization", sousChefToken)
                 .when()
                 .post(ENDPOINT_URL + "/" + draftListId + "/finalize")
                 .then()
@@ -845,7 +855,7 @@ class ShoppingListControllerTest
         void lineCookCannotFinalize()
         {
             given()
-                .header(USER_HEADER, lineCookId)
+                .header("Authorization", lineChefToken)
                 .when()
                 .post(ENDPOINT_URL + "/" + draftListId + "/finalize")
                 .then()
@@ -857,11 +867,41 @@ class ShoppingListControllerTest
         void unknownIdReturns404()
         {
             given()
-                .header(USER_HEADER, headChefId)
+                .header("Authorization", sousChefToken)
                 .when()
                 .post(ENDPOINT_URL + "/9999/finalize")
                 .then()
                 .statusCode(404);
+        }
+    }
+
+    @Nested
+    @DisplayName("Security & Authorization Tests")
+    class Security
+    {
+        @Test
+        @DisplayName("Should return 401 when no Authorization header is provided")
+        void missingTokenReturns401()
+        {
+            given()
+                .when()
+                .get(ENDPOINT_URL)
+                .then()
+                .statusCode(401)
+                .body("message", equalToIgnoringCase("Missing or malformed Authorization header"));
+        }
+
+        @Test
+        @DisplayName("Should return 401 when Authorization header is invalid")
+        void invalidTokenReturns401()
+        {
+            given()
+                .header("Authorization", "Bearer not-a-real-jwt-token")
+                .when()
+                .get(ENDPOINT_URL)
+                .then()
+                .statusCode(401)
+                .body("message", equalToIgnoringCase("Token could not be verified"));
         }
     }
 

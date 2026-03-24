@@ -2,9 +2,10 @@ package app.services.impl;
 
 import app.dtos.dish.DishTranslationDTO;
 import app.dtos.menu.*;
+import app.dtos.security.AuthenticatedUser;
 import app.enums.MenuStatus;
 import app.enums.SupportedLanguage;
-import app.exceptions.UnauthorizedActionException;
+import app.exceptions.ConflictException;
 import app.exceptions.ValidationException;
 import app.mappers.WeeklyMenuMapper;
 import app.persistence.daos.interfaces.*;
@@ -20,7 +21,6 @@ import java.time.LocalDate;
 import java.time.temporal.IsoFields;
 import java.util.*;
 import java.util.stream.Collectors;
-
 
 public class WeeklyMenuService implements IWeeklyMenuService
 {
@@ -40,18 +40,14 @@ public class WeeklyMenuService implements IWeeklyMenuService
     }
 
     @Override
-    public WeeklyMenuDTO createMenu(Long creatorId, CreateWeeklyMenuDTO dto)
+    public WeeklyMenuDTO createMenu(CreateWeeklyMenuDTO dto)
     {
-        ValidationUtil.validateId(creatorId);
         validateCreateInput(dto);
-
-        User creator = userReader.getByID(creatorId);
-        requireHeadOrSousChef(creator);
 
         Optional<WeeklyMenu> existingMenu = menuDAO.findByWeekAndYear(dto.week(), dto.year(), null);
         if (existingMenu.isPresent())
         {
-            throw new IllegalStateException("Menu for week " + dto.week() + "/" + dto.year() + " already exists");
+            throw new ConflictException("Menu for week " + dto.week() + "/" + dto.year() + " already exists");
         }
 
         WeeklyMenu weeklyMenu = new WeeklyMenu(dto.week(), dto.year());
@@ -61,14 +57,10 @@ public class WeeklyMenuService implements IWeeklyMenuService
     }
 
     @Override
-    public WeeklyMenuDTO addMenuSlot(Long editorId, Long menuId, AddMenuSlotDTO dto)
+    public WeeklyMenuDTO addMenuSlot(Long menuId, AddMenuSlotDTO dto)
     {
-        ValidationUtil.validateId(editorId);
         ValidationUtil.validateId(menuId);
         validateSlotInput(dto);
-
-        User editor = userReader.getByID(editorId);
-        requireHeadOrSousChef(editor);
 
         WeeklyMenu menu = menuDAO.getByID(menuId);
         Station station = stationReader.getByID(dto.stationId());
@@ -92,15 +84,11 @@ public class WeeklyMenuService implements IWeeklyMenuService
     }
 
     @Override
-    public WeeklyMenuDTO removeSlot(Long editorId, Long menuId, Long slotId)
+    public WeeklyMenuDTO removeSlot(Long menuId, Long slotId)
     {
-        validateSlotRelatedIds(editorId, menuId, slotId);
-
-        User editor = userReader.getByID(editorId);
-        requireHeadOrSousChef(editor);
+        validateSlotRelatedIds(menuId, slotId);
 
         WeeklyMenu menu = menuDAO.getByID(menuId);
-
         WeeklyMenuSlot slot = findSlot(menu, slotId);
         menu.removeMenuSlot(slot);
 
@@ -109,12 +97,9 @@ public class WeeklyMenuService implements IWeeklyMenuService
     }
 
     @Override
-    public WeeklyMenuDTO updateSlot(Long editorId, Long menuId, Long slotId, UpdateMenuSlotDTO dto)
+    public WeeklyMenuDTO updateSlot(Long menuId, Long slotId, UpdateMenuSlotDTO dto)
     {
-        validateSlotRelatedIds(editorId, menuId, slotId);
-
-        User editor = userReader.getByID(editorId);
-        requireHeadOrSousChef(editor);
+        validateSlotRelatedIds(menuId, slotId);
 
         WeeklyMenu menu = menuDAO.getByID(menuId);
         WeeklyMenuSlot slot = findSlot(menu, slotId);
@@ -123,13 +108,11 @@ public class WeeklyMenuService implements IWeeklyMenuService
         {
             Dish dish = dishDAO.getByID(dto.dishId());
             validateDishForStation(dish, slot.getStation());
-            slot.setDish(dish);
-            slot.setEmpty(false);
+            slot.assignDish(dish);
         }
         else
         {
-            slot.setDish(null);
-            slot.setEmpty(true);
+            slot.clearDish();
         }
 
         WeeklyMenu updated = menuDAO.update(menu);
@@ -137,13 +120,10 @@ public class WeeklyMenuService implements IWeeklyMenuService
     }
 
     @Override
-    public WeeklyMenuDTO translateSlot(Long editorId, Long menuId, Long slotId, SupportedLanguage language)
+    public WeeklyMenuDTO translateSlot(Long menuId, Long slotId, SupportedLanguage language)
     {
-        validateSlotRelatedIds(editorId, menuId, slotId);
+        validateSlotRelatedIds(menuId, slotId);
         ValidationUtil.validateNotNull(language, "Target language");
-
-        User editor = userReader.getByID(editorId);
-        requireHeadOrSousChef(editor);
 
         WeeklyMenu menu = menuDAO.getByID(menuId);
         WeeklyMenuSlot slot = findSlot(menu, slotId);
@@ -152,7 +132,7 @@ public class WeeklyMenuService implements IWeeklyMenuService
 
         if (dish == null)
         {
-            throw new IllegalStateException("Slot " + slotId + " has no dish to translate");
+            throw new ConflictException("Slot " + slotId + " has no dish to translate");
         }
 
         DishTranslationDTO translation = dishTranslationService.translateDish(dish, language.getCode());
@@ -167,14 +147,10 @@ public class WeeklyMenuService implements IWeeklyMenuService
     }
 
     @Override
-    public WeeklyMenuDTO translateMenu(Long editorId, Long menuId, SupportedLanguage language)
+    public WeeklyMenuDTO translateMenu(Long menuId, SupportedLanguage language)
     {
-        ValidationUtil.validateId(editorId);
         ValidationUtil.validateId(menuId);
         ValidationUtil.validateNotNull(language, "Target language");
-
-        User editor = userReader.getByID(editorId);
-        requireHeadOrSousChef(editor);
 
         WeeklyMenu menu = menuDAO.getByID(menuId);
         Set<Dish> dishes = getDishesFromMenu(menu);
@@ -188,13 +164,12 @@ public class WeeklyMenuService implements IWeeklyMenuService
 
     @Override
 
-    public WeeklyMenuDTO publishMenu(Long publisherId, Long menuId)
+    public WeeklyMenuDTO publishMenu(AuthenticatedUser authUser, Long menuId)
     {
-        ValidationUtil.validateId(publisherId);
+        validateAuthenticatedUser(authUser);
         ValidationUtil.validateId(menuId);
 
-        User publisher = userReader.getByID(publisherId);
-        requireHeadOrSousChef(publisher);
+        User publisher = userReader.getByID(authUser.userId());
 
         WeeklyMenu menu = menuDAO.getByID(menuId);
         requireNotEmpty(menu);
@@ -206,13 +181,11 @@ public class WeeklyMenuService implements IWeeklyMenuService
     }
 
     @Override
-    public WeeklyMenuDTO getByWeekAndYear(Long userId, int week, int year)
+    public WeeklyMenuDTO getByWeekAndYear(AuthenticatedUser authUser, int week, int year)
     {
         validateWeekAndYear(week, year);
-        ValidationUtil.validateId(userId);
 
-        User user = userReader.getByID(userId);
-        MenuStatus menuStatus = getMenuStatusPermission(user);
+        MenuStatus menuStatus = getMenuStatusPermission(authUser);
 
         return menuDAO.findByWeekAndYear(week, year, menuStatus)
             .map(WeeklyMenuMapper::toDTO)
@@ -241,22 +214,18 @@ public class WeeklyMenuService implements IWeeklyMenuService
     }
 
     @Override
-    public List<WeeklyMenuOverviewDTO> getOverview(Long userId, MenuStatus menuStatus, Integer year, Integer week)
+    public List<WeeklyMenuOverviewDTO> getOverview(MenuStatus menuStatus, Integer year, Integer week)
     {
-        ValidationUtil.validateId(userId);
-        User user = userReader.getByID(userId);
-        requireHeadOrSousChef(user);
-
         return menuDAO.findByFilter(menuStatus, year, week);
     }
 
     @Override
-    public boolean deleteMenu(Long userId, Long menuId)
+    public boolean deleteMenu(AuthenticatedUser authUser, Long menuId)
     {
-        ValidationUtil.validateId(userId);
+        validateAuthenticatedUser(authUser);
         ValidationUtil.validateId(menuId);
 
-        User user = userReader.getByID(userId);
+        User user = userReader.getByID(authUser.userId());
         WeeklyMenu menu = menuDAO.getByID(menuId);
 
         menu.delete(user);
@@ -305,7 +274,7 @@ public class WeeklyMenuService implements IWeeklyMenuService
     {
         if (!dish.isActive())
         {
-            throw new IllegalStateException("Dish is not active");
+            throw new ConflictException("Dish is not active");
         }
 
         if (!dish.getStation().getId().equals(station.getId()))
@@ -318,15 +287,7 @@ public class WeeklyMenuService implements IWeeklyMenuService
     {
         if (menu.getWeeklyMenuSlots().isEmpty())
         {
-            throw new IllegalStateException("Cannot publish an empty menu");
-        }
-    }
-
-    private void requireHeadOrSousChef(User user)
-    {
-        if (!user.isHeadChef() && !user.isSousChef())
-        {
-            throw new UnauthorizedActionException("Only head chef and sous chef can manage menus");
+            throw new ConflictException("Cannot publish an empty menu");
         }
     }
 
@@ -341,7 +302,7 @@ public class WeeklyMenuService implements IWeeklyMenuService
 
         if(!untranslatedDishes.isEmpty())
         {
-            throw new IllegalStateException("Cannot publish - untranslated dishes: " + String.join(", ", untranslatedDishes));
+            throw new ConflictException("Cannot publish - untranslated dishes: " + String.join(", ", untranslatedDishes));
         }
     }
 
@@ -351,6 +312,12 @@ public class WeeklyMenuService implements IWeeklyMenuService
         validateWeekAndYear(dto.week(), dto.year());
     }
 
+    private void validateAuthenticatedUser(AuthenticatedUser authUser)
+    {
+        ValidationUtil.validateNotNull(authUser, "Authenticated User");
+        ValidationUtil.validateId(authUser.userId());
+    }
+
     private void validateSlotInput(AddMenuSlotDTO dto)
     {
         ValidationUtil.validateNotNull(dto, "Slot");
@@ -358,19 +325,24 @@ public class WeeklyMenuService implements IWeeklyMenuService
         ValidationUtil.validateId(dto.stationId());
     }
 
-    private void validateSlotRelatedIds(Long editorId, Long menuId, Long slotId)
+    private void validateSlotRelatedIds(Long menuId, Long slotId)
     {
-        ValidationUtil.validateId(editorId);
         ValidationUtil.validateId(menuId);
         ValidationUtil.validateId(slotId);
     }
 
-    private MenuStatus getMenuStatusPermission(User user)
+    private MenuStatus getMenuStatusPermission(AuthenticatedUser authUser)
     {
-        if (!user.isKitchenStaff())
+        if (authUser == null)
         {
             return MenuStatus.PUBLISHED;
         }
-        return null;
+
+        if (authUser.isHeadChef() || authUser.isSousChef())
+        {
+            return null;
+        }
+
+        return MenuStatus.PUBLISHED;
     }
 }

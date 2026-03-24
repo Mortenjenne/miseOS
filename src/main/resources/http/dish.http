@@ -1,37 +1,44 @@
-### Variables
-@headChefId = 1
 
 ### Get all dishes
 GET {{url}}/dishes
+Authorization: Bearer {{authTokenHeadChef}}
 
 ### Get all active dishes
 GET {{url}}/dishes?active=true
+Authorization: Bearer {{authTokenHeadChef}}
 
 ### Get all inactive dishes
 GET {{url}}/dishes?active=false
+Authorization: Bearer {{authTokenHeadChef}}
 
 ### Get dishes by station
 GET {{url}}/dishes?stationId=1
+Authorization: Bearer {{authTokenHeadChef}}
 
 ### Get active dishes for station
 GET {{url}}/dishes?stationId=1&active=true
+Authorization: Bearer {{authTokenHeadChef}}
 
 ### Get dish by id — check station shape in response
 GET {{url}}/dishes/1
+Authorization: Bearer {{authTokenHeadChef}}
 
 ### Search by name
 GET {{url}}/dishes/search?query=laks
+Authorization: Bearer {{authTokenHeadChef}}
 
 ### Get dishes grouped by station
 GET {{url}}/dishes/grouped
+Authorization: Bearer {{authTokenHeadChef}}
 
 ### Get available dishes for week 7 2026
 GET {{url}}/dishes/available?week=7&year=2026
+Authorization: Bearer {{authTokenHeadChef}}
 
 ### Create dish
 POST {{url}}/dishes
 Content-Type: application/json
-X-Dev-User-Id: {{headChefId}}
+Authorization: Bearer {{authTokenHeadChef}}
 
 {
     "nameDA": "Røget Laks",
@@ -43,7 +50,7 @@ X-Dev-User-Id: {{headChefId}}
 ### Update dish — bilingual language
 PUT {{url}}/dishes/1
 Content-Type: application/json
-X-Dev-User-Id: {{headChefId}}
+Authorization: Bearer {{authTokenHeadChef}}
 
 {
     "nameDA": "Opdateret Laks",
@@ -56,7 +63,7 @@ X-Dev-User-Id: {{headChefId}}
 ### Update dish — remove all allergens
 PUT {{url}}/dishes/1
 Content-Type: application/json
-X-Dev-User-Id: {{headChefId}}
+Authorization: Bearer {{authTokenHeadChef}}
 
 {
     "nameDA": "Opdateret Laks",
@@ -66,12 +73,12 @@ X-Dev-User-Id: {{headChefId}}
 
 ### Activate dish e
 PATCH {{url}}/dishes/1/activate
-X-Dev-User-Id: {{headChefId}}
+Authorization: Bearer {{authTokenHeadChef}}
 
 ### Deactivate dish
 PATCH {{url}}/dishes/1/deactivate
-X-Dev-User-Id: {{headChefId}}
+Authorization: Bearer {{authTokenHeadChef}}
 
 ### Delete dish — expect 204
 DELETE {{url}}/dishes/2
-X-Dev-User-Id: {{headChefId}}
+Authorization: Bearer {{authTokenHeadChef}}

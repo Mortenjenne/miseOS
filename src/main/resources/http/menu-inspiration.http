@@ -1,8 +1,10 @@
 
 ### GET daily menu inspiration
 GET {{url}}/menu-inspirations/daily
+Authorization: Bearer {{authTokenLineCook}}}
 
 ### GET daily menu inspiration as sse stream
 GET {{url}}/menu-inspirations/stream
+Authorization: Bearer {{authTokenHeadChef}}}
 
 ###

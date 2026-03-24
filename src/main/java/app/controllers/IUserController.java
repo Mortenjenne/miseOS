@@ -4,8 +4,6 @@ import io.javalin.http.Context;
 
 public interface IUserController extends ICrudController
 {
-    void login(Context ctx);
-
     void changeRole(Context ctx);
 
     void changeEmail(Context ctx);
@@ -14,5 +12,5 @@ public interface IUserController extends ICrudController
 
     void assignToStation(Context ctx);
 
-
+    void getMe(Context ctx);
 }

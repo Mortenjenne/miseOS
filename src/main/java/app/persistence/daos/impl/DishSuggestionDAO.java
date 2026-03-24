@@ -6,6 +6,7 @@ import app.persistence.daos.interfaces.IDishSuggestionDAO;
 import app.persistence.entities.DishSuggestion;
 import app.utils.DBValidator;
 import app.utils.TransactionUtil;
+import app.utils.ValidationUtil;
 import jakarta.persistence.*;
 
 import java.util.LinkedHashSet;
@@ -21,7 +22,7 @@ public class DishSuggestionDAO implements IDishSuggestionDAO
     }
 
     @Override
-    public Set<DishSuggestion> findByFilter(Status status, Integer week, Integer year, Long stationId, String orderBy)
+    public Set<DishSuggestion> findByFilter(Status status, Long creatorId, Integer week, Integer year, Long stationId, String orderBy)
     {
         String target = orderBy != null ? orderBy : "";
 
@@ -41,12 +42,14 @@ public class DishSuggestionDAO implements IDishSuggestionDAO
                         "SELECT DISTINCT ds FROM DishSuggestion ds " +
                             "LEFT JOIN FETCH ds.allergens " +
                             "WHERE (:status IS NULL OR ds.dishStatus  = :status) " +
-                            "AND (:week IS NULL OR ds.targetWeek  = :week) " +
-                            "AND (:year IS NULL OR ds.targetYear  = :year) " +
+                            "AND (:creatorId IS NULL OR ds.createdBy = :creatorId) " +
+                            "AND (:week IS NULL OR ds.targetWeek = :week) " +
+                            "AND (:year IS NULL OR ds.targetYear = :year) " +
                             "AND (:stationId IS NULL OR ds.station.id = :stationId) " +
                             "ORDER BY " + orderColumn,
                         DishSuggestion.class)
                     .setParameter("status", status)
+                    .setParameter("creatorId", creatorId)
                     .setParameter("week", week)
                     .setParameter("year", year)
                     .setParameter("stationId", stationId);
@@ -61,9 +64,32 @@ public class DishSuggestionDAO implements IDishSuggestionDAO
     }
 
     @Override
+    public int getPendingSuggestionsCount()
+    {
+        try(EntityManager em = emf.createEntityManager())
+        {
+            try
+            {
+                TypedQuery<Long> query = em.createQuery(
+                    "SELECT COUNT(ds) FROM DishSuggestion ds " +
+                        "WHERE ds.dishStatus = :status",
+                    Long.class
+                );
+                query.setParameter("status", Status.PENDING);
+
+                return Math.toIntExact(query.getSingleResult());
+            }
+            catch (PersistenceException e)
+            {
+                throw new DatabaseException("Failed to count all pending dishes", e);
+            }
+        }
+    }
+
+    @Override
     public DishSuggestion getByID(Long id)
     {
-        DBValidator.validateId(id);
+        ValidationUtil.validateId(id);
 
         try(EntityManager em = emf.createEntityManager())
         {
@@ -90,7 +116,7 @@ public class DishSuggestionDAO implements IDishSuggestionDAO
     @Override
     public DishSuggestion create(DishSuggestion dishSuggestion)
     {
-        DBValidator.validateNotNull(dishSuggestion, "DishSuggestion");
+        ValidationUtil.validateNotNull(dishSuggestion, "DishSuggestion");
 
         try(EntityManager em = emf.createEntityManager())
         {
@@ -112,8 +138,8 @@ public class DishSuggestionDAO implements IDishSuggestionDAO
     @Override
     public DishSuggestion update(DishSuggestion dishSuggestion)
     {
-        DBValidator.validateNotNull(dishSuggestion, "DishSuggestion");
-        DBValidator.validateId(dishSuggestion.getId());
+        ValidationUtil.validateNotNull(dishSuggestion, "DishSuggestion");
+        ValidationUtil.validateId(dishSuggestion.getId());
 
         try (EntityManager em = emf.createEntityManager())
         {
@@ -142,7 +168,7 @@ public class DishSuggestionDAO implements IDishSuggestionDAO
     @Override
     public boolean delete(Long id)
     {
-        DBValidator.validateId(id);
+        ValidationUtil.validateId(id);
 
         try (EntityManager em = emf.createEntityManager())
         {

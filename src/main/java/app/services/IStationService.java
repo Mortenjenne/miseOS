@@ -7,15 +7,15 @@ import java.util.Set;
 
 public interface IStationService
 {
-    StationDTO createStation(Long creatorID, StationRequestDTO dto);
+    StationDTO createStation(StationRequestDTO dto);
 
-    StationDTO updateStation(Long editorId, Long stationId, StationRequestDTO dto);
+    StationDTO updateStation(Long stationId, StationRequestDTO dto);
 
-    boolean deleteStation(Long userId, Long stationId);
+    boolean deleteStation(Long stationId);
 
-    StationDTO getStationById(Long id);
+    StationDTO getStationById(Long stationId);
 
     Set<StationDTO> getAllStations();
 
-    StationDTO getStationByName(String name);
+    StationDTO getStationByName(String stationName);
 }

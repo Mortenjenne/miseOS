@@ -1,35 +1,32 @@
-### Variables
-@headChefId = 1
-@lineCookId = 3
 
 ### Get all shopping lists
 GET {{url}}/shopping-lists
-X-Dev-User-Id: {{headChefId}}
+Authorization: Bearer {{authTokenHeadChef}}}
 
 ### Get by status DRAFT
 GET {{url}}/shopping-lists?status=DRAFT
-X-Dev-User-Id: {{headChefId}}
+Authorization: Bearer {{authTokenHeadChef}}}
 
 ### Get by status FINALIZED
 GET {{url}}/shopping-lists?status=FINALIZED
-X-Dev-User-Id: {{headChefId}}
+Authorization: Bearer {{authTokenHeadChef}}}
 
 ### Get by delivery date
 GET {{url}}/shopping-lists?deliveryDate=2026-03-20
-X-Dev-User-Id: {{headChefId}}
+Authorization: Bearer {{authTokenHeadChef}}}
 
 ### Get by status and delivery date
 GET {{url}}/shopping-lists?status=DRAFT&deliveryDate=2026-03-20
-X-Dev-User-Id: {{headChefId}}
+Authorization: Bearer {{authTokenHeadChef}}}
 
 ### Get shopping list by id
 GET {{url}}/shopping-lists/1
-X-Dev-User-Id: {{headChefId}}
+Authorization: Bearer {{authTokenHeadChef}}}
 
 ### Generate shopping list from approved requests
 POST {{url}}/shopping-lists
 Content-Type: application/json
-X-Dev-User-Id: {{headChefId}}
+Authorization: Bearer {{authTokenHeadChef}}}
 
 {
     "deliveryDate": "2026-03-20",
@@ -39,7 +36,7 @@ X-Dev-User-Id: {{headChefId}}
 ### Update delivery date
 PATCH {{url}}/shopping-lists/1/delivery-date
 Content-Type: application/json
-X-Dev-User-Id: {{headChefId}}
+Authorization: Bearer {{authTokenHeadChef}}}
 
 {
     "deliveryDate": "2026-03-25"
@@ -48,7 +45,7 @@ X-Dev-User-Id: {{headChefId}}
 ### Add item manually
 POST {{url}}/shopping-lists/1/items
 Content-Type: application/json
-X-Dev-User-Id: {{headChefId}}
+Authorization: Bearer {{authTokenHeadChef}}}
 
 {
     "ingredientName": "Smør",
@@ -60,7 +57,7 @@ X-Dev-User-Id: {{headChefId}}
 ### Update item
 PUT {{url}}/shopping-lists/1/items/1
 Content-Type: application/json
-X-Dev-User-Id: {{headChefId}}
+Authorization: Bearer {{authTokenHeadChef}}}
 
 {
     "quantity": 10.0,
@@ -70,22 +67,22 @@ X-Dev-User-Id: {{headChefId}}
 
 ### Mark single item as ordered
 PATCH {{url}}/shopping-lists/1/items/1/ordered
-X-Dev-User-Id: {{headChefId}}
+Authorization: Bearer {{authTokenHeadChef}}}
 
 ### Mark all items as ordered
 PATCH {{url}}/shopping-lists/1/items/ordered
-X-Dev-User-Id: {{headChefId}}
+Authorization: Bearer {{authTokenHeadChef}}}
 
 ### Remove item
 DELETE {{url}}/shopping-lists/1/items/1
-X-Dev-User-Id: {{headChefId}}
+Authorization: Bearer {{authTokenHeadChef}}}
 
 ### Finalize shopping list
 POST {{url}}/shopping-lists/1/finalize
-X-Dev-User-Id: {{headChefId}}
+Authorization: Bearer {{authTokenHeadChef}}}
 
 ### Delete shopping list
 DELETE {{url}}/shopping-lists/1
-X-Dev-User-Id: {{headChefId}}
+Authorization: Bearer {{authTokenHeadChef}}}
 
 ###

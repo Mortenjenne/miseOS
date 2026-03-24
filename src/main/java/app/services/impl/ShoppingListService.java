@@ -1,10 +1,10 @@
 package app.services.impl;
 
+import app.dtos.security.AuthenticatedUser;
 import app.dtos.shopping.*;
 import app.enums.ShoppingListStatus;
 import app.enums.Status;
 import app.exceptions.ConflictException;
-import app.exceptions.UnauthorizedActionException;
 import app.mappers.ShoppingListMapper;
 import app.persistence.daos.interfaces.IIngredientRequestDAO;
 import app.persistence.daos.interfaces.IShoppingListDAO;
@@ -20,7 +20,6 @@ import jakarta.persistence.EntityNotFoundException;
 
 import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class ShoppingListService implements IShoppingListService
 {
@@ -28,56 +27,34 @@ public class ShoppingListService implements IShoppingListService
     private final IIngredientRequestDAO ingredientRequestDAO;
     private final IUserReader userReader;
     private final IAiService aiService;
+    private final IShoppingListAggregator shoppingListAggregator;
 
-    private static final String DEFAULT_SUPPLIER = "AB Catering";
-
-    public ShoppingListService(IShoppingListDAO shoppingListDAO, IIngredientRequestDAO ingredientRequestDAO, IUserReader userReader, IAiService aiService)
+    public ShoppingListService(IShoppingListDAO shoppingListDAO, IIngredientRequestDAO ingredientRequestDAO, IUserReader userReader, IAiService aiService, IShoppingListAggregator shoppingListAggregator)
     {
         this.shoppingListDAO = shoppingListDAO;
         this.ingredientRequestDAO = ingredientRequestDAO;
         this.userReader = userReader;
         this.aiService = aiService;
+        this.shoppingListAggregator = shoppingListAggregator;
     }
 
     @Override
-    public ShoppingListDTO generateShoppingList(Long userId, CreateShoppingListDTO dto)
+    public ShoppingListDTO generateShoppingList(AuthenticatedUser authUser, CreateShoppingListDTO dto)
     {
-        ValidationUtil.validateId(userId);
+        validateAuthenticatedUser(authUser);
         validateCreateInput(dto);
-
         checkIfShoppingListExists(dto);
-
-        User creator = userReader.getByID(userId);
-        requireHeadChefOrSousChef(creator);
 
         List<IngredientRequest> approvedRequests = ingredientRequestDAO.findByFilter(Status.APPROVED, dto.deliveryDate(),null,null, null);
         checkRequestNotEmpty(approvedRequests, dto.deliveryDate());
 
-        List<String> uniqueIngredientNames = getUniqueIngredientNames(approvedRequests);
+        List<String> uniqueIngredientNames = shoppingListAggregator.getUniqueIngredientNames(approvedRequests);
         Map<String, String> normalizedNames = aiService.normalizeIngredientList(uniqueIngredientNames, dto.targetLanguage());
+        List<ShoppingListItem> shoppingListItems = shoppingListAggregator.aggregateAndGetShoppingListItems(approvedRequests, normalizedNames);
 
-        Map<AggregationKey, List<IngredientRequest>> grouped = getIngredientsGrouped(approvedRequests, normalizedNames);
+        User creator = userReader.getByID(authUser.userId());
         ShoppingList shoppingList = new ShoppingList(dto.deliveryDate(), creator);
-
-        grouped.forEach((aggregationKey, requests) -> {
-
-            Double total = requests.stream()
-                .map(IngredientRequest::getQuantity)
-                .reduce(0.0, Double::sum);
-
-            String supplier = getMostCommonSupplier(requests);
-
-            String notes = requests.stream()
-                .map(req -> String.format("%s (%s: %s %s)",
-                    req.getCreatedBy().getFirstName(),
-                    req.getName(),
-                    req.getQuantity(),
-                    req.getUnit()))
-                .collect(Collectors.joining(" | "));
-
-            ShoppingListItem item = new ShoppingListItem(aggregationKey.normalizedName(), total, aggregationKey.unit(), supplier, notes);
-            shoppingList.addItem(item);
-        });
+        shoppingListItems.forEach(shoppingList::addItem);
 
         ShoppingList saved = shoppingListDAO.create(shoppingList);
         ShoppingList fetchedWithItems = shoppingListDAO.getByID(saved.getId());
@@ -85,46 +62,33 @@ public class ShoppingListService implements IShoppingListService
     }
 
     @Override
-    public ShoppingListDTO finalizeShoppingList(Long userId, Long shoppingListId)
+    public ShoppingListDTO finalizeShoppingList(Long shoppingListId)
     {
         ValidationUtil.validateId(shoppingListId);
-        ValidationUtil.validateId(userId);
 
-        User approver = userReader.getByID(userId);
         ShoppingList list = shoppingListDAO.getByID(shoppingListId);
-
-        requireHeadChefOrSousChef(approver);
-
         list.finalizeShoppingList();
 
         ShoppingList finalized = shoppingListDAO.update(list);
-
         return ShoppingListMapper.toDTO(finalized);
     }
 
     @Override
-    public boolean deleteShoppingList(Long userId, Long shoppingListId)
+    public boolean deleteShoppingList(AuthenticatedUser authUser, Long shoppingListId)
     {
+        validateAuthenticatedUser(authUser);
         ValidationUtil.validateId(shoppingListId);
-        ValidationUtil.validateId(userId);
 
-        User approver = userReader.getByID(userId);
+        User editor = userReader.getByID(authUser.userId());
         ShoppingList list = shoppingListDAO.getByID(shoppingListId);
-
-        requireHeadChefOrSousChef(approver);
-        list.delete(approver);
+        list.delete(editor);
 
         return shoppingListDAO.delete(list.getId());
     }
 
     @Override
-    public List<ShoppingListDTO> getShoppingLists(Long userId, ShoppingListStatus status, LocalDate deliveryDate)
+    public List<ShoppingListDTO> getShoppingLists(ShoppingListStatus status, LocalDate deliveryDate)
     {
-        ValidationUtil.validateId(userId);
-
-        User user = userReader.getByID(userId);
-        requireHeadChefOrSousChef(user);
-
         return shoppingListDAO.findByFilter(status, deliveryDate)
             .stream()
             .map(ShoppingListMapper::toDTO)
@@ -132,17 +96,12 @@ public class ShoppingListService implements IShoppingListService
     }
 
     @Override
-    public ShoppingListDTO markItemOrdered(Long userId, Long shoppingListId, Long itemId)
+    public ShoppingListDTO markItemOrdered(Long shoppingListId, Long itemId)
     {
-        validateItemRelatedIds(userId, shoppingListId, itemId);
-
-        User user = userReader.getByID(userId);
-        requireHeadChefOrSousChef(user);
+        validateItemRelatedIds(shoppingListId, itemId);
 
         ShoppingList list = shoppingListDAO.getByID(shoppingListId);
-
         ShoppingListItem item = findItemOrThrow(list, itemId);
-
         item.markAsOrdered();
 
         ShoppingList updated = shoppingListDAO.update(list);
@@ -150,16 +109,11 @@ public class ShoppingListService implements IShoppingListService
     }
 
     @Override
-    public ShoppingListDTO markAllItemsOrdered(Long userId, Long shoppingListId)
+    public ShoppingListDTO markAllItemsOrdered(Long shoppingListId)
     {
         ValidationUtil.validateId(shoppingListId);
-        ValidationUtil.validateId(userId);
-
-        User user = userReader.getByID(userId);
-        requireHeadChefOrSousChef(user);
 
         ShoppingList list = shoppingListDAO.getByID(shoppingListId);
-
         list.getShoppingListItems().forEach(ShoppingListItem::markAsOrdered);
 
         ShoppingList updated = shoppingListDAO.update(list);
@@ -167,17 +121,13 @@ public class ShoppingListService implements IShoppingListService
     }
 
     @Override
-    public ShoppingListDTO addItemToShoppingList(Long userId, Long shoppingListId, CreateShoppingListItemDTO dto)
+    public ShoppingListDTO addItemToShoppingList(AuthenticatedUser authUser, Long shoppingListId, CreateShoppingListItemDTO dto)
     {
-        ValidationUtil.validateId(userId);
+        validateAuthenticatedUser(authUser);
         ValidationUtil.validateId(shoppingListId);
         validateItemCreateInput(dto);
 
-        User user = userReader.getByID(userId);
-        requireHeadChefOrSousChef(user);
-
-        ShoppingList list = shoppingListDAO.getByID(shoppingListId);
-
+        User user = userReader.getByID(authUser.userId());
         String note = "Manual entry by: " + user.getFirstName() + " " + user.getLastName();
 
         ShoppingListItem item = new ShoppingListItem(
@@ -188,6 +138,7 @@ public class ShoppingListService implements IShoppingListService
             note
         );
 
+        ShoppingList list = shoppingListDAO.getByID(shoppingListId);
         list.addItem(item);
 
         ShoppingList updated = shoppingListDAO.update(list);
@@ -195,16 +146,12 @@ public class ShoppingListService implements IShoppingListService
     }
 
     @Override
-    public ShoppingListDTO removeItem(Long userId, Long shoppingListId, Long itemId)
+    public ShoppingListDTO removeItem(Long shoppingListId, Long itemId)
     {
-        validateItemRelatedIds(userId, shoppingListId, itemId);
-
-        User user = userReader.getByID(userId);
-        requireHeadChefOrSousChef(user);
+        validateItemRelatedIds(shoppingListId, itemId);
 
         ShoppingList list = shoppingListDAO.getByID(shoppingListId);
         ShoppingListItem item = findItemOrThrow(list, itemId);
-
         list.removeItem(item);
 
         ShoppingList updated = shoppingListDAO.update(list);
@@ -212,13 +159,10 @@ public class ShoppingListService implements IShoppingListService
     }
 
     @Override
-    public ShoppingListDTO updateItem(Long userId, Long shoppingListId, Long itemId, UpdateShoppingListItemDTO dto)
+    public ShoppingListDTO updateItem(Long shoppingListId, Long itemId, UpdateShoppingListItemDTO dto)
     {
-        validateItemRelatedIds(userId, shoppingListId, itemId);
+        validateItemRelatedIds(shoppingListId, itemId);
         validateItemUpdateInput(dto);
-
-        User user = userReader.getByID(userId);
-        requireHeadChefOrSousChef(user);
 
         ShoppingList list = shoppingListDAO.getByID(shoppingListId);
         ShoppingListItem item = findItemOrThrow(list, itemId);
@@ -239,17 +183,11 @@ public class ShoppingListService implements IShoppingListService
     }
 
     @Override
-    public ShoppingListDTO updateDeliveryDate(Long userId, Long shoppingListId, UpdateShoppingListDTO dto)
+    public ShoppingListDTO updateDeliveryDate(Long shoppingListId, UpdateShoppingListDTO dto)
     {
-        ValidationUtil.validateId(userId);
         ValidationUtil.validateId(shoppingListId);
         ValidationUtil.validateNotNull(dto.deliveryDate(), "Delivery date");
-        ValidationUtil.validateFutureDate(dto.deliveryDate(), "Delivery date");
-
-        User user = userReader.getByID(userId);
-        requireHeadChefOrSousChef(user);
-
-        ShoppingList list = shoppingListDAO.getByID(shoppingListId);
+        ValidationUtil.validateNotPastDate(dto.deliveryDate(), "Delivery date");
 
         shoppingListDAO.findByDeliveryDate(dto.deliveryDate()).ifPresent(existing ->
         {
@@ -259,47 +197,11 @@ public class ShoppingListService implements IShoppingListService
             }
         });
 
+        ShoppingList list = shoppingListDAO.getByID(shoppingListId);
         list.updateDeliveryDate(dto.deliveryDate());
 
         ShoppingList updated = shoppingListDAO.update(list);
         return ShoppingListMapper.toDTO(updated);
-    }
-
-    private String getMostCommonSupplier(List<IngredientRequest> requests)
-    {
-        return requests.stream()
-            .map(IngredientRequest::getPreferredSupplier)
-            .filter(Objects::nonNull)
-            .collect(Collectors.groupingBy(s -> s, Collectors.counting()))
-            .entrySet().stream()
-            .max(Map.Entry.comparingByValue())
-            .map(Map.Entry::getKey)
-            .orElse(DEFAULT_SUPPLIER);
-    }
-
-    private Map<AggregationKey, List<IngredientRequest>> getIngredientsGrouped(List<IngredientRequest> approved, Map<String, String> normalizedNames)
-    {
-        return approved.stream()
-            .collect(Collectors.groupingBy(req -> new AggregationKey(
-                normalizedNames.getOrDefault(req.getName(), req.getName()), req.getUnit())
-            ));
-    }
-
-    private List<String> getUniqueIngredientNames(List<IngredientRequest> ingredientRequests)
-    {
-        return ingredientRequests.stream()
-            .map(IngredientRequest::getName)
-            .filter(Objects::nonNull)
-            .distinct()
-            .toList();
-    }
-
-    private void requireHeadChefOrSousChef(User user)
-    {
-        if (!user.isHeadChef() && !user.isSousChef())
-        {
-            throw new UnauthorizedActionException("Only head chef or sous chef can manage shopping lists");
-        }
     }
 
     private void checkRequestNotEmpty(List<IngredientRequest> requests, LocalDate deliveryDate)
@@ -328,6 +230,12 @@ public class ShoppingListService implements IShoppingListService
             .orElseThrow(() -> new EntityNotFoundException("Item not found: " + itemId));
     }
 
+    private void validateAuthenticatedUser(AuthenticatedUser authUser)
+    {
+        ValidationUtil.validateNotNull(authUser, "Authenticated User");
+        ValidationUtil.validateId(authUser.userId());
+    }
+
     private void validateCreateInput(CreateShoppingListDTO dto)
     {
         ValidationUtil.validateNotNull(dto, "Shopping list");
@@ -350,9 +258,8 @@ public class ShoppingListService implements IShoppingListService
         ValidationUtil.validateNotNull(dto.unit(), "Unit");
     }
 
-    private void validateItemRelatedIds(Long userId, Long shoppingListId, Long itemId)
+    private void validateItemRelatedIds(Long shoppingListId, Long itemId)
     {
-        ValidationUtil.validateId(userId);
         ValidationUtil.validateId(shoppingListId);
         ValidationUtil.validateId(itemId);
     }

@@ -1,7 +1,8 @@
 package app.config;
 
-import app.controllers.*;
 import app.routes.*;
+import app.routes.resources.*;
+import app.routes.security.SecurityRoute;
 import io.javalin.Javalin;
 import jakarta.persistence.EntityManagerFactory;
 import org.slf4j.Logger;
@@ -25,10 +26,8 @@ public class ApplicationConfig
 
     public static Javalin buildAndStart(int port, DIContainer di)
     {
-        Routes routes = buildRoutes(di);
-        IExceptionController exceptionController = new ExceptionController();
-        ServerConfig serverConfig = new ServerConfig(routes, exceptionController);
-
+        ApiRoutes apiRoutes = buildRoutes(di);
+        ServerConfig serverConfig = new ServerConfig(apiRoutes, di.getExceptionController(), di.getSecurityController());
         Javalin app = serverConfig.create();
         logger.info("Starting javalin app");
         app.start(port);
@@ -41,9 +40,10 @@ public class ApplicationConfig
         logger.info("Stopping javalin app");
     }
 
-    private static Routes buildRoutes(DIContainer di)
+    private static ApiRoutes buildRoutes(DIContainer di)
     {
-        return new Routes(
+        return new ApiRoutes(
+            new SecurityRoute(di.getSecurityController(), di.getUserController()),
             new AllergenRoute(di.getAllergenController()),
             new UserRoute(di.getUserController()),
             new StationRoute(di.getStationController()),
@@ -52,7 +52,8 @@ public class ApplicationConfig
             new DishRoute(di.getDishController()),
             new WeeklyMenuRoute(di.getWeeklyMenuController()),
             new IngredientRequestRoute(di.getIngredientRequestController()),
-            new ShoppingListRoute(di.getShoppingListController())
+            new ShoppingListRoute(di.getShoppingListController()),
+            new NotificationRoute(di.getNotificationController())
         );
     }
 }

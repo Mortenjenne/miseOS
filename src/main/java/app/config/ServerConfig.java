@@ -1,15 +1,15 @@
 package app.config;
 
 import app.controllers.IExceptionController;
+import app.controllers.ISecurityController;
 import app.exceptions.*;
-import app.routes.Routes;
+import app.routes.ApiRoutes;
 import io.javalin.Javalin;
 import io.javalin.config.JavalinConfig;
 import io.javalin.http.Context;
 import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import io.javalin.rendering.template.JavalinThymeleaf;
 
 import java.util.UUID;
 
@@ -19,13 +19,15 @@ public class ServerConfig
     private static final String START_TIME = "start-time";
     private static final String REQ_ID = "request-id";
 
-    private final Routes routes;
+    private final ApiRoutes apiRoutes;
     private final IExceptionController exceptionController;
+    private final ISecurityController securityController;
 
-    public ServerConfig(Routes routes, IExceptionController exceptionController)
+    public ServerConfig(ApiRoutes apiRoutes, IExceptionController exceptionController, ISecurityController securityController)
     {
-        this.routes = routes;
+        this.apiRoutes = apiRoutes;
         this.exceptionController = exceptionController;
+        this.securityController = securityController;
     }
 
     public Javalin create()
@@ -35,13 +37,21 @@ public class ServerConfig
             config.startup.showJavalinBanner = false;
             config.router.contextPath = "/api/v1";
             config.bundledPlugins.enableRouteOverview("/routes");
-            config.routes.apiBuilder(routes.getRoutes());
-            configureMiddleWare(config);
+            config.routes.apiBuilder(apiRoutes.getRoutes());
+            configureMiddleWareLogging(config);
+            configureMiddleWareSecurity(config);
             configureExceptions(config);
         });
     }
 
-    private void configureMiddleWare(JavalinConfig config)
+    private void configureMiddleWareSecurity(JavalinConfig config)
+    {
+        config.routes.beforeMatched(securityController::authenticate);
+        config.routes.beforeMatched(securityController::authorize);
+        config.routes.wsBefore("/notifications", ws -> ws.onConnect(securityController::authenticateWebSocket));
+    }
+
+    private void configureMiddleWareLogging(JavalinConfig config)
     {
         config.routes.before(this::logRequest);
         config.routes.after(this::logResponse);
@@ -55,6 +65,7 @@ public class ServerConfig
         config.routes.exception(IllegalStateException.class, exceptionController::handleIllegalState);
         config.routes.exception(ConflictException.class, exceptionController::handleConflict);
         config.routes.exception(UnauthorizedActionException.class, exceptionController::handleUnauthorized);
+        config.routes.exception(AuthenticationException.class, exceptionController::handleAuthentication);
         config.routes.exception(AIIntegrationException.class, exceptionController::handleAIIntegration);
         config.routes.exception(WeatherIntegrationException.class, exceptionController::handleWeatherIntegration);
         config.routes.exception(TranslationException.class, exceptionController::handleTranslation);
@@ -67,7 +78,8 @@ public class ServerConfig
         String requestId = UUID.randomUUID().toString().substring(0, 8);
         ctx.attribute(REQ_ID, requestId);
         ctx.attribute(START_TIME, System.currentTimeMillis());
-        String body = ctx.body();
+
+        String body = isSensitivePath(ctx.path()) ? "[CENSORED]" : ctx.body();
 
         if (!body.isBlank())
         {
@@ -112,5 +124,10 @@ public class ServerConfig
                 duration
             );
         }
+    }
+
+    private boolean isSensitivePath(String path)
+    {
+        return path.contains("/login") || path.contains("/register") || path.contains("/password") || path.contains("/auth");
     }
 }

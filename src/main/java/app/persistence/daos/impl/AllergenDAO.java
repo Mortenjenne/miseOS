@@ -5,6 +5,7 @@ import app.persistence.daos.interfaces.IAllergenDAO;
 import app.persistence.entities.Allergen;
 import app.utils.DBValidator;
 import app.utils.TransactionUtil;
+import app.utils.ValidationUtil;
 import jakarta.persistence.*;
 
 import java.util.LinkedHashSet;
@@ -23,7 +24,7 @@ public class AllergenDAO implements IAllergenDAO
     @Override
     public Optional<Allergen> findByNameDA(String nameDA)
     {
-        DBValidator.validateNotBlank(nameDA, "Name DA");
+        ValidationUtil.validateNotBlank(nameDA, "Name DA");
 
         try(EntityManager em = emf.createEntityManager())
         {
@@ -47,7 +48,7 @@ public class AllergenDAO implements IAllergenDAO
     @Override
     public Optional<Allergen> findByNameEN(String nameEN)
     {
-        DBValidator.validateNotBlank(nameEN, "Name EN");
+        ValidationUtil.validateNotBlank(nameEN, "Name EN");
 
         try(EntityManager em = emf.createEntityManager())
         {
@@ -88,7 +89,7 @@ public class AllergenDAO implements IAllergenDAO
     @Override
     public boolean isUsedByAnyDish(Long allergenId)
     {
-        DBValidator.validateId(allergenId);
+        ValidationUtil.validateId(allergenId);
 
         try (EntityManager em = emf.createEntityManager())
         {
@@ -120,7 +121,7 @@ public class AllergenDAO implements IAllergenDAO
     @Override
     public boolean existsByDisplayNumber(Integer displayNumber)
     {
-        DBValidator.validatePositive(displayNumber, "Display number");
+        ValidationUtil.validatePositive(displayNumber, "Display number");
 
         try(EntityManager em = emf.createEntityManager())
         {
@@ -142,7 +143,7 @@ public class AllergenDAO implements IAllergenDAO
     @Override
     public Allergen create(Allergen allergen)
     {
-        DBValidator.validateNotNull(allergen, "Allergen");
+        ValidationUtil.validateNotNull(allergen, "Allergen");
 
         try(EntityManager em = emf.createEntityManager())
         {
@@ -181,7 +182,7 @@ public class AllergenDAO implements IAllergenDAO
     @Override
     public Allergen getByID(Long id)
     {
-        DBValidator.validateId(id);
+        ValidationUtil.validateId(id);
 
         try(EntityManager em = emf.createEntityManager())
         {
@@ -204,8 +205,8 @@ public class AllergenDAO implements IAllergenDAO
     @Override
     public Allergen update(Allergen allergen)
     {
-        DBValidator.validateNotNull(allergen, "User");
-        DBValidator.validateId(allergen.getId());
+        ValidationUtil.validateNotNull(allergen, "User");
+        ValidationUtil.validateId(allergen.getId());
 
         try (EntityManager em = emf.createEntityManager())
         {
@@ -234,7 +235,7 @@ public class AllergenDAO implements IAllergenDAO
     @Override
     public boolean delete(Long id)
     {
-        DBValidator.validateId(id);
+        ValidationUtil.validateId(id);
 
         try (EntityManager em = emf.createEntityManager())
         {

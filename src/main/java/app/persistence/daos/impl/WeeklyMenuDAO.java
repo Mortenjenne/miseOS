@@ -7,6 +7,7 @@ import app.persistence.daos.interfaces.IWeeklyMenuDAO;
 import app.persistence.entities.WeeklyMenu;
 import app.utils.DBValidator;
 import app.utils.TransactionUtil;
+import app.utils.ValidationUtil;
 import jakarta.persistence.*;
 
 import java.util.List;
@@ -54,8 +55,8 @@ public class WeeklyMenuDAO implements IWeeklyMenuDAO
     @Override
     public Optional<WeeklyMenu> findByWeekAndYear(int weekNumber, int year, MenuStatus status)
     {
-        DBValidator.validateRange(weekNumber, 1, 53, "Week number");
-        DBValidator.validateRange(year, 2000, 2100, "Year");
+        ValidationUtil.validateRange(weekNumber, 1, 53, "Week number");
+        ValidationUtil.validateRange(year, 2000, 2100, "Year");
 
         try(EntityManager em = emf.createEntityManager())
         {
@@ -89,7 +90,7 @@ public class WeeklyMenuDAO implements IWeeklyMenuDAO
     @Override
     public WeeklyMenu getByID(Long id)
     {
-        DBValidator.validateId(id);
+        ValidationUtil.validateId(id);
 
         try (EntityManager em = emf.createEntityManager())
         {
@@ -121,9 +122,9 @@ public class WeeklyMenuDAO implements IWeeklyMenuDAO
     @Override
     public WeeklyMenu create(WeeklyMenu weeklyMenu)
     {
-        DBValidator.validateNotNull(weeklyMenu, "Weekly Menu");
-        DBValidator.validateRange(weeklyMenu.getWeekNumber(), 1, 53, "Week number");
-        DBValidator.validateRange(weeklyMenu.getYear(), 2000, 2100, "Year");
+        ValidationUtil.validateNotNull(weeklyMenu, "Weekly Menu");
+        ValidationUtil.validateRange(weeklyMenu.getWeekNumber(), 1, 53, "Week number");
+        ValidationUtil.validateRange(weeklyMenu.getYear(), 2000, 2100, "Year");
 
         try(EntityManager em = emf.createEntityManager())
         {
@@ -146,8 +147,8 @@ public class WeeklyMenuDAO implements IWeeklyMenuDAO
     @Override
     public WeeklyMenu update(WeeklyMenu weeklyMenu)
     {
-        DBValidator.validateNotNull(weeklyMenu, "WeeklyMenu");
-        DBValidator.validateId(weeklyMenu.getId());
+        ValidationUtil.validateNotNull(weeklyMenu, "WeeklyMenu");
+        ValidationUtil.validateId(weeklyMenu.getId());
 
         try (EntityManager em = emf.createEntityManager())
         {
@@ -176,7 +177,7 @@ public class WeeklyMenuDAO implements IWeeklyMenuDAO
     @Override
     public boolean delete(Long id)
     {
-        DBValidator.validateId(id);
+        ValidationUtil.validateId(id);
 
         try (EntityManager em = emf.createEntityManager())
         {
