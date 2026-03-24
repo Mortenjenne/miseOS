@@ -11,8 +11,6 @@ public class ValidationUtil
     private static final int NAME_MAX = 100;
     private static final int DESCRIPTION_MIN = 5;
     private static final int DESCRIPTION_MAX = 150;
-    private static final int USERNAME_MIN = 2;
-    private static final int USERNAME_MAX = 50;
 
     private ValidationUtil(){}
 
@@ -64,11 +62,6 @@ public class ValidationUtil
         validateText(value, fieldName, DESCRIPTION_MIN, DESCRIPTION_MAX);
     }
 
-    public static void validateUserName(String value, String fieldName)
-    {
-        validateText(value, fieldName, USERNAME_MIN, USERNAME_MAX);
-    }
-
     public static void validatePositive(double value, String fieldName)
     {
         if (value <= 0)
@@ -86,20 +79,23 @@ public class ValidationUtil
         }
     }
 
-    public static void validateFutureDate(LocalDate date, String fieldName)
+    public static void validateNotPastDate(LocalDate date, String fieldName)
     {
         if (date == null)
         {
             throw new IllegalArgumentException(fieldName + " is required");
         }
-        if (date.isBefore(LocalDate.now())) {
+
+        if (date.isBefore(LocalDate.now()))
+        {
             throw new IllegalArgumentException(fieldName + " must be in the future");
         }
     }
 
     public static void validateId(Long id)
     {
-        if (id == null || id <= 0) {
+        if (id == null || id <= 0)
+        {
             throw new IllegalArgumentException("Invalid ID: must be provided and greater than 0");
         }
     }
@@ -107,13 +103,14 @@ public class ValidationUtil
     public static String validateEmail(String email)
     {
         validateNotBlank(email, "email");
+        String trimmed = email.trim();
 
-        if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"))
+        if (!trimmed.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"))
         {
             throw new ValidationException("Invalid email format");
         }
 
-        return email.trim().toLowerCase();
+        return trimmed.toLowerCase();
     }
 
     public static void validateNotEmpty(java.util.Collection<?> collection, String fieldName)

@@ -326,7 +326,7 @@ public class IngredientRequestService implements IIngredientRequestService
         ValidationUtil.validatePositive(dto.quantity(), "Quantity");
         ValidationUtil.validateNotNull(dto.unit(), "Unit");
         ValidationUtil.validateNotNull(dto.deliveryDate(), "Delivery date");
-        ValidationUtil.validateFutureDate(dto.deliveryDate(), "Delivery date");
+        ValidationUtil.validateNotPastDate(dto.deliveryDate(), "Delivery date");
     }
 
     private void validateUpdateInput(UpdateIngredientRequestDTO dto)
@@ -337,6 +337,6 @@ public class IngredientRequestService implements IIngredientRequestService
         ValidationUtil.validateNotNull(dto.unit(), "Unit");
         ValidationUtil.validateNotNull(dto.requestType(), "Request type");
         ValidationUtil.validateNotNull(dto.deliveryDate(), "Delivery date");
-        ValidationUtil.validateFutureDate(dto.deliveryDate(), "Delivery date");
+        ValidationUtil.validateNotPastDate(dto.deliveryDate(), "Delivery date");
     }
 }

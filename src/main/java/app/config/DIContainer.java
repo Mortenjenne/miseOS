@@ -53,6 +53,7 @@ public final class DIContainer
     private final NotificationService notificationService;
     private final INotificationSnapshotService notificationSnapshotService;
     private final ISecurityService securityService;
+    private final IShoppingListAggregator shoppingListAggregator;
 
     @Getter
     private final IAllergenController allergenController;
@@ -112,6 +113,7 @@ public final class DIContainer
         this.shoppingListDAO = new ShoppingListDAO(emf);
         this.stationDAO = new StationDAO(emf);
 
+        this.shoppingListAggregator = new ShoppingListAggregator();
         this.notificationService = new NotificationService();
         this.notificationSnapshotService = new NotificationSnapshotService(dishSuggestionDAO, ingredientRequestDAO);
         this.dishTranslationService = new DishTranslationService(translationClient);
@@ -123,7 +125,7 @@ public final class DIContainer
         this.userService = new UserService(userDAO, stationDAO);
         this.weeklyMenuService = new WeeklyMenuService(weeklyMenuDAO, dishDAO, userDAO, stationDAO, dishTranslationService);
         this.ingredientRequestService = new IngredientRequestService(ingredientRequestDAO, dishDAO, userDAO, notificationService);
-        this.shoppingListService = new ShoppingListService(shoppingListDAO, ingredientRequestDAO, userDAO, aiService);
+        this.shoppingListService = new ShoppingListService(shoppingListDAO, ingredientRequestDAO, userDAO, aiService, shoppingListAggregator);
         this.menuInspirationService = new MenuInspirationService(aiService, userDAO, weatherClient);
         this.securityService = new SecurityService(userDAO, apiConfig.getIssuer(), apiConfig.getSecretKey(), apiConfig.getExpirationMs());
 
