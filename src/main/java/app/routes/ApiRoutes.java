@@ -4,6 +4,8 @@ import app.routes.resources.*;
 import app.routes.security.SecurityRoute;
 import io.javalin.apibuilder.EndpointGroup;
 
+import static io.javalin.apibuilder.ApiBuilder.get;
+
 public class ApiRoutes
 {
     private final SecurityRoute securityRoute;
@@ -37,6 +39,7 @@ public class ApiRoutes
     {
         return () ->
         {
+            get("/health", ctx -> ctx.status(200).result("OK"));
             securityRoute.getRoutes().addEndpoints();
             allergenRoute.getRoutes().addEndpoints();
             userRoute.getRoutes().addEndpoints();
