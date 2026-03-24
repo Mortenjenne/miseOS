@@ -5,6 +5,6 @@ Authorization: Bearer {{authTokenLineCook}}}
 
 ### GET daily menu inspiration as sse stream
 GET {{url}}/menu-inspirations/stream
-Authorization: Bearer {{authTokenLineCook}}}
+Authorization: Bearer {{authTokenHeadChef}}}
 
 ###
