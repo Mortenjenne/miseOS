@@ -5,8 +5,7 @@ import app.controllers.IUserController;
 import app.enums.Role;
 import io.javalin.apibuilder.EndpointGroup;
 
-import static io.javalin.apibuilder.ApiBuilder.path;
-import static io.javalin.apibuilder.ApiBuilder.post;
+import static io.javalin.apibuilder.ApiBuilder.*;
 
 public class SecurityRoute
 {
@@ -23,8 +22,9 @@ public class SecurityRoute
     {
         return () -> path("auth", () ->
         {
-            post("/login", securityController::login, Role.ANYONE);
-            post("/register", userController::create, Role.ANYONE);
+            get("health", securityController::healthCheck, Role.ANYONE);
+            post("login", securityController::login, Role.ANYONE);
+            post("register", userController::create, Role.ANYONE);
         });
     }
 }

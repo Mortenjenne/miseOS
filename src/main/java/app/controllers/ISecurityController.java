@@ -13,5 +13,7 @@ public interface ISecurityController
 
     void authorize(Context ctx);
 
+    void healthCheck(Context ctx);
+
     void authenticateWebSocket(WsConnectContext ws);
 }
