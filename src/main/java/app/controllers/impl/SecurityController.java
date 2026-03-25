@@ -96,6 +96,12 @@ public class SecurityController implements ISecurityController
     }
 
     @Override
+    public void healthCheck(Context ctx)
+    {
+        ctx.status(200).json("{\"msg\": \"API is up and running\"}");
+    }
+
+    @Override
     public void authenticateWebSocket(WsConnectContext wsCtx)
     {
         String header = wsCtx.header("Authorization");
