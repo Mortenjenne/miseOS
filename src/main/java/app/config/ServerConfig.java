@@ -80,7 +80,7 @@ public class ServerConfig
         String requestId = UUID.randomUUID().toString().substring(0, 8);
         ctx.attribute(REQ_ID, requestId);
         ctx.attribute(START_TIME, System.currentTimeMillis());
-        
+
         String body = isSensitivePath(ctx.path()) ? "[CENSORED]" : ctx.body();
 
         if (!body.isBlank())
