@@ -23,7 +23,7 @@ POST {{url}}/auth/login
 Content-Type: application/json
 
 {
-    "email": "morten@email.com",
+    "email": "mo_ten@hotmail.com",
     "password": "Morten123."
 }
 
@@ -95,4 +95,5 @@ Authorization: Bearer {{authTokenHeadChef}}
 DELETE {{url}}/users/2
 Authorization: Bearer {{authToken}}
 
-###
+### Auth Health check
+GET {{url}}/auth/health
