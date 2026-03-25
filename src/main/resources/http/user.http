@@ -12,10 +12,10 @@ POST {{url}}/users
 Content-Type: application/json
 
 {
-    "firstName": "Jeanette",
-    "lastName": "Nielsen",
+    "firstName": "Morten",
+    "lastName": "Jensen",
     "password": "Morten123.",
-    "email": "jeanette@email.com"
+    "email": "mo_ten@hotmail.com"
 }
 
 ### POST Login to get JWT Token(Head chef)

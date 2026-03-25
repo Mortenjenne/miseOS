@@ -39,7 +39,6 @@ public class ApiRoutes
     {
         return () ->
         {
-            get("/health", ctx -> ctx.status(200).result("OK"));
             securityRoute.getRoutes().addEndpoints();
             allergenRoute.getRoutes().addEndpoints();
             userRoute.getRoutes().addEndpoints();
