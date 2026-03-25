@@ -75,10 +75,12 @@ public class ServerConfig
 
     private void logRequest(Context ctx)
     {
+        if (ctx.path().contains("/health")) {return;}
+
         String requestId = UUID.randomUUID().toString().substring(0, 8);
         ctx.attribute(REQ_ID, requestId);
         ctx.attribute(START_TIME, System.currentTimeMillis());
-
+        
         String body = isSensitivePath(ctx.path()) ? "[CENSORED]" : ctx.body();
 
         if (!body.isBlank())
@@ -108,6 +110,8 @@ public class ServerConfig
 
     private void logResponse(Context ctx)
     {
+        if (ctx.path().contains("/health")) {return;}
+
         Long start = ctx.attribute(START_TIME);
         String requestId = ctx.attribute(REQ_ID);
 
