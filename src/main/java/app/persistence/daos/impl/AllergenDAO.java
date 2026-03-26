@@ -9,6 +9,7 @@ import app.utils.ValidationUtil;
 import jakarta.persistence.*;
 
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -22,6 +23,29 @@ public class AllergenDAO implements IAllergenDAO
     }
 
     @Override
+    public List<Allergen> searchByName(String query)
+    {
+        ValidationUtil.validateNotBlank(query, "Query");
+
+        try(EntityManager em = emf.createEntityManager())
+        {
+            try
+            {
+                return em.createQuery(
+                        "SELECT a FROM Allergen a" +
+                            " WHERE a.nameDA ILIKE :nameDA OR a.nameEN ILIKE :query",
+                        Allergen.class)
+                    .setParameter("query", "%" + query + "%")
+                    .getResultList();
+            }
+            catch (PersistenceException e)
+            {
+                throw new DatabaseException("Failed to search allergens by name: " + query, e);
+            }
+        }
+    }
+
+    @Override
     public Optional<Allergen> findByNameDA(String nameDA)
     {
         ValidationUtil.validateNotBlank(nameDA, "Name DA");
@@ -30,7 +54,8 @@ public class AllergenDAO implements IAllergenDAO
         {
             try
             {
-                Allergen allergen = em.createQuery("SELECT a FROM Allergen a WHERE a.nameDA ILIKE :nameDA", Allergen.class)
+                Allergen allergen = em.createQuery("SELECT a FROM Allergen a" +
+                        " WHERE a.nameDA ILIKE :nameDA", Allergen.class)
                     .setParameter("nameDA", "%" + nameDA + "%")
                     .getResultStream()
                     .findFirst()
