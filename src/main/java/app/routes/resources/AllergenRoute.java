@@ -21,7 +21,7 @@ public class AllergenRoute
         return () -> path("/allergens", () ->
         {
             get("", allergenController::getAll, Role.KITCHEN_STAFF);
-            get("name/{name}", allergenController::getByName, Role.KITCHEN_STAFF);
+            get("search/{query}", allergenController::searchByName, Role.KITCHEN_STAFF);
             get("{id}", allergenController::getById, Role.KITCHEN_STAFF);
             post("", allergenController::create, Role.HEAD_CHEF);
             post("seed", allergenController::seedEUAllergens, Role.HEAD_CHEF);

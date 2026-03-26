@@ -3,6 +3,7 @@ package app.controllers;
 import app.config.ApplicationConfig;
 import app.config.HibernateTestConfig;
 import app.dtos.allergen.AllergenCreateRequestDTO;
+import app.dtos.allergen.AllergenDTO;
 import app.dtos.allergen.AllergenUpdateRequestDTO;
 import app.persistence.entities.Allergen;
 import app.persistence.entities.IEntity;
@@ -15,9 +16,11 @@ import io.restassured.RestAssured;
 import jakarta.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.*;
 
+import java.util.List;
 import java.util.Map;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -128,39 +131,6 @@ class AllergenControllerTest
                 .get(ENDPOINT_URL + "/-1")
                 .then()
                 .statusCode(400);
-        }
-    }
-
-    @Nested
-    @DisplayName("GET /allergens/name/{name}")
-    class GetByName
-    {
-        @Test
-        @DisplayName("Should return allergen matching Danish name")
-        void returnsMatchingAllergen()
-        {
-            Allergen gluten = (Allergen) seeded.get("allergen_gluten");
-
-            given()
-                .header("Authorization", lineChefToken)
-                .when()
-                .get(ENDPOINT_URL + "/name/" + gluten.getNameDA())
-                .then()
-                .statusCode(200)
-                .body("nameDA", equalTo(gluten.getNameDA()))
-                .body("nameEN", equalTo(gluten.getNameEN()));
-        }
-
-        @Test
-        @DisplayName("Should return 404 for unknown name")
-        void unknownNameReturns404()
-        {
-            given()
-                .header("Authorization", lineChefToken)
-                .when()
-                .get(ENDPOINT_URL + "/name/Hvidløg")
-                .then()
-                .statusCode(404);
         }
     }
 
@@ -405,6 +375,45 @@ class AllergenControllerTest
                 .then()
                 .statusCode(400)
                 .body("message", containsString("already seeded"));
+        }
+    }
+
+    @Nested
+    @DisplayName("GET /allergens/search{query}")
+    class Search
+    {
+        @Test
+        @DisplayName("Should return allergen matching name search query")
+        void returnsMatchingAllergen()
+        {
+            Allergen gluten = (Allergen) seeded.get("allergen_gluten");
+
+            List<AllergenDTO> result = given()
+                .header("Authorization", lineChefToken)
+                .when()
+                .get(ENDPOINT_URL + "/search/" + "Gluten")
+                .then()
+                .statusCode(200)
+                .extract()
+                .jsonPath()
+                .getList(".", AllergenDTO.class);
+
+            assertThat(result, hasSize(1));
+            assertThat(result.get(0).nameDA(), is(gluten.getNameDA()));
+            assertThat(result.get(0).nameEN(), is(gluten.getNameEN()));
+        }
+
+        @Test
+        @DisplayName("Throws 400  when input is blank")
+        void returnsEmptyAllergenList()
+        {
+
+            given()
+                .header("Authorization", lineChefToken)
+                .when()
+                .get(ENDPOINT_URL + "/search/" + "")
+                .then()
+                .statusCode(400);
         }
     }
 
