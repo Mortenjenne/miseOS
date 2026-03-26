@@ -6,6 +6,8 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,17 +15,19 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public class GeminiClient implements IAiClient
 {
+    private static final Logger logger = LoggerFactory.getLogger(GeminiClient.class);
     private final HttpClient client;
     private final ObjectMapper objectMapper;
     private final String apiKey;
     private final String apiUrl;
+    private static final String MODEL_PRIMARY = "gemini-3.1-flash-lite-preview";
+    private static final String MODEL_FALLBACK = "gemini-2.5-flash-lite";
     private static final String GEMINI_GENERATE_CONTENT = ":generateContent";
     private static final String GEMINI_STREAM_GENERATE_CONTENT = ":streamGenerateContent";
 
@@ -39,12 +43,15 @@ public class GeminiClient implements IAiClient
     {
         try
         {
-            String generateUrl = apiUrl + GEMINI_GENERATE_CONTENT;
             GeminiRequest geminiRequest = buildGeminiRequest(prompt);
             String jsonBody = objectMapper.writeValueAsString(geminiRequest);
 
-            HttpRequest request = buildHttpRequest(jsonBody, generateUrl);
-            HttpResponse<String> response = sendRequest(request);
+            HttpResponse<String> response = sendRequestAndGetResponse(
+                jsonBody,
+                buildEndpoint(MODEL_PRIMARY, GEMINI_GENERATE_CONTENT),
+                buildEndpoint(MODEL_FALLBACK, GEMINI_GENERATE_CONTENT)
+            );
+
             GeminiResponse geminiResponse = objectMapper.readValue(response.body(), GeminiResponse.class);
             String content = deSerializeResponse(geminiResponse);
             return cleanGeminiResponse(content);
@@ -60,9 +67,12 @@ public class GeminiClient implements IAiClient
     {
         try
         {
-            String streamUrl = apiUrl + GEMINI_STREAM_GENERATE_CONTENT;
             String jsonBody = objectMapper.writeValueAsString(buildGeminiRequest(prompt));
-            HttpRequest request = buildHttpRequest(jsonBody, streamUrl);
+
+            HttpRequest request = buildHttpRequest(
+                jsonBody,
+                buildEndpoint(MODEL_PRIMARY, GEMINI_STREAM_GENERATE_CONTENT)
+            );
 
             client.sendAsync(request, HttpResponse.BodyHandlers.ofInputStream())
                 .orTimeout(20, TimeUnit.SECONDS)
@@ -70,8 +80,16 @@ public class GeminiClient implements IAiClient
                 {
                     try
                     {
-                        checkResponseCodes(response);
-                        readChunksFromStream(response.body(), chunkConsumer);
+                        if (response.statusCode() == 503 || (response.statusCode() == 429))
+                        {
+                            logger.warn("Primary model unavailable for stream — falling back to {}", MODEL_FALLBACK);
+                            streamFromEndpoint(jsonBody, buildEndpoint(MODEL_FALLBACK, GEMINI_STREAM_GENERATE_CONTENT), chunkConsumer);
+                        }
+                        else
+                        {
+                            checkResponseCodes(response.statusCode(), GEMINI_STREAM_GENERATE_CONTENT);
+                            readChunksFromStream(response.body(), chunkConsumer);
+                        }
                     }
                     catch (Exception e)
                     {
@@ -95,6 +113,14 @@ public class GeminiClient implements IAiClient
         }
     }
 
+    private void streamFromEndpoint(String jsonBody, String endpoint, Consumer<String> chunkConsumer) throws IOException, InterruptedException
+    {
+        HttpRequest request = buildHttpRequest(jsonBody, endpoint);
+        HttpResponse<InputStream> response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
+        checkResponseCodes(response.statusCode(), GEMINI_STREAM_GENERATE_CONTENT);
+        readChunksFromStream(response.body(), chunkConsumer);
+    }
+
     private void readChunksFromStream(InputStream inputStream, Consumer<String> chunkConsumer) throws IOException
     {
         JsonParser parser = objectMapper.getFactory().createParser(inputStream);
@@ -114,6 +140,25 @@ public class GeminiClient implements IAiClient
         parser.close();
     }
 
+    private HttpResponse<String> sendRequestAndGetResponse(String jsonBody, String primaryEndpoint, String fallbackEndpoint) throws IOException, InterruptedException
+    {
+        System.out.println(primaryEndpoint);
+        System.out.println(fallbackEndpoint);
+        HttpRequest request = buildHttpRequest(jsonBody, primaryEndpoint);
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() == 503 || (response.statusCode() == 429))
+        {
+            logger.warn("Primary model unavailable. Status code: ({}) — falling back to {}", response.statusCode(), MODEL_FALLBACK);
+            request  = buildHttpRequest(jsonBody, fallbackEndpoint);
+            response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        }
+
+        checkResponseCodes(response.statusCode(), GEMINI_GENERATE_CONTENT);
+
+        return response;
+    }
+
     private String deSerializeResponse(GeminiResponse geminiResponse)
     {
         if (geminiResponse.candidates() == null || geminiResponse.candidates().isEmpty()) {
@@ -127,22 +172,6 @@ public class GeminiClient implements IAiClient
         }
 
         return candidate.content().parts().get(0).text();
-    }
-
-    private HttpResponse<String> sendRequest(HttpRequest request) throws IOException, InterruptedException
-    {
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-        if (response.statusCode() == 429)
-        {
-            throw new AIIntegrationException("Rate limit hit!");
-        }
-
-        if (response.statusCode() != 200)
-        {
-            throw new AIIntegrationException("Gemini returned error code: " + response.statusCode());
-        }
-        return response;
     }
 
     private String cleanGeminiResponse(String geminiResponse)
@@ -165,16 +194,26 @@ public class GeminiClient implements IAiClient
         return new GeminiRequest(List.of(new Content(List.of(new Part(prompt)))));
     }
 
-    private void checkResponseCodes(HttpResponse<InputStream> response)
+    private void checkResponseCodes(int statusCode, String context)
     {
-        if (response.statusCode() == 429)
+        if (statusCode == 503)
+        {
+            throw new AIIntegrationException("Gemini Service unavailable at the moment");
+        }
+
+        if (statusCode == 429)
         {
             throw new AIIntegrationException("Rate limit hit!");
         }
 
-        if (response.statusCode() != 200)
+        if (statusCode != 200)
         {
-            throw new AIIntegrationException("Gemini stream error: " + response.statusCode());
+            throw new AIIntegrationException("Gemini error on: " + context + " status code: " + statusCode);
         }
+    }
+
+    private String buildEndpoint(String model, String action)
+    {
+        return apiUrl + model + action;
     }
 }
