@@ -47,7 +47,7 @@ class ShoppingListDAOTest
     void create()
     {
         User user = (User) seeded.get("user_gordon");
-        ShoppingList newList = new ShoppingList(LocalDate.now().plusDays(2), user);
+        ShoppingList newList = new ShoppingList(LocalDate.now().plusDays(2), user, true);
 
         ShoppingListItem item1 = new ShoppingListItem("Smør", 10, Unit.KG, "Arla", "Usaltet");
         ShoppingListItem item2 = new ShoppingListItem("Fløde", 5, Unit.L, "Arla", "38%");
@@ -117,7 +117,7 @@ class ShoppingListDAOTest
     void updateTransientThrowsException()
     {
         User user = (User) seeded.get("user_gordon");
-        ShoppingList transientList = new ShoppingList(LocalDate.now(), user);
+        ShoppingList transientList = new ShoppingList(LocalDate.now(), user, true);
 
         assertThrows(IllegalArgumentException.class, () -> shoppingListDAO.update(transientList));
     }

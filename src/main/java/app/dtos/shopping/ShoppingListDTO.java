@@ -16,6 +16,7 @@ public record ShoppingListDTO(
     int itemCount,
     List<ShoppingListItemDTO> items,
     boolean allOrdered,
+    boolean normalized,
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     LocalDateTime createdAt,
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
