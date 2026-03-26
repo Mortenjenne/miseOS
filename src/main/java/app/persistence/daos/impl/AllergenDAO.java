@@ -33,7 +33,7 @@ public class AllergenDAO implements IAllergenDAO
             {
                 return em.createQuery(
                         "SELECT a FROM Allergen a" +
-                            " WHERE a.nameDA ILIKE :nameDA OR a.nameEN ILIKE :query",
+                            " WHERE a.nameDA ILIKE :query OR a.nameEN ILIKE :query",
                         Allergen.class)
                     .setParameter("query", "%" + query + "%")
                     .getResultList();
