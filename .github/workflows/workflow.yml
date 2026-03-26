@@ -68,3 +68,8 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/mise-os:latest
+
+      - name: Trigger Watchtower Webhook
+        run: |
+          curl -f -H "Authorization: Bearer ${{ secrets.WATCHTOWER_TOKEN }}" https://deploy.corral.dk/v1/update
+
