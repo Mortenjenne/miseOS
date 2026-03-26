@@ -17,7 +17,7 @@ public class ShoppingListRoute
 
     public EndpointGroup getRoutes()
     {
-        return () -> path("/shopping-lists", () ->
+        return () -> path("shopping-lists", () ->
         {
             get("", shoppingListController::getShoppingLists, Role.HEAD_CHEF, Role.SOUS_CHEF);
             post("", shoppingListController::create, Role.HEAD_CHEF, Role.SOUS_CHEF);
