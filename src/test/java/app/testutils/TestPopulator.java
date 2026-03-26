@@ -502,7 +502,7 @@ public class TestPopulator
         User claire = (User) seeded.get("user_claire");
         User gordon = (User) seeded.get("user_gordon");
 
-        ShoppingList list1 = new ShoppingList(LocalDate.now().plusDays(3), claire);
+        ShoppingList list1 = new ShoppingList(LocalDate.now().plusDays(3), claire, true);
         ShoppingListItem item1 = new ShoppingListItem("Frisk Dild", 15.0, Unit.BUNCH, "Grønttorvet", "Til fiskefrikadeller og garniture");
         ShoppingListItem item2 = new ShoppingListItem("Laks", 5.0, Unit.SIDES, "Hvide Sande Fiskehus", "Til rygning");
         list1.addItem(item1);
@@ -510,7 +510,7 @@ public class TestPopulator
         shoppingListDAO.create(list1);
         seeded.put("shopping_list_draft", list1);
 
-        ShoppingList list2 = new ShoppingList(LocalDate.now().plusDays(6), gordon);
+        ShoppingList list2 = new ShoppingList(LocalDate.now().plusDays(6), gordon, true);
         ShoppingListItem item3 = new ShoppingListItem("Smør", 10.0, Unit.KG, "Arla", "Usaltet");
         list2.addItem(item3);
         item3.markAsOrdered();

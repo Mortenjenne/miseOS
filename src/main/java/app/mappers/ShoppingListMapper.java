@@ -31,6 +31,7 @@ public class ShoppingListMapper
             shoppingList.getItemCount(),
             shoppingListItemDTOS,
             shoppingList.allItemsOrdered(),
+            shoppingList.isNormalized(),
             shoppingList.getCreatedAt(),
             shoppingList.getFinalizedAt()
         );
