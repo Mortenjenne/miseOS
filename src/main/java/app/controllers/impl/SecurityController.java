@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 public class SecurityController implements ISecurityController
 {
     private static final Logger logger = LoggerFactory.getLogger(SecurityController.class);
+    private static final String BEARER_PREFIX = "Bearer ";
     private final ISecurityService securityService;
 
     public SecurityController(ISecurityService securityService)
@@ -59,7 +60,7 @@ public class SecurityController implements ISecurityController
         String header = ctx.header("Authorization");
         validateHeader(header);
 
-        String token = header.substring(7);
+        String token = header.substring(BEARER_PREFIX.length()).trim();
         AuthenticatedUser authUser = securityService.verifyAndExtract(token);
 
         ctx.attribute("authUser", authUser);

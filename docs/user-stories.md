@@ -3,28 +3,66 @@
 ## Epic 1: User Management & Authentication
 
 ### US-01: User Registration
-As a Head Chef  
-I want to register Line Cooks in the system  
-So that they can access their station and submit menu suggestions
+As a new user
+I want to register an account in the system
+So that I can access the application features
+
+**Acceptance Criteria**
+
+- Given I am not registered
+- When I submit my email, password and name
+- Then a user account is created
+- And I receive login credentials
+- And my default role is Customer
+- And I can log in to the system
+
+### US-02: Login with JWT
+As a user (Head Chef, Sous Chef, Line Cook, Customer)  
+I want to log in with email and password  
+So that I can access protected features
+
+**Acceptance Criteria**
+- Given I have valid credentials
+- When I send a login request
+- Then I receive a JWT token
+- And I can use the token in `Authorization: Bearer <token>`
+- And requests with invalid credentials return 401
+
+### US-03: Role Assigment
+I want to assign roles to users
+So that they can access features based on their role
 
 **Acceptance Criteria:**
 - Given I am logged in as Head Chef
-- When I create a new Line Cook account
-- Then I can assign them to a specific station (Salad, Cold/Starter, Hot, Bakery)
-- And they receive login credentials
-- And they can only access features for their role
+- When I assign a role to a user
+- Then the user receives the assigned role
+- And the user can only access features allowed for that role
+- And unauthorized users cannot assign roles
 
-### US-02: User Login
-As a Line Cook or Head Chef  
-I want to log in to the system  
-So that I can access my role-specific features
+### US-04: Station Assigment
+As a Head Chef  
+I want to assign kitchen staff to specific stations
+So that responsibilities in the kitchen are clearly defined
 
 **Acceptance Criteria:**
-- Given I have valid credentials
-- When I enter my email and password
-- Then I receive a JWT token
-- And I am redirected to my role-appropriate dashboard
-- And my session persists until token expiration
+- Given I am logged in as Head Chef
+- When I assign a user to a station
+- Then the user is linked to that station
+- And the user can access resources related to that station
+
+### US-05: Protected Endpoints Require Auth
+As a system  
+I want to protect secured endpoints  
+So that only authenticated users can access them
+
+**Acceptance Criteria**
+- Given an endpoint is not `ANYONE`
+- When request has no token
+- Then response is 401
+- When request has invalid/expired token
+- Then response is 401
+- When token is valid but role is not allowed
+- Then response is 403
 
 ---
 
