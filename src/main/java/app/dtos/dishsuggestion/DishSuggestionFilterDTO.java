@@ -6,8 +6,8 @@ public record DishSuggestionFilterDTO(
     Status status,
     Integer week,
     Integer year,
-    Long    stationId,
-    String  orderBy
+    Long stationId,
+    String orderBy
 )
 {
 }

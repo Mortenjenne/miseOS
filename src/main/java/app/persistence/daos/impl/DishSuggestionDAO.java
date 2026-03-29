@@ -28,10 +28,10 @@ public class DishSuggestionDAO implements IDishSuggestionDAO
 
         String orderColumn = switch (target)
         {
-            case "status" -> "ds.dishStatus";
-            case "station" -> "ds.station.stationName";
+            case "status" -> "ds.dishStatus ASC";
+            case "station" -> "ds.station.stationName ASC";
             case "createdAt" -> "ds.createdAt ASC";
-            default -> "ds.targetYear ASC, ds.targetWeek";
+            default -> "ds.targetYear ASC, ds.targetWeek ASC";
         };
 
         try (EntityManager em = emf.createEntityManager())
@@ -41,8 +41,8 @@ public class DishSuggestionDAO implements IDishSuggestionDAO
                 TypedQuery<DishSuggestion> query = em.createQuery(
                         "SELECT DISTINCT ds FROM DishSuggestion ds " +
                             "LEFT JOIN FETCH ds.allergens " +
-                            "WHERE (:status IS NULL OR ds.dishStatus  = :status) " +
-                            "AND (:creatorId IS NULL OR ds.createdBy = :creatorId) " +
+                            "WHERE (:status IS NULL OR ds.dishStatus = :status) " +
+                            "AND (:creatorId IS NULL OR ds.createdBy.id = :creatorId) " +
                             "AND (:week IS NULL OR ds.targetWeek = :week) " +
                             "AND (:year IS NULL OR ds.targetYear = :year) " +
                             "AND (:stationId IS NULL OR ds.station.id = :stationId) " +
