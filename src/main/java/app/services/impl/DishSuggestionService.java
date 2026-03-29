@@ -297,7 +297,7 @@ public class DishSuggestionService implements IDishSuggestionService
         int numberOfPendingDishes = dishSuggestionDAO.getPendingSuggestionsCount();
 
         notificationSender.broadcastPendingUpdate(
-            NotificationType.NEW_DISH_SUGGESTIONS,
+            NotificationType.NEW_DISH_SUGGESTION,
             NotificationCategory.DISH_SUGGESTION,
             numberOfPendingDishes
         );
