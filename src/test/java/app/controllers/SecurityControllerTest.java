@@ -21,7 +21,7 @@ import static org.hamcrest.Matchers.*;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SecurityControllerTest
 {
-    private static final String LOGIN_URL = "/auth/login";
+    private static final String ENDPOINT_URL = "/auth";
     private static final int TEST_PORT = 7780;
     private static EntityManagerFactory emf;
     private static Javalin app;
@@ -53,6 +53,82 @@ class SecurityControllerTest
     }
 
     @Nested
+    @DisplayName("POST /register")
+    class Create
+    {
+        @Test
+        @DisplayName("Anyone can register a new user")
+        void create()
+        {
+            String payload = """
+                {
+                    "firstName": "Jamie",
+                    "lastName": "Oliver",
+                    "email": "jamie@oliver.com",
+                    "password": "Password123!"
+                }
+                """;
+
+            given()
+                .contentType("application/json")
+                .body(payload)
+                .when()
+                .post(ENDPOINT_URL + "/register")
+                .then()
+                .statusCode(201)
+                .body("firstName", is("Jamie"))
+                .body("lastName", is("Oliver"))
+                .body("email", is("jamie@oliver.com"))
+                .body("userRole", is("CUSTOMER"));
+        }
+
+        @Test
+        @DisplayName("Create user with email already existing returns 409")
+        void createMissingFieldReturn400()
+        {
+            String payload = """
+                {
+                    "firstName": "Jamie",
+                    "lastName": "Oliver",
+                    "email": "claire@pastry.com",
+                    "password": "Password123!"
+                }
+                """;
+
+            given()
+                .contentType("application/json")
+                .body(payload)
+                .when()
+                .post(ENDPOINT_URL + "/register")
+                .then()
+                .statusCode(409)
+                .body("message", equalToIgnoringCase("A user with this email already exists"));
+        }
+
+        @Test
+        @DisplayName("Bad email format returns 400")
+        void badEmailFormat()
+        {
+            String payload = """
+                {
+                    "firstName": "Jamie",
+                    "lastName": "Oliver",
+                    "email": "jamieoliver.com",
+                    "password": "Password123!"
+                }
+                """;
+
+            given()
+                .contentType("application/json")
+                .body(payload)
+                .when()
+                .post(ENDPOINT_URL + "/register")
+                .then()
+                .statusCode(400);
+        }
+    }
+
+    @Nested
     @DisplayName("POST /auth/login")
     class Login
     {
@@ -74,7 +150,7 @@ class SecurityControllerTest
                 .contentType(ContentType.JSON)
                 .body(payload)
                 .when()
-                .post(LOGIN_URL)
+                .post(ENDPOINT_URL + "/login")
                 .then()
                 .statusCode(200)
                 .body("token", notNullValue())
@@ -98,7 +174,7 @@ class SecurityControllerTest
                 .contentType(ContentType.JSON)
                 .body(payload)
                 .when()
-                .post(LOGIN_URL)
+                .post(ENDPOINT_URL + "/login")
                 .then()
                 .statusCode(401);
         }
@@ -119,7 +195,7 @@ class SecurityControllerTest
                 .contentType(ContentType.JSON)
                 .body(payload)
                 .when()
-                .post(LOGIN_URL)
+                .post(ENDPOINT_URL + "/login")
                 .then()
                 .statusCode(401);
         }
@@ -139,7 +215,7 @@ class SecurityControllerTest
                 .contentType(ContentType.JSON)
                 .body(payload)
                 .when()
-                .post(LOGIN_URL)
+                .post(ENDPOINT_URL + "/login")
                 .then()
                 .statusCode(400);
         }
@@ -152,7 +228,7 @@ class SecurityControllerTest
                 .contentType(ContentType.JSON)
                 .body("{}")
                 .when()
-                .post(LOGIN_URL)
+                .post(ENDPOINT_URL + "/login")
                 .then()
                 .statusCode(400);
         }
