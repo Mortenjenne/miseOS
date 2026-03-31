@@ -21,9 +21,11 @@ public class WeeklyMenuMapper
 
         List<WeeklyMenuSlotDTO> slots = menu.getWeeklyMenuSlots()
             .stream()
-            .sorted(Comparator.comparing(WeeklyMenuSlot::getDayOfWeek))
+            .sorted(Comparator
+                .comparingInt((WeeklyMenuSlot slot) -> sortByDayOrder(slot.getDayOfWeek().name()))
+                .thenComparingLong(slot -> slot.getStation().getId()))
             .map(WeeklyMenuMapper::toSlotDTO)
-            .toList();
+            .collect(Collectors.toList());
 
         return new WeeklyMenuDTO(
             menu.getId(),
@@ -59,5 +61,17 @@ public class WeeklyMenuMapper
             (long) weeklyMenu.getWeeklyMenuSlots().size(),
             weeklyMenu.getPublishedAt()
         );
+    }
+
+    private static int sortByDayOrder(String day) {
+        return switch (day)
+        {
+            case "MONDAY" -> 1;
+            case "TUESDAY" -> 2;
+            case "WEDNESDAY" -> 3;
+            case "THURSDAY" -> 4;
+            case "FRIDAY" -> 5;
+            default -> 99;
+        };
     }
 }
