@@ -3,7 +3,7 @@ package app.enums;
 public enum NotificationType
 {
     PENDING_COUNT_UPDATED,
-    NEW_DISH_SUGGESTIONS,
+    NEW_DISH_SUGGESTION,
     NEW_INGREDIENT_REQUEST,
     REQUEST_APPROVED,
     REQUEST_REJECTED,

@@ -14,7 +14,7 @@ GET {{url}}/weekly-menus/1
 
 ### Get menu by week and year
 GET {{url}}/weekly-menus/by-week?week=12&year=2026
-Authorization: Bearer {{authTokenHeadChef}}}
+
 
 ### Get menu overview list
 GET {{url}}/weekly-menus

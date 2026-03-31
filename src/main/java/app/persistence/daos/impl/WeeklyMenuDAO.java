@@ -70,7 +70,7 @@ public class WeeklyMenuDAO implements IWeeklyMenuDAO
                             "LEFT JOIN FETCH d.allergens " +
                             "WHERE (:status IS NULL OR wm.menuStatus = :status) " +
                             "AND   (:year   IS NULL OR wm.year = :year) " +
-                            "AND   (:week   IS NULL OR wm.weekNumber = :week)", WeeklyMenu.class)
+                            "AND   (:week   IS NULL OR wm.weekNumber = :week) ", WeeklyMenu.class)
                     .setParameter("status", status)
                     .setParameter("year", year)
                     .setParameter("week", weekNumber)

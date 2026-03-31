@@ -17,7 +17,7 @@ public class MenuInspirationRoute
 
     public EndpointGroup getRoutes()
     {
-        return () -> path("/menu-inspirations", () ->
+        return () -> path("menu-inspirations", () ->
         {
             get("daily", menuInspirationController::getDailyInspiration, Role.KITCHEN_STAFF);
             sse("stream", menuInspirationController::getStreamingSuggestions, Role.KITCHEN_STAFF);

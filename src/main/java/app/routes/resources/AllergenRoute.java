@@ -18,7 +18,7 @@ public class AllergenRoute
 
     public EndpointGroup getRoutes()
     {
-        return () -> path("/allergens", () ->
+        return () -> path("allergens", () ->
         {
             get("", allergenController::getAll, Role.KITCHEN_STAFF);
             get("search/{query}", allergenController::searchByName, Role.KITCHEN_STAFF);

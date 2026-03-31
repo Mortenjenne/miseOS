@@ -17,7 +17,7 @@ public class WeeklyMenuRoute
 
     public EndpointGroup getRoutes()
     {
-        return () -> path("/weekly-menus", () ->
+        return () -> path("weekly-menus", () ->
         {
             get("", weeklyMenuController::getAll, Role.HEAD_CHEF, Role.SOUS_CHEF);
             get("current", weeklyMenuController::getCurrentWeekMenu, Role.ANYONE);
