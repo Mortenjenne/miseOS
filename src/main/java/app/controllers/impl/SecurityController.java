@@ -99,7 +99,7 @@ public class SecurityController implements ISecurityController
     @Override
     public void healthCheck(Context ctx)
     {
-        ctx.status(200).json("{\"msg\": \"API is up and running\"}");
+        ctx.status(200).json("{\"msg\": \"API is up and running v2\"}");
     }
 
     @Override
