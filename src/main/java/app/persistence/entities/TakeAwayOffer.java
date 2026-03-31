@@ -24,7 +24,7 @@ public class TakeAwayOffer
     @Column(name = "soldout")
     private boolean soldOut;
 
-    @Column(name = "offered_portions")
+    @Column(name = "offered_portions", nullable = false)
     private int offeredPortions;
 
     @Column(name = "available_portions_left")
@@ -51,7 +51,9 @@ public class TakeAwayOffer
         ValidationUtil.validateNotNull(dish, "Dish");
 
         this.enabled = true;
+        this.soldOut = false;
         this.offeredPortions = offeredPortions;
+        this.availablePortions = offeredPortions;
         this.createdBy = createdBy;
         this.dish = dish;
     }
@@ -59,21 +61,23 @@ public class TakeAwayOffer
     public void sellPortions(int quantity)
     {
         ValidationUtil.validatePositive(quantity, "Quantity");
+        requireEnabled();
         requireNotSoldOut();
 
-        int remainingPortions = quantity - availablePortions;
+        int remainingPortions = availablePortions - quantity;
 
-        if(remainingPortions < 0)
+        if (remainingPortions < 0)
         {
             throw new ConflictException("Not enough portions left for your order");
         }
 
-        if(remainingPortions == 0)
+        availablePortions = remainingPortions;
+
+        if (remainingPortions == 0)
         {
             soldOut = true;
+            enabled = false;
         }
-
-        availablePortions = remainingPortions;
     }
 
     public void disableOffer()
@@ -83,6 +87,10 @@ public class TakeAwayOffer
 
     public void enableOffer()
     {
+        if (soldOut)
+        {
+            throw new ConflictException("Cannot enable a sold out offer");
+        }
         this.enabled = true;
     }
 
@@ -103,6 +111,14 @@ public class TakeAwayOffer
         if(soldOut)
         {
             throw new ConflictException("All take away dishes are sold out");
+        }
+    }
+
+    private void requireEnabled()
+    {
+        if (!enabled)
+        {
+            throw new ConflictException("Take away offer is not enabled");
         }
     }
 
