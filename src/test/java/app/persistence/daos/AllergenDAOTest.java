@@ -11,14 +11,14 @@ import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.*;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AllergenDAOTest
@@ -169,5 +169,16 @@ class AllergenDAOTest
         Optional<Allergen> result = allergenDAO.findByNameDA("Non-existing Allergen");
 
         assertTrue(result.isEmpty());
+    }
+
+    @Test
+    @DisplayName("Search by name - should return correct Allergen")
+    void searchByName()
+    {
+        List<Allergen> result = allergenDAO.searchByName("Æg");
+
+        assertFalse(result.isEmpty());
+        assertThat(result, hasSize(1));
+        assertThat(result.get(0).getNameDA(), is("Æg"));
     }
 }

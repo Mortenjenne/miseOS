@@ -20,7 +20,7 @@ public class StationRoute
 
     public EndpointGroup getRoutes()
     {
-        return () -> path("/stations", () ->
+        return () -> path("stations", () ->
         {
             get("", stationController::getAll, Role.HEAD_CHEF, Role.SOUS_CHEF);
             get("{id}", stationController::getById, Role.HEAD_CHEF, Role.SOUS_CHEF);

@@ -8,14 +8,14 @@ GET {{url}}/users/
 Authorization: Bearer {{authTokenHeadChef}}
 
 ### POST Register a new User
-POST {{url}}/users
+POST {{url}}/auth/register
 Content-Type: application/json
 
 {
-    "firstName": "Morten",
-    "lastName": "Jensen",
+    "firstName": "Jamie",
+    "lastName": "Oliver",
     "password": "Morten123.",
-    "email": "mo_ten@hotmail.com"
+    "email": "jamie@oliver.com"
 }
 
 ### POST Login to get JWT Token(Head chef)
@@ -23,7 +23,7 @@ POST {{url}}/auth/login
 Content-Type: application/json
 
 {
-    "email": "morten@email.com",
+    "email": "mo_ten@hotmail.com",
     "password": "Morten123."
 }
 
@@ -95,4 +95,5 @@ Authorization: Bearer {{authTokenHeadChef}}
 DELETE {{url}}/users/2
 Authorization: Bearer {{authToken}}
 
-###
+### Auth Health check
+GET {{url}}/auth/health

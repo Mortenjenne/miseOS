@@ -29,6 +29,9 @@ public class ShoppingList implements IEntity
     @Column(name = "shopping_list_status", nullable = false)
     private ShoppingListStatus shoppingListStatus;
 
+    @Column(name = "normalized")
+    private boolean isNormalized;
+
     @ManyToOne
     @JoinColumn(name = "created_by_user_id", nullable = false)
     private User createdBy;
@@ -42,13 +45,14 @@ public class ShoppingList implements IEntity
     @OneToMany(mappedBy = "shoppingList", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<ShoppingListItem> shoppingListItems = new HashSet<>();
 
-    public ShoppingList(LocalDate deliveryDate, User createdBy)
+    public ShoppingList(LocalDate deliveryDate, User createdBy, boolean isNormalized)
     {
         ValidationUtil.validateNotNull(deliveryDate, "Delivery date");
         ValidationUtil.validateNotNull(createdBy, "Created by user");
 
         this.deliveryDate = deliveryDate;
         this.createdBy = createdBy;
+        this.isNormalized = isNormalized;
         this.shoppingListStatus = ShoppingListStatus.DRAFT;
     }
 

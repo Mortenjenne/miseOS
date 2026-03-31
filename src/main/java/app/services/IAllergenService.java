@@ -18,7 +18,7 @@ public interface IAllergenService
 
     List<AllergenDTO> getAllAllergens();
 
-    AllergenDTO getAllergenByNameDA(String nameDA);
+    List<AllergenDTO> searchByName(String query);
 
     List<AllergenDTO> seedEUAllergens();
 }

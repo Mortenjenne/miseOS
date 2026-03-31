@@ -4,6 +4,8 @@ import app.dtos.security.AuthenticatedUser;
 import app.dtos.shopping.*;
 import app.enums.ShoppingListStatus;
 import app.enums.Status;
+import app.enums.SupportedLanguage;
+import app.exceptions.AIIntegrationException;
 import app.exceptions.ConflictException;
 import app.mappers.ShoppingListMapper;
 import app.persistence.daos.interfaces.IIngredientRequestDAO;
@@ -17,12 +19,16 @@ import app.services.IAiService;
 import app.services.IShoppingListService;
 import app.utils.ValidationUtil;
 import jakarta.persistence.EntityNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ShoppingListService implements IShoppingListService
 {
+    private static final Logger logger = LoggerFactory.getLogger(ShoppingListService.class);
     private final IShoppingListDAO shoppingListDAO;
     private final IIngredientRequestDAO ingredientRequestDAO;
     private final IUserReader userReader;
@@ -49,11 +55,11 @@ public class ShoppingListService implements IShoppingListService
         checkRequestNotEmpty(approvedRequests, dto.deliveryDate());
 
         List<String> uniqueIngredientNames = shoppingListAggregator.getUniqueIngredientNames(approvedRequests);
-        Map<String, String> normalizedNames = aiService.normalizeIngredientList(uniqueIngredientNames, dto.targetLanguage());
-        List<ShoppingListItem> shoppingListItems = shoppingListAggregator.aggregateAndGetShoppingListItems(approvedRequests, normalizedNames);
+        NormalizationResult normalizationResult = normalizeWithFallback(uniqueIngredientNames, dto.targetLanguage());
+        List<ShoppingListItem> shoppingListItems = shoppingListAggregator.aggregateAndGetShoppingListItems(approvedRequests, normalizationResult.normalizedNames());
 
         User creator = userReader.getByID(authUser.userId());
-        ShoppingList shoppingList = new ShoppingList(dto.deliveryDate(), creator);
+        ShoppingList shoppingList = new ShoppingList(dto.deliveryDate(), creator, normalizationResult.normalized());
         shoppingListItems.forEach(shoppingList::addItem);
 
         ShoppingList saved = shoppingListDAO.create(shoppingList);
@@ -202,6 +208,30 @@ public class ShoppingListService implements IShoppingListService
 
         ShoppingList updated = shoppingListDAO.update(list);
         return ShoppingListMapper.toDTO(updated);
+    }
+
+    private NormalizationResult normalizeWithFallback(List<String> names, SupportedLanguage language)
+    {
+        try
+        {
+            Map<String, String> aiNormalizedNames = aiService.normalizeIngredientList(names, language);
+            return new NormalizationResult(
+                aiNormalizedNames,
+                true
+            );
+        }
+        catch (AIIntegrationException e)
+        {
+            logger.warn("AI normalization failed — creating shopping list with original ingredient names. Reason: {}", e.getMessage());
+
+            Map<String, String> nonNormalizedNames = names.stream()
+                .collect(Collectors.toMap(name -> name, name -> name));
+
+            return new NormalizationResult(
+                nonNormalizedNames,
+                false
+            );
+        }
     }
 
     private void checkRequestNotEmpty(List<IngredientRequest> requests, LocalDate deliveryDate)

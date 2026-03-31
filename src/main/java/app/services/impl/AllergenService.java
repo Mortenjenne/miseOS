@@ -113,13 +113,13 @@ public class AllergenService implements IAllergenService
     }
 
     @Override
-    public AllergenDTO getAllergenByNameDA(String nameDA)
+    public List<AllergenDTO> searchByName(String query)
     {
-        ValidationUtil.validateNotBlank(nameDA, "Name");
+        ValidationUtil.validateNotBlank(query, "Search query");
 
-        return allergenDAO.findByNameDA(nameDA)
+        return allergenDAO.searchByName(query).stream()
             .map(AllergenMapper::toDTO)
-            .orElseThrow(() -> new EntityNotFoundException("Allergen not found: " + nameDA));
+            .toList();
     }
 
     @Override

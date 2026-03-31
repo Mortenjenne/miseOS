@@ -77,17 +77,17 @@ public class AllergenController implements IAllergenController
     }
 
     @Override
-    public void getByName(Context ctx)
-    {
-        String name = RequestUtil.requirePathString(ctx, "name");
-        AllergenDTO dto = allergenService.getAllergenByNameDA(name);
-        ctx.status(200).json(dto);
-    }
-
-    @Override
     public void seedEUAllergens(Context ctx)
     {
         List<AllergenDTO> allergens = allergenService.seedEUAllergens();
         ctx.status(201).json(allergens);
+    }
+
+    @Override
+    public void searchByName(Context ctx)
+    {
+        String query = RequestUtil.requirePathString(ctx, "query");
+        List<AllergenDTO> allergens = allergenService.searchByName(query);
+        ctx.status(200).json(allergens);
     }
 }
