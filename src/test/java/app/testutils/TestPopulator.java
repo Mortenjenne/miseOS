@@ -1,9 +1,6 @@
 package app.testutils;
 
-import app.enums.DayOfWeek;
-import app.enums.RequestType;
-import app.enums.Unit;
-import app.enums.UserRole;
+import app.enums.*;
 import app.persistence.daos.impl.*;
 import app.persistence.daos.interfaces.*;
 import app.persistence.entities.*;
@@ -25,6 +22,7 @@ public class TestPopulator
     private final IIngredientRequestDAO ingredientRequestDAO;
     private final IShoppingListDAO shoppingListDAO;
     private final ITakeAwayOfferDAO takeAwayOfferDAO;
+    private final ITakeAwayOrderDAO takeAwayOrderDAO;
     private final Map<String, IEntity> seeded;
 
     public TestPopulator(EntityManagerFactory emf)
@@ -38,6 +36,7 @@ public class TestPopulator
         this.ingredientRequestDAO = new IngredientRequestDAO(emf);
         this.shoppingListDAO = new ShoppingListDAO(emf);
         this.takeAwayOfferDAO = new TakeAwayOfferDAO(emf);
+        this.takeAwayOrderDAO = new TakeAwayOrderDAO(emf);
         this.seeded = new HashMap<>();
     }
 
@@ -53,6 +52,7 @@ public class TestPopulator
         populateShoppingLists();
         populateForGeminiIngredientRequest();
         populateTakeAwayOffers();
+        populateTakeAwayOrders();
     }
 
     public Map<String, IEntity> getSeededData()
@@ -555,5 +555,36 @@ public class TestPopulator
         soldOutToday.sellPortions(10);
         takeAwayOfferDAO.create(soldOutToday);
         seeded.put("offer_soldout_today", soldOutToday);
+    }
+
+    private void populateTakeAwayOrders()
+    {
+        User customer = (User) seeded.get("user_rene");
+        TakeAwayOffer offer1 = (TakeAwayOffer) seeded.get("offer_active_today");
+        TakeAwayOffer offer2 = (TakeAwayOffer) seeded.get("offer_soldout_today");
+
+        TakeAwayOrder order1 = new TakeAwayOrder(customer,
+            offer1,
+            2
+        );
+
+        takeAwayOrderDAO.create(order1);
+        seeded.put("order_1", order1);
+
+        TakeAwayOrder order2 = new TakeAwayOrder(customer,
+            offer1,
+            3
+        );
+
+        takeAwayOrderDAO.create(order2);
+        seeded.put("order_2", order2);
+
+        TakeAwayOrder order3 = new TakeAwayOrder(customer,
+            offer2,
+            5
+        );
+
+        takeAwayOrderDAO.create(order3);
+        seeded.put("order_3", order3);
     }
 }

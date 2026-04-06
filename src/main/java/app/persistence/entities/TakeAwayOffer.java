@@ -140,4 +140,16 @@ public class TakeAwayOffer implements IEntity
     {
         return getClass().hashCode();
     }
+
+    public void addPortionsBack(int quantity)
+    {
+        ValidationUtil.validatePositive(quantity, "Quantity");
+        this.availablePortions += quantity;
+
+        if (this.availablePortions > 0)
+        {
+            this.soldOut = false;
+            this.enabled = true;
+        }
+    }
 }
