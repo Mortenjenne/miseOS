@@ -142,8 +142,6 @@ public class GeminiClient implements IAiClient
 
     private HttpResponse<String> sendRequestAndGetResponse(String jsonBody, String primaryEndpoint, String fallbackEndpoint) throws IOException, InterruptedException
     {
-        System.out.println(primaryEndpoint);
-        System.out.println(fallbackEndpoint);
         HttpRequest request = buildHttpRequest(jsonBody, primaryEndpoint);
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
