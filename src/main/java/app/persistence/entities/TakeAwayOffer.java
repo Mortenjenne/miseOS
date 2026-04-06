@@ -6,13 +6,14 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 @Getter
 @Entity
 @Table(name = "take_away_offer")
-public class TakeAwayOffer
+public class TakeAwayOffer implements IEntity
 {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,6 +28,9 @@ public class TakeAwayOffer
     @Column(name = "offered_portions", nullable = false)
     private int offeredPortions;
 
+    @Column(name = "price", nullable = false)
+    private double price;
+
     @Column(name = "available_portions_left")
     private int availablePortions ;
 
@@ -39,7 +43,7 @@ public class TakeAwayOffer
     User createdBy;
 
     @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    private LocalDate createdAt;
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
@@ -97,7 +101,7 @@ public class TakeAwayOffer
     @PrePersist
     private void onCreate()
     {
-        this.createdAt = LocalDateTime.now();
+        this.createdAt = LocalDate.now();
     }
 
     @PreUpdate
@@ -126,7 +130,7 @@ public class TakeAwayOffer
     public boolean equals(Object o)
     {
         if (this == o) return true;
-        if (!(o instanceof DishSuggestion)) return false;
+        if (!(o instanceof TakeAwayOffer)) return false;
         TakeAwayOffer other = (TakeAwayOffer) o;
         return id != null && id.equals(other.id);
     }
