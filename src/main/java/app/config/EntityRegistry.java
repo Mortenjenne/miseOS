@@ -20,5 +20,7 @@ final class EntityRegistry
         configuration.addAnnotatedClass(Station.class);
         configuration.addAnnotatedClass(WeeklyMenu.class);
         configuration.addAnnotatedClass(WeeklyMenuSlot.class);
+        configuration.addAnnotatedClass(TakeAwayOffer.class);
+        configuration.addAnnotatedClass(TakeAwayOrder.class);
     }
 }

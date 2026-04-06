@@ -24,6 +24,7 @@ public class TestPopulator
     private final IWeeklyMenuDAO menuDAO;
     private final IIngredientRequestDAO ingredientRequestDAO;
     private final IShoppingListDAO shoppingListDAO;
+    private final ITakeAwayOfferDAO takeAwayOfferDAO;
     private final Map<String, IEntity> seeded;
 
     public TestPopulator(EntityManagerFactory emf)
@@ -36,6 +37,7 @@ public class TestPopulator
         this.menuDAO = new WeeklyMenuDAO(emf);
         this.ingredientRequestDAO = new IngredientRequestDAO(emf);
         this.shoppingListDAO = new ShoppingListDAO(emf);
+        this.takeAwayOfferDAO = new TakeAwayOfferDAO(emf);
         this.seeded = new HashMap<>();
     }
 
@@ -50,6 +52,7 @@ public class TestPopulator
         populateWeeklyMenus();
         populateShoppingLists();
         populateForGeminiIngredientRequest();
+        populateTakeAwayOffers();
     }
 
     public Map<String, IEntity> getSeededData()
@@ -517,5 +520,40 @@ public class TestPopulator
         list2.finalizeShoppingList();
         shoppingListDAO.create(list2);
         seeded.put("shopping_list_finalized", list2);
+    }
+
+    private void populateTakeAwayOffers()
+    {
+        User gordon = (User) seeded.get("user_gordon");
+        Dish salmon = (Dish) seeded.get("dish_salmon");
+        Dish boeuf = (Dish) seeded.get("dish_boeuf");
+        Dish tartelet = (Dish) seeded.get("dish_tartelet");
+
+        TakeAwayOffer activeToday = new TakeAwayOffer(
+            10,
+            gordon,
+            salmon
+        );
+        takeAwayOfferDAO.create(activeToday);
+        seeded.put("offer_active_today", activeToday);
+
+        TakeAwayOffer disableToday = new TakeAwayOffer(
+            10,
+            gordon,
+            boeuf
+        );
+
+        disableToday.disableOffer();
+        takeAwayOfferDAO.create(disableToday);
+        seeded.put("offer_disabled_today", disableToday);
+
+        TakeAwayOffer soldOutToday = new TakeAwayOffer(
+            10,
+            gordon,
+            tartelet
+        );
+        soldOutToday.sellPortions(10);
+        takeAwayOfferDAO.create(soldOutToday);
+        seeded.put("offer_soldout_today", soldOutToday);
     }
 }
