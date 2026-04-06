@@ -16,6 +16,7 @@ import app.persistence.entities.ShoppingList;
 import app.persistence.entities.ShoppingListItem;
 import app.persistence.entities.User;
 import app.services.IAiService;
+import app.services.IShoppingListAggregator;
 import app.services.IShoppingListService;
 import app.utils.ValidationUtil;
 import jakarta.persistence.EntityNotFoundException;

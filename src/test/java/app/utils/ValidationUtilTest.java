@@ -113,6 +113,22 @@ class ValidationUtilTest
         assertDoesNotThrow(() -> ValidationUtil.validateDescription("Valid description", "Description"));
     }
 
+    @DisplayName("Validate description - Passes at maximum length 200")
+    @Test
+    void validateDescriptionAcceptsMaxLength()
+    {
+        String desc = "a".repeat(200);
+        assertDoesNotThrow(() -> ValidationUtil.validateDescription(desc, "Description"));
+    }
+
+    @DisplayName("Validate description - Throws when description exceeds 200 chars")
+    @Test
+    void validateDescriptionThrowsTooLong()
+    {
+        String desc = "a".repeat(201);
+        assertThrows(ValidationException.class, () -> ValidationUtil.validateDescription(desc, "Description"));
+    }
+
     @DisplayName("Validate positive - Throws when value is zero")
     @Test
     void validatePositiveThrowsWithZero()

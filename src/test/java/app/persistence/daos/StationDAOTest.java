@@ -36,7 +36,7 @@ class StationDAOTest
         stationDAO = new StationDAO(emf);
     }
 
-    @DisplayName(("Create - should persist a station"))
+    @DisplayName("Create - should persist a station")
     @Test
     void create()
     {
