@@ -1,6 +1,5 @@
 package app.persistence.daos.interfaces;
 
-import app.dtos.menu.RecentMenuDishDTO;
 import app.dtos.menu.WeeklyMenuOverviewDTO;
 import app.enums.MenuStatus;
 import app.persistence.daos.interfaces.generic.IEntityDAO;

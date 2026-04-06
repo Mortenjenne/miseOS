@@ -1,7 +1,6 @@
 package app.persistence.entities;
 
 import app.enums.DayOfWeek;
-import app.utils.ValidationUtil;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

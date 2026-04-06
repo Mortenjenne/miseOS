@@ -10,7 +10,7 @@ public class ValidationUtil
     private static final int NAME_MIN = 2;
     private static final int NAME_MAX = 100;
     private static final int DESCRIPTION_MIN = 5;
-    private static final int DESCRIPTION_MAX = 150;
+    private static final int DESCRIPTION_MAX = 200;
 
     private ValidationUtil(){}
 

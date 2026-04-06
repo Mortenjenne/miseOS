@@ -22,10 +22,10 @@ public class Allergen implements IEntity
     @Column(name = "name_en", nullable = false, unique = true, length = 100)
     private String nameEN;
 
-    @Column(name = "description_da", length = 150)
+    @Column(name = "description_da", length = 200)
     private String descriptionDA;
 
-    @Column(name = "description_en", length = 150)
+    @Column(name = "description_en", length = 200)
     private String descriptionEN;
 
     @Column(name = "display_number")
