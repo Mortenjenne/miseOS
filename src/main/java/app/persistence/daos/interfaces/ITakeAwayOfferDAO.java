@@ -6,7 +6,7 @@ import app.persistence.entities.TakeAwayOffer;
 import java.time.LocalDate;
 import java.util.Set;
 
-public interface ITakeAwayOffer extends IEntityDAO<TakeAwayOffer, Long>
+public interface ITakeAwayOfferDAO extends IEntityDAO<TakeAwayOffer, Long>
 {
     Set<TakeAwayOffer> findActiveOffers(LocalDate date);
 
