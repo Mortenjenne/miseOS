@@ -12,10 +12,10 @@ POST {{url}}/auth/register
 Content-Type: application/json
 
 {
-    "firstName": "Jamie",
-    "lastName": "Oliver",
+    "firstName": "Morten",
+    "lastName": "Jensen",
     "password": "Morten123.",
-    "email": "jamie@oliver.com"
+    "email": "mo_ten@hotmail.com"
 }
 
 ### POST Login to get JWT Token(Head chef)
@@ -37,20 +37,20 @@ Content-Type: application/json
 }
 
 ### POST Create Another User
-POST {{url}}/users/
+POST {{url}}/auth/register
 Content-Type: application/json
 
 {
-    "firstName": "Anna",
+    "firstName": "Jeanette",
     "lastName": "Hansen",
-    "email": "anna@email.com",
-    "password": "Anna123."
+    "email": "jeanette@email.com",
+    "password": "Morten123."
 }
 
 ### PUT Update User
 PUT {{url}}/users/1
 Content-Type: application/json
-Authorization: Bearer {{authToken}}
+Authorization: Bearer {{authTokenHeadChef}}
 
 {
     "firstName": "Morten",
@@ -62,7 +62,7 @@ Authorization: Bearer {{authToken}}
 ### PATCH Change Email
 PATCH {{url}}/users/1/email
 Content-Type: application/json
-Authorization: Bearer {{authToken}}
+Authorization: Bearer {{authTokenHeadChef}}
 
 {
     "email": "test@email.com"
@@ -71,7 +71,7 @@ Authorization: Bearer {{authToken}}
 ### PATCH Change Password
 PATCH {{url}}/users/1/password
 Content-Type: application/json
-Authorization: Bearer {{authToken}}
+Authorization: Bearer {{authTokenHeadChef}}
 
 {
     "currentPassword": "Morten123.",
@@ -81,7 +81,7 @@ Authorization: Bearer {{authToken}}
 ### PATCH Change Role
 PATCH {{url}}/users/1/role
 Content-Type: application/json
-Authorization: Bearer {{authToken}}
+Authorization: Bearer {{authTokenHeadChef}}
 
 {
     "userRole": "SOUS_CHEF"
@@ -93,7 +93,7 @@ Authorization: Bearer {{authTokenHeadChef}}
 
 ### DELETE Delete User
 DELETE {{url}}/users/2
-Authorization: Bearer {{authToken}}
+Authorization: Bearer {{authTokenHeadChef}}
 
 ### Auth Health check
 GET {{url}}/auth/health

@@ -20,11 +20,11 @@ GET {{url}}/dishes?stationId=1&active=true
 Authorization: Bearer {{authTokenHeadChef}}
 
 ### Get dish by id — check station shape in response
-GET {{url}}/dishes/1
+GET {{url}}/dishes/15
 Authorization: Bearer {{authTokenHeadChef}}
 
 ### Search by name
-GET {{url}}/dishes/search?query=laks
+GET {{url}}/dishes/search?query=kyl
 Authorization: Bearer {{authTokenHeadChef}}
 
 ### Get dishes grouped by station
@@ -32,7 +32,7 @@ GET {{url}}/dishes/grouped
 Authorization: Bearer {{authTokenHeadChef}}
 
 ### Get available dishes for week 7 2026
-GET {{url}}/dishes/available?week=7&year=2026
+GET {{url}}/dishes/available?week=16&year=2026
 Authorization: Bearer {{authTokenHeadChef}}
 
 ### Create dish
@@ -71,12 +71,12 @@ Authorization: Bearer {{authTokenHeadChef}}
     "allergenIds": []
 }
 
-### Activate dish e
-PATCH {{url}}/dishes/1/activate
+### Activate dish
+PATCH {{url}}/dishes/101/activate
 Authorization: Bearer {{authTokenHeadChef}}
 
 ### Deactivate dish
-PATCH {{url}}/dishes/1/deactivate
+PATCH {{url}}/dishes/101/deactivate
 Authorization: Bearer {{authTokenHeadChef}}
 
 ### Delete dish — expect 204

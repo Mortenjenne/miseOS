@@ -1,6 +1,7 @@
 package app.services.impl;
 
 import app.dtos.gemini.AiDishSuggestionDTO;
+import app.dtos.menu.RecentMenuDishDTO;
 import app.dtos.station.StationDTO;
 import app.dtos.weather.WeatherForecastDTO;
 import app.enums.SupportedLanguage;
@@ -53,13 +54,15 @@ public class AiService implements IAiService
     }
 
     @Override
-    public List<AiDishSuggestionDTO> getAiDishSuggestion(WeatherForecastDTO weatherForecastDTO, StationDTO station)
+    public List<AiDishSuggestionDTO> getAiDishSuggestion(WeatherForecastDTO weatherForecastDTO, StationDTO station, List<RecentMenuDishDTO> recentMenuDishDTOS)
     {
         try
         {
             String forecast = WeatherForecastBuilder.getWeatherForecast(weatherForecastDTO);
             String stationJSON = objectMapper.writeValueAsString(station);
-            String prompt = DishPromptBuilder.buildMenuInspirationPrompt(forecast, stationJSON);
+            String recentDishes = objectMapper.writeValueAsString(recentMenuDishDTOS);
+            String prompt = DishPromptBuilder.buildMenuInspirationPrompt(forecast, stationJSON, recentDishes);
+            System.out.println(prompt);
 
             String jsonResponse = aiClient.generateResponse(prompt);
             return Arrays.asList(objectMapper.readValue(jsonResponse, AiDishSuggestionDTO[].class));
@@ -71,7 +74,7 @@ public class AiService implements IAiService
     }
 
     @Override
-    public void getStreamingDishSuggestions(WeatherForecastDTO weatherForecastDTO, StationDTO station, Consumer<AiDishSuggestionDTO> dishConsumer, Runnable onComplete, Consumer<Throwable> errorConsumer)
+    public void getStreamingDishSuggestions(WeatherForecastDTO weatherForecastDTO, StationDTO station, List<RecentMenuDishDTO> recentMenuDishDTOS, Consumer<AiDishSuggestionDTO> dishConsumer, Runnable onComplete, Consumer<Throwable> errorConsumer)
     {
         StringBuilder fullResponse = new StringBuilder();
 
@@ -79,7 +82,8 @@ public class AiService implements IAiService
         {
             String forecast = WeatherForecastBuilder.getWeatherForecast(weatherForecastDTO);
             String stationJSON = objectMapper.writeValueAsString(station);
-            String prompt = DishPromptBuilder.buildMenuInspirationPrompt(forecast, stationJSON);
+            String recentDishes = objectMapper.writeValueAsString(recentMenuDishDTOS);
+            String prompt = DishPromptBuilder.buildMenuInspirationPrompt(forecast, stationJSON, recentDishes);
 
             aiClient.streamResponse(
                 prompt,

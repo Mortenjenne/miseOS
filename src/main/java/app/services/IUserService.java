@@ -1,12 +1,9 @@
 package app.services;
 
 import app.dtos.security.AuthenticatedUser;
-import app.dtos.security.LoginRequestDTO;
 import app.dtos.user.*;
-import app.enums.UserRole;
 
 import java.util.List;
-import java.util.Set;
 
 public interface IUserService
 {

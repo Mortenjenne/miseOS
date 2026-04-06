@@ -1,7 +1,7 @@
 
 ### GET daily menu inspiration
 GET {{url}}/menu-inspirations/daily
-Authorization: Bearer {{authTokenLineCook}}}
+Authorization: Bearer {{authTokenHeadChef}}}
 
 ### GET daily menu inspiration as sse stream
 GET {{url}}/menu-inspirations/stream

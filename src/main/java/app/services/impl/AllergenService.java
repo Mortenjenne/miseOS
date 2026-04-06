@@ -11,7 +11,6 @@ import app.persistence.entities.Allergen;
 import app.services.IAllergenService;
 import app.utils.EUAllergens;
 import app.utils.ValidationUtil;
-import jakarta.persistence.EntityNotFoundException;
 
 import java.util.*;
 

@@ -29,7 +29,7 @@ public class DishSuggestionDAO implements IDishSuggestionDAO
         String orderColumn = switch (target)
         {
             case "status" -> "ds.dishStatus ASC";
-            case "station" -> "ds.station.stationName ASC";
+            case "station" -> "ds.station.id ASC";
             case "createdAt" -> "ds.createdAt ASC";
             default -> "ds.targetYear ASC, ds.targetWeek ASC";
         };

@@ -2,51 +2,52 @@
 ### Create weekly menu (draft)
 POST {{url}}/weekly-menus
 Content-Type: application/json
-Authorization: Bearer {{authTokenHeadChef}}}
+Authorization: Bearer {{authTokenHeadChef}}
 
 {
-    "week": 12,
+    "week": 16,
     "year": 2026
 }
 
 ### Get menu by id
-GET {{url}}/weekly-menus/1
+GET {{url}}/weekly-menus/3
+Authorization: Bearer {{authTokenHeadChef}}
 
 ### Get menu by week and year
-GET {{url}}/weekly-menus/by-week?week=12&year=2026
+GET {{url}}/weekly-menus/by-week?week=14&year=2026
 
 
 ### Get menu overview list
 GET {{url}}/weekly-menus
-Authorization: Bearer {{authTokenHeadChef}}}
+Authorization: Bearer {{authTokenHeadChef}}
 
 ### Get filtered menu overviews
-GET {{url}}/weekly-menus?status=DRAFT&year=2026&week=12
-Authorization: Bearer {{authTokenHeadChef}}}
+GET {{url}}/weekly-menus?status=DRAFT
+Authorization: Bearer {{authTokenHeadChef}}
 
 ### Translate one slot
-POST {{url}}/weekly-menus/1/slots/1/translate
-Authorization: Bearer {{authTokenHeadChef}}}
+POST {{url}}/weekly-menus/5/slots/101/translate
+Authorization: Bearer {{authTokenHeadChef}}
 
 ### Translate whole menu
 POST {{url}}/weekly-menus/1/translate
-Authorization: Bearer {{authTokenHeadChef}}}
+Authorization: Bearer {{authTokenHeadChef}}
 
 ### Add slot to draft menu
-POST {{url}}/weekly-menus/1/slots
+POST {{url}}/weekly-menus/5/slots
 Content-Type: application/json
-Authorization: Bearer {{authTokenHeadChef}}}
+Authorization: Bearer {{authTokenHeadChef}}
 
 {
-    "dayOfWeek": "FRIDAY",
+    "dayOfWeek": "MONDAY",
     "stationId": 1,
-    "dishId": 1
+    "dishId": 101
 }
 
 ### Update slot dish
 PUT {{url}}/weekly-menus/4/slots/12
 Content-Type: application/json
-Authorization: Bearer {{authTokenHeadChef}}}
+Authorization: Bearer {{authTokenHeadChef}}
 
 {
     "dishId": 1
@@ -54,15 +55,15 @@ Authorization: Bearer {{authTokenHeadChef}}}
 
 ### Remove slot from menu
 DELETE {{url}}/weekly-menus/4/slots/12
-Authorization: Bearer {{authTokenHeadChef}}}
+Authorization: Bearer {{authTokenHeadChef}}
 
 ### Publish menu
-POST {{url}}/weekly-menus/1/publish
-Authorization: Bearer {{authTokenHeadChef}}}
+POST {{url}}/weekly-menus/5/publish
+Authorization: Bearer {{authTokenHeadChef}}
 
 ### Get current week published menu
 GET {{url}}/weekly-menus/current
 
 ### Delete draft menu
 DELETE {{url}}/weekly-menus/2
-Authorization: Bearer {{authTokenHeadChef}}}
+Authorization: Bearer {{authTokenHeadChef}}

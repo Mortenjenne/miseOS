@@ -28,7 +28,7 @@ public class DishSuggestion implements IEntity
     @Column(name = "name_da", nullable = false, length = 100)
     private String nameDA;
 
-    @Column(name = "description_da", nullable = false, length = 150)
+    @Column(name = "description_da", nullable = false, length = 200)
     private String descriptionDA;
 
     @Enumerated(EnumType.STRING)
