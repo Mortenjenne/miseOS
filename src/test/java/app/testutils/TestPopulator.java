@@ -89,6 +89,7 @@ public class TestPopulator
         User u2 = new User("Claire", "Smyth", "claire@pastry.com", PasswordUtil.hashPassword("Hash2", bcryptRounds), UserRole.LINE_COOK);
         User u3 = new User("Marco", "Pierre", "marco@grill.com", PasswordUtil.hashPassword("Hash3", bcryptRounds), UserRole.SOUS_CHEF);
         User u4 = new User("Rene", "Redzepi", "rene@cold.com", PasswordUtil.hashPassword("Hash4", bcryptRounds), UserRole.LINE_COOK);
+        User u5 = new User("Hans", "Hansen", "hans@gmail.com", PasswordUtil.hashPassword("Hash5", bcryptRounds), UserRole.CUSTOMER);
 
         Station cold = (Station) seeded.get("station_cold");
         Station hot = (Station) seeded.get("station_hot");
@@ -104,11 +105,13 @@ public class TestPopulator
         userDAO.create(u2);
         userDAO.create(u3);
         userDAO.create(u4);
+        userDAO.create(u5);
 
         seeded.put("user_gordon", u1);
         seeded.put("user_claire", u2);
         seeded.put("user_marco", u3);
         seeded.put("user_rene", u4);
+        seeded.put("user_customer", u5);
     }
 
     private void populateAllergens() {
@@ -552,14 +555,14 @@ public class TestPopulator
             gordon,
             tartelet
         );
-        soldOutToday.sellPortions(10);
+
         takeAwayOfferDAO.create(soldOutToday);
         seeded.put("offer_soldout_today", soldOutToday);
     }
 
     private void populateTakeAwayOrders()
     {
-        User customer = (User) seeded.get("user_rene");
+        User customer = (User) seeded.get("user_customer");
         TakeAwayOffer offer1 = (TakeAwayOffer) seeded.get("offer_active_today");
         TakeAwayOffer offer2 = (TakeAwayOffer) seeded.get("offer_soldout_today");
 

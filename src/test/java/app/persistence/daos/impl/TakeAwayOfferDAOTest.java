@@ -72,12 +72,12 @@ class TakeAwayOfferDAOTest {
     {
         TakeAwayOffer seed = (TakeAwayOffer) seeded.get("offer_active_today");
 
-        seed.sellPortions(5);
+        seed.sellPortions(2);
         seed.disableOffer();
 
         TakeAwayOffer updated = takeAwayOfferDAO.update(seed);
 
-        assertThat(updated.getAvailablePortions(), is(5));
+        assertThat(updated.getAvailablePortions(), is(3));
         assertFalse(updated.isEnabled());
     }
 
@@ -87,7 +87,7 @@ class TakeAwayOfferDAOTest {
     {
         TakeAwayOffer seed = (TakeAwayOffer) seeded.get("offer_active_today");
 
-        seed.sellPortions(10);
+        seed.sellPortions(5);
 
         TakeAwayOffer updated = takeAwayOfferDAO.update(seed);
 
@@ -112,6 +112,11 @@ class TakeAwayOfferDAOTest {
     void findActiveOffers()
     {
         LocalDate today = LocalDate.now();
+
+        TakeAwayOffer soldOutSeed = (TakeAwayOffer) seeded.get("offer_soldout_today");
+        soldOutSeed.sellPortions(5);
+        takeAwayOfferDAO.update(soldOutSeed);
+
         Set<TakeAwayOffer> activeOffers = takeAwayOfferDAO.findActiveOffers(today);
 
         assertThat(activeOffers, hasSize(1));
