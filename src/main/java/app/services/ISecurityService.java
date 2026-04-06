@@ -3,7 +3,6 @@ package app.services;
 import app.dtos.security.AuthenticatedUser;
 import app.dtos.security.LoginRequestDTO;
 import app.dtos.security.LoginResponseDTO;
-import app.persistence.entities.User;
 
 public interface ISecurityService
 {

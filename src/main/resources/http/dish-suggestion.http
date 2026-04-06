@@ -1,6 +1,6 @@
 
 ### GET by ID
-GET {{url}}/dish-suggestions/1
+GET {{url}}/dish-suggestions/101
 Authorization: Bearer {{authTokenHeadChef}}
 
 ### GET all - no filters
@@ -17,10 +17,6 @@ Authorization: Bearer {{authTokenHeadChef}}
 
 ### GET all - status REJECTED
 GET {{url}}/dish-suggestions?status=REJECTED
-Authorization: Bearer {{authTokenHeadChef}}
-
-### GET all - invalid status → 400
-GET {{url}}/dish-suggestions?status=INVALID
 Authorization: Bearer {{authTokenHeadChef}}
 
 ### GET all - week + year
@@ -40,11 +36,11 @@ GET {{url}}/dish-suggestions?stationId=1
 Authorization: Bearer {{authTokenHeadChef}}
 
 ### GET all - stationId + status PENDING
-GET {{url}}/dish-suggestions?stationId=2&status=PENDING
+GET {{url}}/dish-suggestions?stationId=1&status=PENDING
 Authorization: Bearer {{authTokenHeadChef}}
 
 ### GET all - full filter: status + week + year + stationId + orderBy
-GET {{url}}/dish-suggestions?status=PENDING&week=13&year=2026&stationId=1&orderBy=status
+GET {{url}}/dish-suggestions?status=PENDING&week=16&year=2026&stationId=1&orderBy=status
 Authorization: Bearer {{authTokenHeadChef}}
 
 ### GET all - orderBy station
@@ -91,7 +87,7 @@ Authorization: Bearer {{authTokenLineCook}}
     "descriptionDA": "Marineret kylling i cremet og aromatisk curry-sauce med stegte blomkål og ris",
     "stationId": 1,
     "allergenIds": [1, 2, 3, 4, 5],
-    "targetWeek": 14,
+    "targetWeek": 16,
     "targetYear": 2026
 }
 
@@ -118,7 +114,7 @@ Authorization: Bearer {{authTokenLineCook}}
 }
 
 ### PATCH approve suggestion
-PATCH {{url}}/dish-suggestions/7/approve
+PATCH {{url}}/dish-suggestions/102/approve
 Authorization: Bearer {{authTokenHeadChef}}}
 
 
@@ -132,12 +128,12 @@ Authorization: Bearer {{authTokenHeadChef}}
 }
 
 ### PATCH reject - blank feedback
-PATCH {{url}}/dish-suggestions/2/reject
+PATCH {{url}}/dish-suggestions/101/reject
 Content-Type: application/json
 Authorization: Bearer {{authTokenHeadChef}}
 
 {
-    "feedback": ""
+    "feedback": "Vi har lige haft butter chicken"
 }
 
 ### DELETE - Delete suggestions

@@ -126,7 +126,7 @@ public final class DIContainer
         this.weeklyMenuService = new WeeklyMenuService(weeklyMenuDAO, dishDAO, userDAO, stationDAO, dishTranslationService);
         this.ingredientRequestService = new IngredientRequestService(ingredientRequestDAO, dishDAO, userDAO, notificationService);
         this.shoppingListService = new ShoppingListService(shoppingListDAO, ingredientRequestDAO, userDAO, aiService, shoppingListAggregator);
-        this.menuInspirationService = new MenuInspirationService(aiService, userDAO, weatherClient);
+        this.menuInspirationService = new MenuInspirationService(aiService, userDAO, weatherClient, weeklyMenuDAO);
         this.securityService = new SecurityService(userDAO, apiConfig.getIssuer(), apiConfig.getSecretKey(), apiConfig.getExpirationMs());
 
         this.allergenController = new AllergenController(allergenService);

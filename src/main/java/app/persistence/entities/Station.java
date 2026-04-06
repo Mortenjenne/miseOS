@@ -19,7 +19,7 @@ public class Station implements IEntity
     @Column(name = "station_name",nullable = false, unique = true, length = 100)
     private String stationName;
 
-    @Column(name = "description", nullable = false, length = 100)
+    @Column(name = "description", nullable = false, length = 200)
     private String description;
 
     @Column(name = "created_at")

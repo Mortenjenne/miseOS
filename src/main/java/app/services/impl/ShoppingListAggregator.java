@@ -3,6 +3,7 @@ package app.services.impl;
 import app.dtos.shopping.AggregationKey;
 import app.persistence.entities.IngredientRequest;
 import app.persistence.entities.ShoppingListItem;
+import app.services.IShoppingListAggregator;
 
 import java.util.List;
 import java.util.Map;

@@ -4,5 +4,5 @@ public enum ShoppingListStatus
 {
     DRAFT,
     FINALIZED,
-    ORDERED;
+    ORDERED
 }

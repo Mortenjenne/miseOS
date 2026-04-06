@@ -1,5 +1,6 @@
 package app.persistence.daos.impl;
 
+import app.dtos.menu.RecentMenuDishDTO;
 import app.dtos.menu.WeeklyMenuOverviewDTO;
 import app.enums.MenuStatus;
 import app.exceptions.DatabaseException;
@@ -83,6 +84,43 @@ public class WeeklyMenuDAO implements IWeeklyMenuDAO
             catch (PersistenceException e)
             {
                 throw new DatabaseException("Failed to fetch menu with week: " + weekNumber + " and year: " + year, e);
+            }
+        }
+    }
+
+    @Override
+    public List<RecentMenuDishDTO> findRecentPublishedMenuDishesByStation(Long stationId, int year, int fromWeek, int toWeek)
+    {
+        ValidationUtil.validateId(stationId);
+        ValidationUtil.validateRange(year, 2000, 2100, "Year");
+        ValidationUtil.validateRange(fromWeek, 1, 53, "From week");
+        ValidationUtil.validateRange(toWeek, 1, 53, "To week");
+
+        try (EntityManager em = emf.createEntityManager())
+        {
+            try
+            {
+                return em.createQuery(
+                        "SELECT DISTINCT new app.dtos.menu.RecentMenuDishDTO(d.nameDA, d.descriptionDA) " +
+                            "FROM WeeklyMenu wm " +
+                            "JOIN wm.weeklyMenuSlots s " +
+                            "JOIN s.dish d " +
+                            "WHERE wm.menuStatus = :published " +
+                            "AND s.station.id = :stationId " +
+                            "AND wm.year = :year " +
+                            "AND wm.weekNumber BETWEEN :fromWeek AND :toWeek ",
+                        RecentMenuDishDTO.class)
+                    .setParameter("published", MenuStatus.PUBLISHED)
+                    .setParameter("stationId", stationId)
+                    .setParameter("year", year)
+                    .setParameter("fromWeek", fromWeek)
+                    .setParameter("toWeek", toWeek)
+                    .setMaxResults(20)
+                    .getResultList();
+            }
+            catch (PersistenceException e)
+            {
+                throw new DatabaseException("Failed to fetch recent station dish context", e);
             }
         }
     }
