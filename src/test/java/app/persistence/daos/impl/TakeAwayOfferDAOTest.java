@@ -117,7 +117,7 @@ class TakeAwayOfferDAOTest {
         soldOutSeed.sellPortions(5);
         takeAwayOfferDAO.update(soldOutSeed);
 
-        Set<TakeAwayOffer> activeOffers = takeAwayOfferDAO.findActiveOffers(today);
+        Set<TakeAwayOffer> activeOffers = takeAwayOfferDAO.findByFilter(today, null, null, null);
 
         assertThat(activeOffers, hasSize(1));
         assertThat(activeOffers.iterator().next().getDish().getNameDA(), is("Røget Laks"));

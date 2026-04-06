@@ -22,25 +22,25 @@ public class TakeAwayOfferDAO implements ITakeAwayOfferDAO
     }
 
     @Override
-    public Set<TakeAwayOffer> findActiveOffers(LocalDate date)
+    public Set<TakeAwayOffer> findByFilter(LocalDate date, Boolean isSoldOut, Boolean isEnabled, Long dishId)
     {
-        ValidationUtil.validateNotNull(date, "Date");
-
         try (EntityManager em = emf.createEntityManager())
         {
             try
             {
                 TypedQuery<TakeAwayOffer> query = em.createQuery(
-                        "SELECT DISTINCT to FROM TakeAwayOffer to " +
-                            "JOIN FETCH to.dish d " +
-                            "LEFT JOIN FETCH d.allergens " +
-                            "JOIN FETCH to.createdBy " +
-                            "WHERE to.enabled = true " +
-                            "AND to.soldOut = false " +
-                            "AND to.createdAt = :date " +
-                            "ORDER BY to.createdAt DESC",
+                        "SELECT DISTINCT tao FROM TakeAwayOffer tao " +
+                            "LEFT JOIN FETCH tao.dish d " +
+                            "WHERE (:date IS NULL OR tao.createdAt = :date) " +
+                            "AND   (:dishId IS NULL OR d.id = :dishId) " +
+                            "AND   (:isEnabled IS NULL OR tao.enabled = :isEnabled) " +
+                            "AND   (:isSoldOut IS NULL OR tao.soldOut = :isSoldOut) " +
+                            "ORDER BY tao.createdAt DESC",
                         TakeAwayOffer.class)
-                    .setParameter("date", date);
+                    .setParameter("date", date)
+                    .setParameter("dishId", dishId)
+                    .setParameter("isEnabled", isEnabled)
+                    .setParameter("isSoldOut", isSoldOut);
 
                 return new LinkedHashSet<>(query.getResultList());
             }
@@ -75,34 +75,6 @@ public class TakeAwayOfferDAO implements ITakeAwayOfferDAO
             catch (PersistenceException e)
             {
                 throw new DatabaseException("Failed to check existing take away offer", e);
-            }
-        }
-    }
-
-    @Override
-    public Set<TakeAwayOffer> findByDate(LocalDate date)
-    {
-        ValidationUtil.validateNotNull(date, "Date");
-
-        try (EntityManager em = emf.createEntityManager())
-        {
-            try
-            {
-                TypedQuery<TakeAwayOffer> query = em.createQuery(
-                        "SELECT DISTINCT to FROM TakeAwayOffer to " +
-                            "JOIN FETCH to.dish d " +
-                            "LEFT JOIN FETCH d.allergens " +
-                            "JOIN FETCH to.createdBy " +
-                            "WHERE to.createdAt = :date " +
-                            "ORDER BY to.createdAt DESC",
-                        TakeAwayOffer.class)
-                    .setParameter("date", date);
-
-                return new LinkedHashSet<>(query.getResultList());
-            }
-            catch (PersistenceException e)
-            {
-                throw new DatabaseException("Failed to fetch take away offers by date", e);
             }
         }
     }

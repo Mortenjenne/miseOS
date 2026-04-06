@@ -8,9 +8,7 @@ import java.util.Set;
 
 public interface ITakeAwayOfferDAO extends IEntityDAO<TakeAwayOffer, Long>
 {
-    Set<TakeAwayOffer> findActiveOffers(LocalDate date);
+    Set<TakeAwayOffer> findByFilter(LocalDate date, Boolean isSoldOut, Boolean isEnabled, Long dishId);
 
     boolean existsByDishAndDate(Long dishId, LocalDate date);
-
-    Set<TakeAwayOffer> findByDate(LocalDate date);
 }
