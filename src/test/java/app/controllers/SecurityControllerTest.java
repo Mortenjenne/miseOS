@@ -166,7 +166,7 @@ class SecurityControllerTest
                 """
                     {
                     "email": "gordon@kitchen.com",
-                    "password": "WronPass"
+                    "password": "WrongPass"
                     }
                 """;
 

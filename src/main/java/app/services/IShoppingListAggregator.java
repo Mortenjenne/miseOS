@@ -1,4 +1,4 @@
-package app.services.impl;
+package app.services;
 
 import app.persistence.entities.IngredientRequest;
 import app.persistence.entities.ShoppingListItem;

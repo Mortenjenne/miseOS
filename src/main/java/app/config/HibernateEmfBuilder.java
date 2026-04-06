@@ -5,11 +5,14 @@ import org.hibernate.SessionFactory;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.service.ServiceRegistry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
 
 public final class HibernateEmfBuilder
 {
+    private static final Logger logger = LoggerFactory.getLogger(HibernateEmfBuilder.class);
 
     private HibernateEmfBuilder() {}
 
@@ -20,21 +23,19 @@ public final class HibernateEmfBuilder
             Configuration configuration = new Configuration();
             configuration.setProperties(props);
 
-            // Register entities to make Hibernate aware
             EntityRegistry.registerEntities(configuration);
 
             ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
-                    .applySettings(configuration.getProperties())
-                    .build();
+                .applySettings(configuration.getProperties())
+                .build();
 
-            // Make JPA compliant version of Hibernates sf
             SessionFactory sf = configuration.buildSessionFactory(serviceRegistry);
             return sf.unwrap(EntityManagerFactory.class);
 
         }
         catch (Throwable ex)
         {
-            System.err.println("Initial SessionFactory creation failed: " + ex);
+            logger.error("Initial SessionFactory creation failed: {}", ex.getMessage());
             throw new ExceptionInInitializerError(ex);
         }
     }

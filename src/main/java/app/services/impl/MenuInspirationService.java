@@ -81,11 +81,11 @@ public class MenuInspirationService implements IMenuInspirationService
         int fromWeek = Math.max(1, currentWeek - weeksBack);
 
         return weeklyMenuReader.findRecentPublishedMenuDishesByStation(
-                stationId,
-                currentYear,
-                fromWeek,
-                currentWeek
-            );
+            stationId,
+            currentYear,
+            fromWeek,
+            currentWeek
+        );
     }
 
 }
