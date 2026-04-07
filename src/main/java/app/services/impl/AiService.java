@@ -62,8 +62,7 @@ public class AiService implements IAiService
             String stationJSON = objectMapper.writeValueAsString(station);
             String recentDishes = objectMapper.writeValueAsString(recentMenuDishDTOS);
             String prompt = DishPromptBuilder.buildMenuInspirationPrompt(forecast, stationJSON, recentDishes);
-            System.out.println(prompt);
-
+            
             String jsonResponse = aiClient.generateResponse(prompt);
             return Arrays.asList(objectMapper.readValue(jsonResponse, AiDishSuggestionDTO[].class));
         }
