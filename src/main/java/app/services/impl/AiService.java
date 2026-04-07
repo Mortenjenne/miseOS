@@ -58,7 +58,7 @@ public class AiService implements IAiService
     {
         try
         {
-            String forecast = WeatherForecastBuilder.getWeatherForecast(weatherForecastDTO);
+            String forecast = getWeatherForecastOrServiceUnavailable(weatherForecastDTO);
             String stationJSON = objectMapper.writeValueAsString(station);
             String recentDishes = objectMapper.writeValueAsString(recentMenuDishDTOS);
             String prompt = DishPromptBuilder.buildMenuInspirationPrompt(forecast, stationJSON, recentDishes);
@@ -80,7 +80,7 @@ public class AiService implements IAiService
 
         try
         {
-            String forecast = WeatherForecastBuilder.getWeatherForecast(weatherForecastDTO);
+            String forecast = getWeatherForecastOrServiceUnavailable(weatherForecastDTO);
             String stationJSON = objectMapper.writeValueAsString(station);
             String recentDishes = objectMapper.writeValueAsString(recentMenuDishDTOS);
             String prompt = DishPromptBuilder.buildMenuInspirationPrompt(forecast, stationJSON, recentDishes);
@@ -119,5 +119,15 @@ public class AiService implements IAiService
             .replace("```json", "")
             .replace("```", "")
             .trim();
+    }
+
+    private String getWeatherForecastOrServiceUnavailable(WeatherForecastDTO dto)
+    {
+        if(dto == null)
+        {
+            return "Weather data unavailable. Generate dishes without weather considerations.";
+        }
+
+        return WeatherForecastBuilder.getWeatherForecast(dto);
     }
 }
