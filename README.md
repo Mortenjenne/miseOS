@@ -238,8 +238,6 @@ For the full story set, including acceptance cricteria, see `docs/user-stories.m
 
 ## Testing
 
-The project uses both **unit tests** and **integration tests**, with a total of **400+ automated tests**.
-
 The project uses **JUnit (Jupiter)** and includes **400+ automated tests** across:
 
 - **Unit tests** (small isolated logic)
