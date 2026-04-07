@@ -16,7 +16,7 @@ The goal is to replace fragmented manual planning with a structured, role-based 
 
 **Portfolio website:** https://corral.dk  
 **MiseOS project page:** https://corral.dk/projects/miseos/  
-**Project overview video:** [add link]  
+**Project overview video:** https://www.youtube.com/watch?v=Zti71YNXW6o  
 **Deployed API:** https://miseos.corral.dk/api/v1  
 **Full API documentation:** https://corral.dk/docs/miseos-api-doc/  
 **Source code:** https://github.com/Mortenjenne/miseOS
@@ -60,23 +60,29 @@ A concrete example is the `NotificationService`, which implements two separate i
 
 ### Technologies
 
-| Concern          | Technology                              |
-| ---------------- | --------------------------------------- |
-| Language         | Java 17                                 |
-| Build            | Maven                                   |
-| HTTP framework   | Javalin 7                               |
-| ORM              | Hibernate / JPA                         |
-| Database         | PostgreSQL 16                           |
-| Authentication   | JWT (Nimbus JOSE)                       |
-| Password hashing | BCrypt                                  |
-| AI integration   | Gemini API (flash models)               |
-| Translation      | DeepL API                               |
-| Weather          | Open-Meteo API                          |
-| Real-time        | WebSocket notifications + SSE streaming |
-| Testing          | JUnit 6, REST-assured, Testcontainers   |
-| Deployment       | Docker, Docker Compose, GitHub Actions  |
-| Reverse proxy    | Caddy                                   |
-| Auto-deploy      | Watchtower                              |
+| Concern          | Technology                | Version |
+|------------------|---------------------------|---------|
+| Language         | Java                      | 17 |
+| Build            | Maven                     | - |
+| HTTP framework   | Javalin                   | 7.0.1 |
+| ORM              | Hibernate / JPA           | 7.2.3.Final |
+| Database         | PostgreSQL                | 16 (runtime), JDBC 42.7.7 |
+| Authentication   | Nimbus JOSE + JWT         | 10.7 |
+| Password hashing | jBCrypt                   | 0.4 |
+| JSON             | Jackson Databind + JSR310 | 2.21.1 |
+| Logging          | SLF4J + Logback           | 2.0.17 / 1.5.32 |
+| Boilerplate reduction | Lombok               | 1.18.42 |
+| AI integration   | Gemini API                | flash models |
+| Translation      | DeepL API                 | - |
+| Weather          | Open-Meteo API            | - |
+| Real-time        | WebSocket + SSE           | via Javalin |
+| Testing          | JUnit (Jupiter)           | 6.0.2 |
+| API testing      | REST-assured              | 6.0.0 |
+| Test infrastructure | Testcontainers         | 2.0.3 |
+| Deployment       | Docker, Docker Compose    | - |
+| CI/CD            | GitHub Actions            | - |
+| Reverse proxy    | Caddy                     | - |
+| Auto-deploy      | Watchtower                | - |
 
 
 ## Application Configuration and Dependency Injection
@@ -138,7 +144,7 @@ Key configuration components are:
 
 **Base URL:** `https://miseos.corral.dk/api/v1`
 
-Full documentation: https://corral.dk/docs/miseos-api/
+Full documentation: https://corral.dk/docs/miseos-api-doc/
 
 ### Authentication
 
@@ -225,19 +231,28 @@ Response includes AI-normalized ingredient items aggregated from all approved re
 - As staff/management, I receive live updates via notifications.
 - As a user, I authenticate with JWT and access role-protected endpoints.
 
-See full story set (including planned nice-to-have features): `docs/user-stories.md`.
+This section shows a **subset** of the project’s user stories.
+For the full story set, including acceptance cricteria, see `docs/user-stories.md`.
 
 ---
 
 ## Testing
 
-Integration tests run against a real PostgreSQL instance via Testcontainers. Tests are categorized as:
+The project uses both **unit tests** and **integration tests**, with a total of **400+ automated tests**.
+
+The project uses **JUnit (Jupiter)** and includes **400+ automated tests** across:
+
+- **Unit tests** (small isolated logic)
+- **DAO tests** (persistence behavior)
+- **Controller/API integration tests** with **REST-assured** and **Testcontainers (PostgreSQL)**
+
+Integration tests are grouped into:
 
 - **Happy path** — operation succeeds with valid input and correct role
-- **Role enforcement** — operation is blocked for users without the required role
+- **Role enforcement** — operation is blocked for users without required role  
 - **State conflict** — operation is blocked because the resource is in the wrong state
 
-JWT tokens are obtained via a real login call in `TestAuthenticationUtil` before each test run.
+JWT tokens are obtained via a real login call in `TestAuthenticationUtil` before each test run, so authentication is tested end-to-end.
 
 ---
 
@@ -275,5 +290,11 @@ Full portfolio with weekly posts: https://corral.dk/posts
 
 ## Scope Status
 
-Implemented: US-01 to US-25 (core backend scope)  
-In Progress / Planned: US-26+ (takeaway and payment guest count)
+**Implemented (Done):** Epics 1–8 (US-01 to US-25).  
+The core backend workflow is complete and production-ready: authentication, role-based authorization, dish suggestion lifecycle, weekly menu publishing, ingredient requests, AI-assisted shopping lists, and real-time notifications.
+
+**In Progress (Developing):** Epic 9 (US-26 to US-28).  
+Takeaway functionality is currently being implemented (offer lifecycle, portion tracking, and sales summary).
+
+**Planned (Future / Nice-to-have):** Epic 9 (US-29 to US-30).  
+External payment-service guest count import are planned for the next phase.
