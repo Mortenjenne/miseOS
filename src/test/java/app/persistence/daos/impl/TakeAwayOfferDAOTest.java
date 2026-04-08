@@ -43,12 +43,13 @@ class TakeAwayOfferDAOTest {
         Dish dish = (Dish) seeded.get("dish_chicken");
         User gordon = (User) seeded.get("user_gordon");
 
-        TakeAwayOffer offer = new TakeAwayOffer(20, gordon, dish);
+        TakeAwayOffer offer = new TakeAwayOffer(20, 50.00, gordon, dish);
         TakeAwayOffer result = takeAwayOfferDAO.create(offer);
 
         assertThat(result.getId(), notNullValue());
         assertThat(result.getOfferedPortions(), is(20));
         assertThat(result.getAvailablePortions(), is(20));
+        assertThat(result.getPrice(), is(50.00));
         assertThat(result.isEnabled(), is(true));
         assertThat(result.isSoldOut(), is(false));
         assertThat(result.getCreatedAt(), is(LocalDate.now()));
@@ -148,7 +149,7 @@ class TakeAwayOfferDAOTest {
         User gordon = (User) seeded.get("user_gordon");
         Dish salmon = (Dish) seeded.get("dish_salmon");
 
-        assertThrows(IllegalArgumentException.class, () -> new TakeAwayOffer(-1, gordon, salmon));
-        assertThrows(IllegalArgumentException.class, () -> new TakeAwayOffer(10, null, salmon));
+        assertThrows(IllegalArgumentException.class, () -> new TakeAwayOffer(-1, 10.00, gordon, salmon));
+        assertThrows(IllegalArgumentException.class, () -> new TakeAwayOffer(10, 10.00, null, salmon));
     }
 }

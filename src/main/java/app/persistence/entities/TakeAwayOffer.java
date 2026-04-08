@@ -48,9 +48,10 @@ public class TakeAwayOffer implements IEntity
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    public TakeAwayOffer(int offeredPortions, User createdBy, Dish dish)
+    public TakeAwayOffer(int offeredPortions, double price, User createdBy, Dish dish)
     {
-        ValidationUtil.validatePositive(offeredPortions, "Offered portions");
+        validateOfferedPortions(offeredPortions);
+        ValidationUtil.validatePositive(price, "Price");
         ValidationUtil.validateNotNull(createdBy, "User");
         ValidationUtil.validateNotNull(dish, "Dish");
 
@@ -124,6 +125,14 @@ public class TakeAwayOffer implements IEntity
         {
             throw new ConflictException("Take away offer is not enabled");
         }
+    }
+
+    private void validateOfferedPortions(int offeredPortions)
+    {
+        int minimumAllowedPortions = 1;
+        int maximumAllowedPortions = 1000;
+
+        ValidationUtil.validateRange(offeredPortions, minimumAllowedPortions, maximumAllowedPortions, "Offered portions");
     }
 
     @Override

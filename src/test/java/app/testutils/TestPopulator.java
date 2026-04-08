@@ -534,6 +534,7 @@ public class TestPopulator
 
         TakeAwayOffer activeToday = new TakeAwayOffer(
             10,
+            45.00,
             gordon,
             salmon
         );
@@ -542,6 +543,7 @@ public class TestPopulator
 
         TakeAwayOffer disableToday = new TakeAwayOffer(
             10,
+            57.50,
             gordon,
             boeuf
         );
@@ -552,6 +554,7 @@ public class TestPopulator
 
         TakeAwayOffer soldOutToday = new TakeAwayOffer(
             10,
+            65.25,
             gordon,
             tartelet
         );
