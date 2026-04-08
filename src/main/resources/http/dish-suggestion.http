@@ -63,6 +63,20 @@ Authorization: Bearer {{authTokenHeadChef}}
 GET {{url}}/dish-suggestions/current-week?status=APPROVED
 Authorization: Bearer {{authTokenHeadChef}}
 
+### POST create suggestion (Chicken with asparagus & potatoes)
+POST {{url}}/dish-suggestions
+Content-Type: application/json
+Authorization: Bearer {{authTokenLineCook}}
+
+{
+    "nameDA": "Stegt kylling med asparges",
+    "descriptionDA": "Stegt kylling serveret med smørstegte grønne asparges, glaserede gulerødder, kogte kartofler og let citronsauce",
+    "stationId": 1,
+    "allergenIds": [7],
+    "targetWeek": 16,
+    "targetYear": 2026
+}
+
 ### POST create suggestion (Salmon)
 POST {{url}}/dish-suggestions/
 Content-Type: application/json
@@ -114,7 +128,7 @@ Authorization: Bearer {{authTokenLineCook}}
 }
 
 ### PATCH approve suggestion
-PATCH {{url}}/dish-suggestions/102/approve
+PATCH {{url}}/dish-suggestions/107/approve
 Authorization: Bearer {{authTokenHeadChef}}}
 
 
