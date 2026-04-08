@@ -1,6 +1,8 @@
 
 # miseOS
 
+![miseOS Logo](docs/images/miseos.png)
+
 > A kitchen management platform for professional canteens — from dish proposals to published menus.
 
 ## Vision
@@ -14,12 +16,17 @@ The goal is to replace fragmented manual planning with a structured, role-based 
 
 ## Links
 
-**Portfolio website:** https://corral.dk  
-**MiseOS project page:** https://corral.dk/projects/miseos/  
-**Project overview video:** https://www.youtube.com/watch?v=Zti71YNXW6o  
-**Deployed API:** https://miseos.corral.dk/api/v1  
-**Full API documentation:** https://corral.dk/docs/miseos-api-doc/  
-**Source code:** https://github.com/Mortenjenne/miseOS
+**Portfolio website:** [corral.dk](https://corral.dk)
+
+**MiseOS project page:** [corral.dk/projects/miseos](https://corral.dk/projects/miseos/)
+
+**Project overview video:** [YouTube demo](https://www.youtube.com/watch?v=Zti71YNXW6o)
+
+**Deployed API:** [miseos.corral.dk/api/v1](https://miseos.corral.dk/api/v1)
+
+**Full API documentation:** [corral.dk/docs/miseos-api-doc](https://corral.dk/docs/miseos-api-doc/)
+
+**Source code:** [github.com/Mortenjenne/miseOS](https://github.com/Mortenjenne/miseOS)
 
 ---
 
