@@ -5,6 +5,21 @@
 
 > A kitchen management platform for professional canteens — from dish proposals to published menus.
 
+---
+
+## Problem Statement
+
+Menu planning in many canteens relies on fragmented, analog processes:
+
+- Chefs write proposals on paper or in Word documents and share them verbally
+- The head chef assembles a weekly menu manually from separate inputs
+- Ingredient needs are communicated ad hoc with no consolidated purchasing view
+- Printed menus are static and require manual translation for international guests
+
+MiseOS solves these by providing a centralized backend where data is entered once and flows through the entire kitchen workflow — from proposal to published menu to shopping list.
+
+---
+
 ## Vision
 
 MiseOS digitizes the full kitchen planning workflow: line cooks submit dish proposals for review, head chefs approve and plan weekly menus, ingredient needs are aggregated into AI-normalized shopping lists, and a multilingual public menu is published for guests.
@@ -27,19 +42,6 @@ The goal is to replace fragmented manual planning with a structured, role-based 
 **Full API documentation:** [corral.dk/docs/miseos-api-doc](https://corral.dk/docs/miseos-api-doc/)
 
 **Source code:** [github.com/Mortenjenne/miseOS](https://github.com/Mortenjenne/miseOS)
-
----
-
-## Problem Statement
-
-Menu planning in many canteens relies on fragmented, analog processes:
-
-- Chefs write proposals on paper or in Word documents and share them verbally
-- The head chef assembles a weekly menu manually from separate inputs
-- Ingredient needs are communicated ad hoc with no consolidated purchasing view
-- Printed menus are static and require manual translation for international guests
-
-MiseOS solves these by providing a centralized backend where data is entered once and flows through the entire kitchen workflow — from proposal to published menu to shopping list.
 
 ---
 
