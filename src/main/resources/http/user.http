@@ -24,7 +24,7 @@ Content-Type: application/json
 
 {
     "email": "mo_ten@hotmail.com",
-    "password": "Morten123."
+    "password": "CodingIsPoetry1."
 }
 
 ### POST Login to get JWT Token(Line cook)
@@ -33,7 +33,7 @@ Content-Type: application/json
 
 {
     "email": "jeanette@email.com",
-    "password": "Morten123."
+    "password": "CodingIsPoetry1."
 }
 
 ### POST Create Another User
@@ -69,13 +69,13 @@ Authorization: Bearer {{authTokenHeadChef}}
 }
 
 ### PATCH Change Password
-PATCH {{url}}/users/1/password
+PATCH {{url}}/users/7/password
 Content-Type: application/json
 Authorization: Bearer {{authTokenHeadChef}}
 
 {
     "currentPassword": "Morten123.",
-    "newPassword": "NewSecure123."
+    "newPassword": "CodingIsPoetry1."
 }
 
 ### PATCH Change Role
