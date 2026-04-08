@@ -14,7 +14,7 @@ Content-Type: application/json
 {
     "firstName": "Morten",
     "lastName": "Jensen",
-    "password": "Morten123.",
+    "password": "TestTest123.",
     "email": "mo_ten@hotmail.com"
 }
 
@@ -23,8 +23,8 @@ POST {{url}}/auth/login
 Content-Type: application/json
 
 {
-    "email": "mo_ten@hotmail.com",
-    "password": "CodingIsPoetry1."
+    "email": "{{headChefEmail}}",
+    "password": "{{headChefPassword}}"
 }
 
 ### POST Login to get JWT Token(Line cook)
@@ -32,8 +32,8 @@ POST {{url}}/auth/login
 Content-Type: application/json
 
 {
-    "email": "jeanette@email.com",
-    "password": "CodingIsPoetry1."
+    "email": "{{lineCookEmail}}",
+    "password": "{{lineCookPassword}}"
 }
 
 ### POST Create Another User
@@ -44,7 +44,7 @@ Content-Type: application/json
     "firstName": "Jeanette",
     "lastName": "Hansen",
     "email": "jeanette@email.com",
-    "password": "Morten123."
+    "password": "TestTest123."
 }
 
 ### PUT Update User
@@ -74,8 +74,8 @@ Content-Type: application/json
 Authorization: Bearer {{authTokenHeadChef}}
 
 {
-    "currentPassword": "Morten123.",
-    "newPassword": "CodingIsPoetry1."
+    "currentPassword": "TestTest123.",
+    "newPassword": "NewSecurePassword123."
 }
 
 ### PATCH Change Role
