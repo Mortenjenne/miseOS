@@ -91,6 +91,7 @@ A concrete example is the `NotificationService`, which implements two separate i
 | Reverse proxy    | Caddy                     | - |
 | Auto-deploy      | Watchtower                | - |
 
+---
 
 ## Application Configuration and Dependency Injection
 
@@ -291,7 +292,9 @@ The application is deployed on a DigitalOcean droplet via Docker Compose.
 | Week 9   | CI/CD pipeline and production deployment                     |
 | Week 10  | API documentation                                            |
 
-Full portfolio with weekly posts: https://corral.dk/posts
+Full portfolio with weekly posts: [corral.dk/posts](https://corral.dk/posts)
+
+---
 
 ## Scope Status
 
