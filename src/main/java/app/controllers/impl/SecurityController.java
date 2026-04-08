@@ -112,9 +112,22 @@ public class SecurityController implements ISecurityController
             return;
         }
 
-        String token = header.substring(7).trim();
-        AuthenticatedUser authUser = securityService.verifyAndExtract(token);
-        wsCtx.attribute("authUser", authUser);
+        try
+        {
+            String token = header.substring(7).trim();
+            AuthenticatedUser authUser = securityService.verifyAndExtract(token);
+            wsCtx.attribute("authUser", authUser);
+        }
+        catch (AuthenticationException e)
+        {
+            logger.info("WebSocket auth failed for session {}: {}", wsCtx.sessionId, e.getMessage());
+            wsCtx.closeSession(1008, e.getMessage());
+        }
+        catch (Exception e)
+        {
+            logger.warn("Unexpected WebSocket auth error for session {}", wsCtx.sessionId, e);
+            wsCtx.closeSession(1011, "Internal authentication error");
+        }
     }
 
     private static void requireUserNotNull(AuthenticatedUser authenticatedUser)

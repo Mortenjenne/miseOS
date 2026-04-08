@@ -5,6 +5,7 @@ import app.dtos.menu.RecentMenuDishDTO;
 import app.dtos.security.AuthenticatedUser;
 import app.dtos.station.StationDTO;
 import app.dtos.weather.WeatherForecastDTO;
+import app.exceptions.WeatherIntegrationException;
 import app.integrations.weather.IWeatherClient;
 import app.mappers.StationMapper;
 import app.persistence.daos.interfaces.readers.IUserReader;
@@ -14,6 +15,8 @@ import app.persistence.entities.User;
 import app.services.IAiService;
 import app.services.IMenuInspirationService;
 import app.utils.ValidationUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 import java.time.temporal.IsoFields;
@@ -22,6 +25,7 @@ import java.util.function.Consumer;
 
 public class MenuInspirationService implements IMenuInspirationService
 {
+    private final Logger logger = LoggerFactory.getLogger(MenuInspirationService.class);
     private final IAiService aiService;
     private final IUserReader userReader;
     private final IWeatherClient weatherClient;
@@ -45,7 +49,7 @@ public class MenuInspirationService implements IMenuInspirationService
         ValidationUtil.validateNotNull(station, "Station");
         StationDTO stationDTO = StationMapper.toDTO(station);
         List<RecentMenuDishDTO> recentMenuDishDTOS = getRecentMenuDishesContext(station.getId());
-        WeatherForecastDTO weatherForecastDTO = weatherClient.getWeatherForecast();
+        WeatherForecastDTO weatherForecastDTO = getWeatherOrNull();
 
         return aiService.getAiDishSuggestion(weatherForecastDTO, stationDTO, recentMenuDishDTOS);
     }
@@ -60,11 +64,10 @@ public class MenuInspirationService implements IMenuInspirationService
         Station station = user.getStation();
         ValidationUtil.validateNotNull(station, "Station");
 
-
         statusConsumer.accept("Analyserer køkkenstationens udstyr...");
         StationDTO stationDTO = StationMapper.toDTO(station);
         statusConsumer.accept("Henter vejrdata for din lokation...");
-        WeatherForecastDTO weatherForecastDTO = weatherClient.getWeatherForecast();
+        WeatherForecastDTO weatherForecastDTO = getWeatherOrNull();
         statusConsumer.accept("Henter seneste menuretter fra stationen...");
         List<RecentMenuDishDTO> recentMenuDishDTOS = getRecentMenuDishesContext(station.getId());
         statusConsumer.accept("Forbereder data og bæredygtighedsregler...");
@@ -86,6 +89,19 @@ public class MenuInspirationService implements IMenuInspirationService
             fromWeek,
             currentWeek
         );
+    }
+
+    private WeatherForecastDTO getWeatherOrNull()
+    {
+        try
+        {
+            return weatherClient.getWeatherForecast();
+        }
+        catch (WeatherIntegrationException e)
+        {
+            logger.error("Weather API Error: {}", e.getMessage());
+            return null;
+        }
     }
 
 }
