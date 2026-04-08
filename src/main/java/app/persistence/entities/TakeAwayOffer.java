@@ -59,8 +59,20 @@ public class TakeAwayOffer implements IEntity
         this.soldOut = false;
         this.offeredPortions = offeredPortions;
         this.availablePortions = offeredPortions;
+        this.price = price;
         this.createdBy = createdBy;
         this.dish = dish;
+    }
+
+    public void updateOffer(Dish dish, int offeredPortions, double price)
+    {
+        ValidationUtil.validateNotNull(dish, "Dish");
+        validateOfferedPortions(offeredPortions);
+        ValidationUtil.validatePositive(price, "Price");
+
+        this.dish = dish;
+        this.offeredPortions = offeredPortions;
+        this.price = price;
     }
 
     public void sellPortions(int quantity)

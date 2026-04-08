@@ -20,7 +20,7 @@ public interface ITakeAwayOfferService
 
     TakeAwayOfferDTO disableOffer(AuthenticatedUser authUser, Long offerId);
 
-    List<TakeAwayOfferDTO> getOffers(LocalDate date, Boolean onlyActive, Long dishId);
+    List<TakeAwayOfferDTO> getOffers(LocalDate date, Boolean isSoldOut, Boolean isEnabled, Long dishId);
 
     boolean deleteOffer(AuthenticatedUser authUser, Long offerId);
 }

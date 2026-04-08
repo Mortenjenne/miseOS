@@ -32,11 +32,11 @@ public class TakeAwayOrderDAO implements ITakeAwayOrderDAO
             try
             {
                 TypedQuery<TakeAwayOrder> query = em.createQuery(
-                        "SELECT to FROM TakeAwayOrder to " +
-                            "JOIN FETCH to.customer " +
-                            "JOIN FETCH to.takeAwayOffer " +
-                            "WHERE to.takeAwayOffer.id = :offerId " +
-                            "ORDER BY to.orderedAt DESC",
+                        "SELECT ord FROM TakeAwayOrder ord " +
+                            "JOIN FETCH ord.customer " +
+                            "JOIN FETCH ord.takeAwayOffer " +
+                            "WHERE ord.takeAwayOffer.id = :offerId " +
+                            "ORDER BY ord.orderedAt DESC",
                         TakeAwayOrder.class)
                     .setParameter("offerId", offerId);
 
@@ -59,8 +59,8 @@ public class TakeAwayOrderDAO implements ITakeAwayOrderDAO
             try
             {
                 Long total = em.createQuery(
-                        "SELECT SUM(to.quantity) FROM TakeAwayOrder to " +
-                            "WHERE to.createdAt = :date",
+                        "SELECT SUM(ord.quantity) FROM TakeAwayOrder ord " +
+                            "WHERE ord.createdAt = :date",
                         Long.class)
                     .setParameter("date", date)
                     .getSingleResult();
@@ -84,12 +84,12 @@ public class TakeAwayOrderDAO implements ITakeAwayOrderDAO
             try
             {
                 TypedQuery<TakeAwayOrder> query = em.createQuery(
-                        "SELECT to FROM TakeAwayOrder to " +
-                            "JOIN FETCH to.customer " +
-                            "JOIN FETCH to.takeAwayOffer tao " +
-                            "JOIN FETCH tao.dish " +
-                            "WHERE to.createdAt = :date " +
-                            "ORDER BY to.orderedAt DESC",
+                        "SELECT ord FROM TakeAwayOrder ord " +
+                            "JOIN FETCH ord.customer " +
+                            "JOIN FETCH ord.takeAwayOffer off " +
+                            "JOIN FETCH off.dish " +
+                            "WHERE ord.createdAt = :date " +
+                            "ORDER BY ord.orderedAt DESC",
                         TakeAwayOrder.class)
                     .setParameter("date", date);
 
@@ -112,11 +112,11 @@ public class TakeAwayOrderDAO implements ITakeAwayOrderDAO
             try
             {
                 return em.createQuery(
-                        "SELECT to FROM TakeAwayOrder to " +
-                            "JOIN FETCH to.customer " +
-                            "JOIN FETCH to.takeAwayOffer tao " +
-                            "JOIN FETCH tao.dish " +
-                            "WHERE to.id = :id",
+                        "SELECT ord FROM TakeAwayOrder ord " +
+                            "JOIN FETCH ord.customer " +
+                            "JOIN FETCH ord.takeAwayOffer off " +
+                            "JOIN FETCH off.dish " +
+                            "WHERE ord.id = :id",
                         TakeAwayOrder.class)
                     .setParameter("id", id)
                     .getSingleResult();

@@ -28,19 +28,25 @@ public class TakeAwayOfferDAO implements ITakeAwayOfferDAO
         {
             try
             {
-                TypedQuery<TakeAwayOffer> query = em.createQuery(
-                        "SELECT DISTINCT tao FROM TakeAwayOffer tao " +
-                            "LEFT JOIN FETCH tao.dish d " +
-                            "WHERE (:date IS NULL OR tao.createdAt = :date) " +
-                            "AND   (:dishId IS NULL OR d.id = :dishId) " +
-                            "AND   (:isEnabled IS NULL OR tao.enabled = :isEnabled) " +
-                            "AND   (:isSoldOut IS NULL OR tao.soldOut = :isSoldOut) " +
-                            "ORDER BY tao.createdAt DESC",
-                        TakeAwayOffer.class)
-                    .setParameter("date", date)
-                    .setParameter("dishId", dishId)
-                    .setParameter("isEnabled", isEnabled)
-                    .setParameter("isSoldOut", isSoldOut);
+                StringBuilder jpql = new StringBuilder(
+                    """
+                    SELECT DISTINCT tao FROM TakeAwayOffer
+                    tao LEFT JOIN FETCH tao.dish d
+                    WHERE 1=1
+                    """);
+
+                if (date != null)      jpql.append(" AND tao.createdAt = :date");
+                if (dishId != null)    jpql.append(" AND d.id = :dishId");
+                if (isEnabled != null) jpql.append(" AND tao.enabled = :isEnabled");
+                if (isSoldOut != null) jpql.append(" AND tao.soldOut = :isSoldOut");
+                                       jpql.append(" ORDER BY tao.createdAt DESC");
+
+                TypedQuery<TakeAwayOffer> query = em.createQuery(jpql.toString(), TakeAwayOffer.class);
+
+                if (date != null)      query.setParameter("date", date);
+                if (dishId != null)    query.setParameter("dishId", dishId);
+                if (isEnabled != null) query.setParameter("isEnabled", isEnabled);
+                if (isSoldOut != null) query.setParameter("isSoldOut", isSoldOut);
 
                 return new LinkedHashSet<>(query.getResultList());
             }
@@ -190,6 +196,30 @@ public class TakeAwayOfferDAO implements ITakeAwayOfferDAO
             {
                 TransactionUtil.rollback(em);
                 throw new DatabaseException("Failed to delete take away offer: " + id, e);
+            }
+        }
+    }
+
+    @Override
+    public boolean isUsedInAnyOrders(Long offerId)
+    {
+        ValidationUtil.validateId(offerId);
+
+        try (EntityManager em = emf.createEntityManager())
+        {
+            try
+            {
+                Long count = em.createQuery(
+                        "SELECT COUNT(tao) FROM TakeAwayOrder tao " +
+                            "WHERE tao.takeAwayOffer.id = :offerId", Long.class)
+                    .setParameter("offerId", offerId)
+                    .getSingleResult();
+
+                return count > 0;
+            }
+            catch (PersistenceException e)
+            {
+                throw new DatabaseException("Failed to check order usage for offer: " + offerId, e);
             }
         }
     }

@@ -51,8 +51,6 @@ public class TakeAwayOrder implements IEntity
         ValidationUtil.validateNotNull(takeAwayOffer, "Take away offer");
         ValidationUtil.validatePositive(quantity, "Quantity");
 
-        takeAwayOffer.sellPortions(quantity);
-
         this.customer = customer;
         this.takeAwayOffer = takeAwayOffer;
         this.orderStatus = OrderStatus.RESERVED;
@@ -114,7 +112,7 @@ public class TakeAwayOrder implements IEntity
 
     private boolean isHeadChefOrSousChef(User user)
     {
-        return user.isHeadChef() || !user.isSousChef();
+        return user.isHeadChef() || user.isSousChef();
     }
 
     private boolean isOwner(User user)

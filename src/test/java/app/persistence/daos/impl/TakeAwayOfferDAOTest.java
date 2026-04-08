@@ -78,7 +78,7 @@ class TakeAwayOfferDAOTest {
 
         TakeAwayOffer updated = takeAwayOfferDAO.update(seed);
 
-        assertThat(updated.getAvailablePortions(), is(3));
+        assertThat(updated.getAvailablePortions(), is(8));
         assertFalse(updated.isEnabled());
     }
 
@@ -88,7 +88,7 @@ class TakeAwayOfferDAOTest {
     {
         TakeAwayOffer seed = (TakeAwayOffer) seeded.get("offer_active_today");
 
-        seed.sellPortions(5);
+        seed.sellPortions(10);
 
         TakeAwayOffer updated = takeAwayOfferDAO.update(seed);
 
@@ -109,19 +109,55 @@ class TakeAwayOfferDAOTest {
     }
 
     @Test
-    @DisplayName("Find Active Offers - should exclude disabled and sold out offers")
-    void findActiveOffers()
+    @DisplayName("Find by filter - returns all offers when no filters applied")
+    void findByFilterReturnsAll()
     {
-        LocalDate today = LocalDate.now();
+        Set<TakeAwayOffer> all = takeAwayOfferDAO.findByFilter(null, null, null, null);
+        assertThat(all, hasSize(3));
+    }
 
-        TakeAwayOffer soldOutSeed = (TakeAwayOffer) seeded.get("offer_soldout_today");
-        soldOutSeed.sellPortions(5);
-        takeAwayOfferDAO.update(soldOutSeed);
+    @Test
+    @DisplayName("Find by filter - enabled only returns active offers")
+    void findByFilterReturnsOnlyEnabled()
+    {
+        Set<TakeAwayOffer> enabled = takeAwayOfferDAO.findByFilter(null, null, true, null);
+        assertThat(enabled, hasSize(2));
+        assertTrue(enabled.stream().allMatch(TakeAwayOffer::isEnabled));
+    }
 
-        Set<TakeAwayOffer> activeOffers = takeAwayOfferDAO.findByFilter(today, null, null, null);
+    @Test
+    @DisplayName("Find by filter - disabled only returns disabled offers")
+    void findByFilterReturnsOnlyDisabled()
+    {
+        Set<TakeAwayOffer> disabled = takeAwayOfferDAO.findByFilter(null, null, false, null);
+        assertThat(disabled, hasSize(1));
+        assertThat(disabled.iterator().next().getDish().getNameDA(), is("Bøf Bearnaise"));
+    }
+    
+    @Test
+    @DisplayName("Find by filter - filter by date returns only today's offers")
+    void findByFilter_byDate_returnsOnlyToday()
+    {
+        Set<TakeAwayOffer> today = takeAwayOfferDAO.findByFilter(LocalDate.now(), null, null, null);
+        assertThat(today, hasSize(3));
+    }
 
-        assertThat(activeOffers, hasSize(1));
-        assertThat(activeOffers.iterator().next().getDish().getNameDA(), is("Røget Laks"));
+    @Test
+    @DisplayName("Find by filter - future date returns empty")
+    void findByFilter_futureDate_returnsEmpty()
+    {
+        Set<TakeAwayOffer> future = takeAwayOfferDAO.findByFilter(LocalDate.now().plusDays(1), null, null, null);
+        assertThat(future, empty());
+    }
+
+    @Test
+    @DisplayName("Find by filter - filter by dishId returns only matching offer")
+    void findByFilter_byDishId_returnsSingleOffer()
+    {
+        Dish salmon = (Dish) seeded.get("dish_salmon");
+        Set<TakeAwayOffer> result = takeAwayOfferDAO.findByFilter(null, null, null, salmon.getId());
+        assertThat(result, hasSize(1));
+        assertThat(result.iterator().next().getDish().getNameDA(), is("Røget Laks"));
     }
 
     @Test
