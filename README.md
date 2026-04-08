@@ -3,11 +3,6 @@
 
 ![miseOS Logo](docs/images/miseos.png)
 
-![Java](https://img.shields.io/badge/Java-17-orange)
-![Build](https://img.shields.io/github/actions/workflow/status/Mortenjenne/miseOS/deploy.yml?label=build)
-![License](https://img.shields.io/badge/license-MIT-green)
-![Docker](https://img.shields.io/badge/docker-ready-blue)
-
 > A kitchen management platform for professional canteens — from dish proposals to published menus.
 
 ## Vision
