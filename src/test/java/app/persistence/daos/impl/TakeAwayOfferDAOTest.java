@@ -133,7 +133,7 @@ class TakeAwayOfferDAOTest {
         assertThat(disabled, hasSize(1));
         assertThat(disabled.iterator().next().getDish().getNameDA(), is("Bøf Bearnaise"));
     }
-    
+
     @Test
     @DisplayName("Find by filter - filter by date returns only today's offers")
     void findByFilter_byDate_returnsOnlyToday()
