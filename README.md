@@ -3,6 +3,11 @@
 
 ![miseOS Logo](docs/images/miseos.png)
 
+![Java](https://img.shields.io/badge/Java-17-orange)
+![Build](https://img.shields.io/github/actions/workflow/status/Mortenjenne/miseOS/deploy.yml?label=build)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Docker](https://img.shields.io/badge/docker-ready-blue)
+
 > A kitchen management platform for professional canteens — from dish proposals to published menus.
 
 ## Vision
@@ -45,11 +50,12 @@ MiseOS solves these by providing a centralized backend where data is entered onc
 
 ## Architecture
 
-### System Overview
+### System Overview  
 
 The backend follows a layered architecture separating HTTP handling, domain logic, and persistence. Dependencies flow in one direction only, preventing tight coupling and improving maintainability.
 
-![System Overview](docs/architecture/system-overview.svg)
+![System Overview](docs/architecture/system-overview.svg)  
+
 ### Key Architectural Decisions
 
 **Rich domain model** — Entities guard their own invariants. Business rules live on the entity (`suggestion.approve(user)`, `list.finalizeShoppingList()`), not scattered across services.
@@ -65,7 +71,9 @@ A concrete example is the `NotificationService`, which implements two separate i
 
 **AI with fallback** — Gemini AI normalizes ingredient names when generating shopping lists. If normalization fails, the list is still created using original ingredient names. The client falls back to a secondary model if the API returns a `503 Service Unavailable` response.
 
-### Technologies
+---
+
+## Technology Stack  
 
 | Concern          | Technology                | Version |
 |------------------|---------------------------|---------|
@@ -115,7 +123,7 @@ Key configuration components are:
 
 ---
 
-## Data Model
+## Data Model  
 
 ### Core Entities
 
@@ -142,17 +150,17 @@ Key configuration components are:
 - `ShoppingList` has many `ShoppingListItems`, created by a `User`
 
 
-### ERD
+### ERD  
 
 ![Database ERD](docs/architecture/erd.png)
 
 ---
 
-## API
+## API  
 
 **Base URL:** `https://miseos.corral.dk/api/v1`
 
-Full documentation: https://corral.dk/docs/miseos-api-doc/
+Full documentation: [corral.dk/miseos-api-doc](https://corral.dk/docs/miseos-api-doc/)
 
 ### Authentication
 
@@ -164,7 +172,7 @@ Authorization: Bearer <token>
 
 Tokens are obtained via `POST /auth/login` and expire after 30 minutes.
 
-### Roles
+### Roles  
 
 |Role|Access|
 |---|---|
@@ -173,7 +181,7 @@ Tokens are obtained via `POST /auth/login` and expire after 30 minutes.
 |`LINE_COOK`|Own resources — requests, suggestions, read access|
 |`ANYONE`|Public endpoints — no token required|
 
-### Endpoint Summary
+### Endpoint Summary  
 
 | Resource            | Endpoints                                                     |
 | ------------------- | ------------------------------------------------------------- |
@@ -189,7 +197,7 @@ Tokens are obtained via `POST /auth/login` and expire after 30 minutes.
 | Notifications       | WebSocket + snapshot                                          |
 | Menu Inspirations   | AI daily + SSE stream                                         |
 
-### Example: Login request
+### Example: Login request  
 
 ```http request
 POST /api/v1/auth/login
@@ -201,7 +209,7 @@ Content-Type: application/json
 }
 ```
 
-### Example response
+### Example response  
 
 ```json
 {
@@ -211,7 +219,7 @@ Content-Type: application/json
 }
 ```
 
-### Example: Generate Shopping List
+### Example: Generate Shopping List  
 
 ```http request
 POST /api/v1/shopping-lists
@@ -228,7 +236,7 @@ Response includes AI-normalized ingredient items aggregated from all approved re
 
 ---
 
-## User Stories
+## User Stories  
 
 - As a line cook, I can submit dish suggestions for a target week.
 - As head/sous chef, I can approve or reject suggestions.
@@ -244,7 +252,7 @@ For the full story set, including acceptance cricteria, see `docs/user-stories.m
 
 ---
 
-## Testing
+## Testing  
 
 The project uses **JUnit (Jupiter)** and includes **400+ automated tests** across:
 
@@ -262,7 +270,7 @@ JWT tokens are obtained via a real login call in `TestAuthenticationUtil` before
 
 ---
 
-## Deployment
+## Deployment  
 
 The application is deployed on a DigitalOcean droplet via Docker Compose.
 
@@ -280,7 +288,7 @@ The application is deployed on a DigitalOcean droplet via Docker Compose.
 
 ---
 
-## Portfolio Log
+## Portfolio Log  
 
 | Post     | Topic                                                        |
 | -------- | ------------------------------------------------------------ |
@@ -296,7 +304,7 @@ Full portfolio with weekly posts: [corral.dk/posts](https://corral.dk/posts)
 
 ---
 
-## Scope Status
+## Scope Status  
 
 **Implemented (Done):** Epics 1–8 (US-01 to US-25).  
 The core backend workflow is complete and production-ready: authentication, role-based authorization, dish suggestion lifecycle, weekly menu publishing, ingredient requests, AI-assisted shopping lists, and real-time notifications.
