@@ -3,7 +3,9 @@
 
 ![miseOS Logo](docs/images/miseos.png)
 
-> A kitchen management platform for professional canteens — from dish proposals to published menus.
+> A kitchen management platform for professional canteens — from dish proposals to published menus.  
+
+**Backend REST API** · Java 17 · Javalin · PostgreSQL · JWT · Deployed on DigitalOcean
 
 ---
 
