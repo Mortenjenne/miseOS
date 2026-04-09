@@ -1,0 +1,45 @@
+### Get orders - All orders
+GET {{url}}/takeaway/orders
+Authorization: Bearer {{authTokenHeadChef}}
+
+### Get orders - See own orders, Head Chef sees all
+GET {{url}}/takeaway/orders
+Authorization: Bearer {{authTokenUser}}
+
+### Get orders - filtered by status and customer
+GET {{url}}/takeaway/orders?status=RESERVED&date=2026-04-09&customerId=9
+Authorization: Bearer {{authTokenHeadChef}}
+
+### Get order by id
+GET {{url}}/takeaway/orders/3
+Authorization: Bearer {{authTokenUser}}
+
+### Place new order
+POST {{url}}/takeaway/orders
+Content-Type: application/json
+Authorization: Bearer {{authTokenUser}}
+
+{
+    "takeAwayOrderLines": [
+        {
+            "offerId": 1,
+            "quantity": 2
+        },
+        {
+            "offerId": 2,
+            "quantity": 1
+        }
+    ]
+}
+
+### Mark order as paid
+PATCH {{url}}/takeaway/orders/1/pay
+Authorization: Bearer {{authTokenHeadChef}}
+
+### Cancel order (within 45 min window)
+PATCH {{url}}/takeaway/orders/2/cancel
+Authorization: Bearer {{authTokenUser}}
+
+### Get daily summary
+GET {{url}}/takeaway/orders/summary?date=2026-04-09
+Authorization: Bearer {{authTokenHeadChef}}

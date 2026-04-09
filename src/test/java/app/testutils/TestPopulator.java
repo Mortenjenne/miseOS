@@ -1,9 +1,8 @@
 package app.testutils;
 
-import app.enums.DayOfWeek;
-import app.enums.RequestType;
-import app.enums.Unit;
-import app.enums.UserRole;
+import app.dtos.takeaway.TakeAwayOrderCreateDTO;
+import app.dtos.takeaway.TakeAwayOrderLineCreateDTO;
+import app.enums.*;
 import app.persistence.daos.impl.*;
 import app.persistence.daos.interfaces.*;
 import app.persistence.entities.*;
@@ -24,6 +23,8 @@ public class TestPopulator
     private final IWeeklyMenuDAO menuDAO;
     private final IIngredientRequestDAO ingredientRequestDAO;
     private final IShoppingListDAO shoppingListDAO;
+    private final ITakeAwayOfferDAO takeAwayOfferDAO;
+    private final ITakeAwayOrderDAO takeAwayOrderDAO;
     private final Map<String, IEntity> seeded;
 
     public TestPopulator(EntityManagerFactory emf)
@@ -36,6 +37,8 @@ public class TestPopulator
         this.menuDAO = new WeeklyMenuDAO(emf);
         this.ingredientRequestDAO = new IngredientRequestDAO(emf);
         this.shoppingListDAO = new ShoppingListDAO(emf);
+        this.takeAwayOfferDAO = new TakeAwayOfferDAO(emf);
+        this.takeAwayOrderDAO = new TakeAwayOrderDAO(emf);
         this.seeded = new HashMap<>();
     }
 
@@ -50,6 +53,8 @@ public class TestPopulator
         populateWeeklyMenus();
         populateShoppingLists();
         populateForGeminiIngredientRequest();
+        populateTakeAwayOffers();
+        populateTakeAwayOrders();
     }
 
     public Map<String, IEntity> getSeededData()
@@ -86,6 +91,7 @@ public class TestPopulator
         User u2 = new User("Claire", "Smyth", "claire@pastry.com", PasswordUtil.hashPassword("Hash2", bcryptRounds), UserRole.LINE_COOK);
         User u3 = new User("Marco", "Pierre", "marco@grill.com", PasswordUtil.hashPassword("Hash3", bcryptRounds), UserRole.SOUS_CHEF);
         User u4 = new User("Rene", "Redzepi", "rene@cold.com", PasswordUtil.hashPassword("Hash4", bcryptRounds), UserRole.LINE_COOK);
+        User u5 = new User("Hans", "Hansen", "hans@gmail.com", PasswordUtil.hashPassword("Hash5", bcryptRounds), UserRole.CUSTOMER);
 
         Station cold = (Station) seeded.get("station_cold");
         Station hot = (Station) seeded.get("station_hot");
@@ -101,11 +107,13 @@ public class TestPopulator
         userDAO.create(u2);
         userDAO.create(u3);
         userDAO.create(u4);
+        userDAO.create(u5);
 
         seeded.put("user_gordon", u1);
         seeded.put("user_claire", u2);
         seeded.put("user_marco", u3);
         seeded.put("user_rene", u4);
+        seeded.put("user_customer", u5);
     }
 
     private void populateAllergens() {
@@ -517,5 +525,60 @@ public class TestPopulator
         list2.finalizeShoppingList();
         shoppingListDAO.create(list2);
         seeded.put("shopping_list_finalized", list2);
+    }
+
+    private void populateTakeAwayOffers()
+    {
+        User gordon = (User) seeded.get("user_gordon");
+        Dish salmon = (Dish) seeded.get("dish_salmon");
+        Dish boeuf = (Dish) seeded.get("dish_boeuf");
+        Dish tartelet = (Dish) seeded.get("dish_tartelet");
+
+        TakeAwayOffer activeToday = new TakeAwayOffer(
+            20,
+            45.00,
+            gordon,
+            salmon
+        );
+        takeAwayOfferDAO.create(activeToday);
+        seeded.put("offer_active_today", activeToday);
+
+        TakeAwayOffer disableToday = new TakeAwayOffer(
+            10,
+            57.50,
+            gordon,
+            boeuf
+        );
+
+        disableToday.disableOffer();
+        takeAwayOfferDAO.create(disableToday);
+        seeded.put("offer_disabled_today", disableToday);
+
+        TakeAwayOffer soldOutToday = new TakeAwayOffer(
+            10,
+            65.25,
+            gordon,
+            tartelet
+        );
+
+        takeAwayOfferDAO.create(soldOutToday);
+        seeded.put("offer_soldout_today", soldOutToday);
+    }
+
+    private void populateTakeAwayOrders()
+    {
+        User customer = (User) seeded.get("user_customer");
+        TakeAwayOffer offer1 = (TakeAwayOffer) seeded.get("offer_active_today");
+
+        TakeAwayOrderLineCreateDTO line1 = new TakeAwayOrderLineCreateDTO(offer1.getId(), 4);
+        TakeAwayOrderCreateDTO dto1 = new TakeAwayOrderCreateDTO(List.of(line1));
+        TakeAwayOrder order1 = takeAwayOrderDAO.create(customer.getId(), dto1);
+        seeded.put("order_1", order1);
+
+        TakeAwayOrderLineCreateDTO line2 = new TakeAwayOrderLineCreateDTO(offer1.getId(), 6);
+        TakeAwayOrderCreateDTO dto2 = new TakeAwayOrderCreateDTO(List.of(line2));
+        TakeAwayOrder order2 = takeAwayOrderDAO.create(customer.getId(), dto2);
+        seeded.put("order_2", order2);
+
     }
 }

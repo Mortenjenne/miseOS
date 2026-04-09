@@ -903,6 +903,19 @@ class ShoppingListControllerTest
                 .statusCode(401)
                 .body("message", equalToIgnoringCase("Token could not be verified"));
         }
+
+        @Test
+        @DisplayName("Should return 401 when token expired")
+        void invalidExpiredTokenReturns401()
+        {
+            given()
+                .header("Authorization", "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqZWFuZXR0ZUBlbWFpbC5jb20iLCJyb2xlIjoiTElORV9DT09LIiwiaXNzIjoibWlzZU9TIiwiZXhwIjoxNzc0MDg4MjExLCJ1c2VySWQiOjUsImlhdCI6MTc3NDA4NzMxMSwiZW1haWwiOiJqZWFuZXR0ZUBlbWFpbC5jb20ifQ.8RyVKeyplMEMBZZ5rrOa2_-T2TZGaofR9d0GMHf36sU")
+                .when()
+                .get(ENDPOINT_URL)
+                .then()
+                .statusCode(401)
+                .body("message", equalToIgnoringCase("Token has expired"));
+        }
     }
 
     private String getCreateListPayload(LocalDate date)

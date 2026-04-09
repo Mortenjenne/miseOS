@@ -3,7 +3,7 @@
 GET {{url}}/menu-inspirations/daily
 Authorization: Bearer {{authTokenLineCook}}}
 
-### GET daily menu inspiration as sse stream
+### GET daily menu inspiration as SSE stream
 GET {{url}}/menu-inspirations/stream
 Authorization: Bearer {{authTokenHeadChef}}}
 

@@ -7,6 +7,17 @@ Authorization: Bearer {{authTokenHeadChef}}}
 GET {{url}}/users/
 Authorization: Bearer {{authTokenHeadChef}}
 
+### POST Register a new User(Customer)
+POST {{url}}/auth/register
+Content-Type: application/json
+
+{
+    "firstName": "Sara",
+    "lastName": "Poulsen",
+    "password": "TestTest123.",
+    "email": "sara@mail.com"
+}
+
 ### POST Register a new User
 POST {{url}}/auth/register
 Content-Type: application/json
@@ -14,7 +25,7 @@ Content-Type: application/json
 {
     "firstName": "Morten",
     "lastName": "Jensen",
-    "password": "TestTest123.",
+    "password": "TestTest123",
     "email": "mo_ten@hotmail.com"
 }
 
@@ -34,6 +45,15 @@ Content-Type: application/json
 {
     "email": "{{lineCookEmail}}",
     "password": "{{lineCookPassword}}"
+}
+
+### POST Login to get JWT Token(Customer)
+POST {{url}}/auth/login
+Content-Type: application/json
+
+{
+    "email": "{{customerEmail}}",
+    "password": "{{customerPassword}}"
 }
 
 ### POST Create Another User

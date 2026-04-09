@@ -16,8 +16,12 @@ public class TestCleanDB
         try (EntityManager em = emf.createEntityManager())
         {
             em.getTransaction().begin();
-            em.createNativeQuery("""
+            em.createNativeQuery(
+                """
                 TRUNCATE TABLE
+                    take_away_order_line,
+                    take_away_order,
+                    take_away_offer,
                     weekly_menu_slot,
                     weekly_menu,
                     shopping_list_item,

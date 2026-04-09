@@ -104,6 +104,20 @@ public final class RequestUtil
         }
     }
 
+    public static OrderStatus getQueryOrderStatus(Context ctx, String param)
+    {
+        if (!isPresent(ctx, param)) return null;
+
+        try
+        {
+            return OrderStatus.valueOf(ctx.queryParam(param).trim().toUpperCase());
+        }
+        catch (IllegalArgumentException e)
+        {
+            throw new IllegalArgumentException("Invalid order status: " + ctx.queryParam(param));
+        }
+    }
+
     public static LocalDate getQueryDate(Context ctx, String param)
     {
         if (!isPresent(ctx, param)) return null;

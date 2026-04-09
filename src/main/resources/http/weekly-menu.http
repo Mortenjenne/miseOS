@@ -10,7 +10,7 @@ Authorization: Bearer {{authTokenHeadChef}}
 }
 
 ### Get menu by id
-GET {{url}}/weekly-menus/3
+GET {{url}}/weekly-menus/2
 Authorization: Bearer {{authTokenHeadChef}}
 
 ### Get menu by week and year

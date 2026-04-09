@@ -78,8 +78,8 @@ class UserDAOTest
     {
         Set<User> users = userDAO.getAll();
 
-        assertThat(users, hasSize(4));
-        assertThat(users, containsInAnyOrder(seeded.get("user_gordon"), seeded.get("user_claire"), seeded.get("user_marco"), seeded.get("user_rene")));
+        assertThat(users, hasSize(5));
+        assertThat(users, containsInAnyOrder(seeded.get("user_gordon"), seeded.get("user_claire"), seeded.get("user_marco"), seeded.get("user_rene"), seeded.get("user_customer")));
     }
 
     @Test
@@ -141,7 +141,7 @@ class UserDAOTest
 
         assertThat(isDeleted, is(true));
         assertThrows(EntityNotFoundException.class, () -> userDAO.getByID(id));
-        assertThat(users, hasSize(3));
+        assertThat(users, hasSize(4));
     }
 
     @Test
