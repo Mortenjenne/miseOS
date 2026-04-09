@@ -1,20 +1,20 @@
 
 ### GET by ID
 GET {{url}}/allergens/16
-Authorization: Bearer {{authToken}}
+Authorization: Bearer {{authTokenHeadChef}}
 
 ### GET ALL
 GET {{url}}/allergens
-Authorization: Bearer {{authToken}}
+Authorization: Bearer {{authTokenHeadChef}}
 
 ### GET by Name
 GET {{url}}/allergens/name/Sell
-Authorization: Bearer {{authToken}}
+Authorization: Bearer {{authTokenHeadChef}}
 
 ### POST create allergen
 POST {{url}}/allergens
 Content-Type: application/json
-Authorization: Bearer {{authToken}}
+Authorization: Bearer {{authTokenHeadChef}}
 
 {
     "nameDA": "Pinjekerner",
@@ -27,12 +27,12 @@ Authorization: Bearer {{authToken}}
 ### POST seed EU allergens
 POST {{url}}/allergens/seed
 Content-Type: application/json
-Authorization: Bearer {{authToken}}
+Authorization: Bearer {{authTokenHeadChef}}
 
 ### PUT update allergen
 PUT {{url}}/allergens/15
 Content-Type: application/json
-Authorization: Bearer {{authToken}}
+Authorization: Bearer {{authTokenHeadChef}}
 
 {
     "nameDA": "Pinjekerner(Updated)",

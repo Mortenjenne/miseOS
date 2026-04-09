@@ -53,7 +53,8 @@ public class ApplicationConfig
             new WeeklyMenuRoute(di.getWeeklyMenuController()),
             new IngredientRequestRoute(di.getIngredientRequestController()),
             new ShoppingListRoute(di.getShoppingListController()),
-            new NotificationRoute(di.getNotificationController())
+            new NotificationRoute(di.getNotificationController()),
+            new TakeAwayRoute(di.getTakeAwayOfferController(), di.getTakeAwayOrderController())
         );
     }
 }

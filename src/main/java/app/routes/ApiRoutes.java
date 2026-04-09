@@ -4,8 +4,6 @@ import app.routes.resources.*;
 import app.routes.security.SecurityRoute;
 import io.javalin.apibuilder.EndpointGroup;
 
-import static io.javalin.apibuilder.ApiBuilder.get;
-
 public class ApiRoutes
 {
     private final SecurityRoute securityRoute;
@@ -19,8 +17,9 @@ public class ApiRoutes
     private final IngredientRequestRoute ingredientRequestRoute;
     private final ShoppingListRoute shoppingListRoute;
     private final NotificationRoute notificationRoute;
+    private final TakeAwayRoute takeAwayRoute;
 
-    public ApiRoutes(SecurityRoute securityRoute, AllergenRoute allergenRoute, UserRoute userRoute, StationRoute stationRoute, MenuInspirationRoute menuInspirationRoute, DishSuggestionRoute dishSuggestionRoute, DishRoute dishRoute, WeeklyMenuRoute weeklyMenuRoute, IngredientRequestRoute ingredientRequestRoute, ShoppingListRoute shoppingListRoute, NotificationRoute notificationRoute)
+    public ApiRoutes(SecurityRoute securityRoute, AllergenRoute allergenRoute, UserRoute userRoute, StationRoute stationRoute, MenuInspirationRoute menuInspirationRoute, DishSuggestionRoute dishSuggestionRoute, DishRoute dishRoute, WeeklyMenuRoute weeklyMenuRoute, IngredientRequestRoute ingredientRequestRoute, ShoppingListRoute shoppingListRoute, NotificationRoute notificationRoute, TakeAwayRoute takeAwayRoute)
     {
         this.securityRoute = securityRoute;
         this.allergenRoute = allergenRoute;
@@ -33,6 +32,7 @@ public class ApiRoutes
         this.ingredientRequestRoute = ingredientRequestRoute;
         this.shoppingListRoute = shoppingListRoute;
         this.notificationRoute = notificationRoute;
+        this.takeAwayRoute = takeAwayRoute;
     }
 
     public EndpointGroup getRoutes()
@@ -50,6 +50,7 @@ public class ApiRoutes
             ingredientRequestRoute.getRoutes().addEndpoints();
             shoppingListRoute.getRoutes().addEndpoints();
             notificationRoute.getRoutes().addEndpoints();
+            takeAwayRoute.getRoutes().addEndpoints();
         };
     }
 }

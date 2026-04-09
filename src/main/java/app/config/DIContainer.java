@@ -38,6 +38,8 @@ public final class DIContainer
     private final IIngredientRequestDAO ingredientRequestDAO;
     private final IShoppingListDAO shoppingListDAO;
     private final IStationDAO stationDAO;
+    private final ITakeAwayOfferDAO takeAwayOfferDAO;
+    private final ITakeAwayOrderDAO takeAwayOrderDAO;
 
     private final IAllergenService allergenService;
     private final IDishService dishService;
@@ -54,6 +56,8 @@ public final class DIContainer
     private final INotificationSnapshotService notificationSnapshotService;
     private final ISecurityService securityService;
     private final IShoppingListAggregator shoppingListAggregator;
+    private final ITakeAwayOfferService takeAwayOfferService;
+    private final ITakeAwayOrderService takeAwayOrderService;
 
     @Getter
     private final IAllergenController allergenController;
@@ -86,6 +90,12 @@ public final class DIContainer
     private final INotificationController notificationController;
 
     @Getter
+    private final ITakeAwayOfferController takeAwayOfferController;
+
+    @Getter
+    private final ITakeAwayOrderController takeAwayOrderController;
+
+    @Getter
     private final IExceptionController exceptionController;
 
     @Getter
@@ -112,6 +122,8 @@ public final class DIContainer
         this.ingredientRequestDAO = new IngredientRequestDAO(emf);
         this.shoppingListDAO = new ShoppingListDAO(emf);
         this.stationDAO = new StationDAO(emf);
+        this.takeAwayOfferDAO = new TakeAwayOfferDAO(emf);
+        this.takeAwayOrderDAO = new TakeAwayOrderDAO(emf);
 
         this.shoppingListAggregator = new ShoppingListAggregator();
         this.notificationService = new NotificationService();
@@ -128,6 +140,8 @@ public final class DIContainer
         this.shoppingListService = new ShoppingListService(shoppingListDAO, ingredientRequestDAO, userDAO, aiService, shoppingListAggregator);
         this.menuInspirationService = new MenuInspirationService(aiService, userDAO, weatherClient, weeklyMenuDAO);
         this.securityService = new SecurityService(userDAO, apiConfig.getIssuer(), apiConfig.getSecretKey(), apiConfig.getExpirationMs());
+        this.takeAwayOfferService = new TakeAwayOfferService(takeAwayOfferDAO, userDAO, dishDAO);
+        this.takeAwayOrderService = new TakeAwayOrderService(takeAwayOrderDAO, takeAwayOfferDAO, userDAO);
 
         this.allergenController = new AllergenController(allergenService);
         this.stationController = new StationController(stationService);
@@ -139,6 +153,8 @@ public final class DIContainer
         this.ingredientRequestController = new IngredientRequestController(ingredientRequestService);
         this.shoppingListController = new ShoppingListController(shoppingListService);
         this.notificationController = new NotificationController(notificationService, notificationSnapshotService);
+        this.takeAwayOfferController = new TakeAwayOfferController(takeAwayOfferService);
+        this.takeAwayOrderController = new TakeAwayOrderController(takeAwayOrderService);
         this.exceptionController = new ExceptionController();
         this.securityController = new SecurityController(securityService);
     }

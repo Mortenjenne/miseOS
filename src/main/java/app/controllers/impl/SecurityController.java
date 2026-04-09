@@ -80,16 +80,10 @@ public class SecurityController implements ISecurityController
         AuthenticatedUser authUser = ctx.attribute("authUser");
         requireUserNotNull(authUser);
 
-        if (allowedRoles.contains("KITCHEN_STAFF"))
-        {
-            if (!authUser.isKitchenStaff())
-            {
-                throw new UnauthorizedActionException("Kitchen staff only");
-            }
-            return;
-        }
+        boolean hasDirectRole = allowedRoles.contains(authUser.userRole().name());
+        boolean hasKitchenStaffRole = allowedRoles.contains("KITCHEN_STAFF") && authUser.isKitchenStaff();
 
-        if (!allowedRoles.contains(authUser.userRole().name()))
+        if (!hasDirectRole && !hasKitchenStaffRole)
         {
             logger.warn("[{}] Authorization failed: {} has role {} but needs {}", ctx.attribute("request-id"), authUser.email(), authUser.userRole(), allowedRoles);
             throw new UnauthorizedActionException("Insufficient role. Required: " + allowedRoles);
