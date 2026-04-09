@@ -68,9 +68,9 @@ public class TakeAwayOfferDAO implements ITakeAwayOfferDAO
             try
             {
                 Long count = em.createQuery(
-                        "SELECT COUNT(to) FROM TakeAwayOffer to " +
-                            "WHERE to.dish.id = :dishId " +
-                            "AND to.createdAt = :date",
+                        "SELECT COUNT(tao) FROM TakeAwayOffer tao " +
+                            "WHERE tao.dish.id = :dishId " +
+                            "AND tao.createdAt = :date",
                         Long.class)
                     .setParameter("dishId", dishId)
                     .setParameter("date", date)

@@ -70,9 +70,9 @@ public class TakeAwayOrderService implements ITakeAwayOrderService
         User requester = userReader.getByID(authUser.userId());
 
         TakeAwayOrder takeAwayOrder = takeAwayOrderDAO.getByID(orderId);
+        validateCancellationTime(requester, takeAwayOrder);
         takeAwayOrder.cancelOrder(requester);
 
-        validateCancellationTime(requester, takeAwayOrder);
 
         takeAwayOrder.getOrderLines().forEach(line ->
         {
@@ -131,7 +131,7 @@ public class TakeAwayOrderService implements ITakeAwayOrderService
         Set<TakeAwayOffer> takeAwayOffers = takeAwayOfferDAO.findByFilter(fallBackDate, null, null, null);
 
         Long totalOrders = takeAwayOrderDAO
-            .countOrdersByDate(date)
+            .countOrdersByDate(fallBackDate)
             .orElse(0L);
 
         List<TakeAwayOfferSummaryDTO> takeAwayOfferSummaryDTOS = takeAwayOffers
@@ -149,7 +149,7 @@ public class TakeAwayOrderService implements ITakeAwayOrderService
             .mapToInt(TakeAwayOffer::getAvailablePortions)
             .sum();
 
-        Long totalSoldPortions = takeAwayOrderDAO.sumSoldQuantityByDate(date)
+        Long totalSoldPortions = takeAwayOrderDAO.sumSoldQuantityByDate(fallBackDate)
             .orElse(0L);
 
         return new TakeAwaySummaryDTO(
