@@ -21,7 +21,7 @@ public class TakeAwayOrderLine implements IEntity
 
     @ManyToOne
     @JoinColumn(name = "take_away_offer_id", nullable = false)
-    private TakeAwayOffer offer;
+    private TakeAwayOffer takeAwayOffer;
 
     @Column(name = "quantity", nullable = false)
     private int quantity;
@@ -29,16 +29,16 @@ public class TakeAwayOrderLine implements IEntity
     @Column(name = "price_at_purchase", nullable = false)
     private double priceAtPurchase;
 
-    public TakeAwayOrderLine(TakeAwayOrder order, TakeAwayOffer offer, int quantity)
+    public TakeAwayOrderLine(TakeAwayOrder order, TakeAwayOffer takeAwayOffer, int quantity)
     {
         ValidationUtil.validateNotNull(order, "Order");
-        ValidationUtil.validateNotNull(offer, "Offer");
+        ValidationUtil.validateNotNull(takeAwayOffer, "Offer");
         ValidationUtil.validatePositive(quantity, "Quantity");
 
         this.order = order;
-        this.offer = offer;
+        this.takeAwayOffer = takeAwayOffer;
         this.quantity = quantity;
-        this.priceAtPurchase = offer.getPrice() * quantity;
+        this.priceAtPurchase = takeAwayOffer.getPrice() * quantity;
     }
 
     @Override

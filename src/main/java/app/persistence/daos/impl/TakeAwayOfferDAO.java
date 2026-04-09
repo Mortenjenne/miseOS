@@ -39,7 +39,7 @@ public class TakeAwayOfferDAO implements ITakeAwayOfferDAO
                 if (dishId != null)    jpql.append(" AND d.id = :dishId");
                 if (isEnabled != null) jpql.append(" AND tao.enabled = :isEnabled");
                 if (isSoldOut != null) jpql.append(" AND tao.soldOut = :isSoldOut");
-                                       jpql.append(" ORDER BY tao.createdAt DESC");
+                jpql.append(" ORDER BY tao.createdAt DESC");
 
                 TypedQuery<TakeAwayOffer> query = em.createQuery(jpql.toString(), TakeAwayOffer.class);
 

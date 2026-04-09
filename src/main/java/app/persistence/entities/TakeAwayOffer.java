@@ -111,6 +111,16 @@ public class TakeAwayOffer implements IEntity
         this.enabled = true;
     }
 
+    public int getTotalSoldPortions()
+    {
+        return this.getOfferedPortions() - this.getAvailablePortions();
+    }
+
+    public double getTotalRevenue()
+    {
+        return getTotalSoldPortions() * this.getPrice();
+    }
+
     @PrePersist
     private void onCreate()
     {

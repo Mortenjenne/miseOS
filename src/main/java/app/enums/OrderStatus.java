@@ -3,6 +3,6 @@ package app.enums;
 public enum OrderStatus
 {
     RESERVED,
-    PAYED,
+    PAID,
     CANCELLED
 }

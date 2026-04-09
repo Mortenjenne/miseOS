@@ -44,4 +44,18 @@ public class TakeAwayOfferMapper
         );
     }
 
+    public static TakeAwayOfferSummaryDTO toSummaryDTO(TakeAwayOffer offer)
+    {
+        DishReferenceDTO dishReferenceDTO = DishMapper.toDishReferenceDTO(offer.getDish());
+
+        return new TakeAwayOfferSummaryDTO(
+            offer.getId(),
+            dishReferenceDTO,
+            offer.getOfferedPortions(),
+            offer.getTotalSoldPortions(),
+            offer.getAvailablePortions(),
+            offer.getTotalRevenue()
+        );
+    }
+
 }

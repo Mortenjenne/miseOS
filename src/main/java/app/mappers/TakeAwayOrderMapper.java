@@ -33,7 +33,7 @@ public class TakeAwayOrderMapper
 
     private static TakeAwayOrderLineDTO toLineDTO(TakeAwayOrderLine line)
     {
-        TakeAwayOfferReferenceDTO offerReferenceDTO = TakeAwayOfferMapper.toReferenceDTO(line.getOffer());
+        TakeAwayOfferReferenceDTO offerReferenceDTO = TakeAwayOfferMapper.toReferenceDTO(line.getTakeAwayOffer());
 
         return new TakeAwayOrderLineDTO(
             line.getId(),

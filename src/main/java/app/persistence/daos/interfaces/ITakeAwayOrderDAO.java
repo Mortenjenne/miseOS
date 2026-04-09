@@ -13,5 +13,7 @@ public interface ITakeAwayOrderDAO extends IEntityDAO<TakeAwayOrder, Long>
 
     Optional<Long> sumSoldQuantityByDate(LocalDate date);
 
+    Optional<Long> countOrdersByDate(LocalDate date);
+
     Set<TakeAwayOrder> findByDate(LocalDate date);
 }

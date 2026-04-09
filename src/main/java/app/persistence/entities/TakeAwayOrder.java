@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -31,10 +30,6 @@ public class TakeAwayOrder implements IEntity
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<TakeAwayOrderLine> orderLines = new HashSet<>();
 
-    @ManyToOne
-    @JoinColumn(name = "take_away_offer_id", nullable = false)
-    TakeAwayOffer takeAwayOffer;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "order_status")
     private OrderStatus orderStatus;
@@ -45,13 +40,11 @@ public class TakeAwayOrder implements IEntity
     @Column(name = "created_at")
     private LocalDate createdAt;
 
-    public TakeAwayOrder(User customer, TakeAwayOffer takeAwayOffer)
+    public TakeAwayOrder(User customer)
     {
         ValidationUtil.validateNotNull(customer, "Customer");
-        ValidationUtil.validateNotNull(takeAwayOffer, "Take away offer");
 
         this.customer = customer;
-        this.takeAwayOffer = takeAwayOffer;
         this.orderStatus = OrderStatus.RESERVED;
         this.orderedAt = LocalDateTime.now();
     }
@@ -69,12 +62,13 @@ public class TakeAwayOrder implements IEntity
             throw new UnauthorizedActionException("Only head or sous chef can manage payments");
         }
 
-        this.orderStatus = OrderStatus.PAYED;
+        this.orderStatus = OrderStatus.PAID;
     }
 
     public void cancelOrder(User user)
     {
-        if (this.orderStatus == OrderStatus.PAYED) {
+        if (this.orderStatus == OrderStatus.PAID)
+        {
             throw new ConflictException("Cannot cancel an order that is already payed");
         }
 
@@ -83,12 +77,12 @@ public class TakeAwayOrder implements IEntity
             throw new UnauthorizedActionException("Only owners, head chefs and sous chefs can cancel order");
         }
 
-        this.takeAwayOffer.addPortionsBack(this.quantity);
         this.orderStatus = OrderStatus.CANCELLED;
     }
 
     public void addOrderLine(TakeAwayOrderLine line)
     {
+        ValidationUtil.validateNotNull(line, "Order line");
         orderLines.add(line);
     }
 

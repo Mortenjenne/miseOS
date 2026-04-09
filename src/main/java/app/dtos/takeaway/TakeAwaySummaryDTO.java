@@ -6,9 +6,9 @@ import java.util.List;
 public record TakeAwaySummaryDTO(
     LocalDate date,
     int totalOfferedPortions,
-    int totalSoldPortions,
+    Long totalSoldPortions,
     int totalRemainingPortions,
-    int totalOrders,
+    Long totalOrders,
     List<TakeAwayOfferSummaryDTO> summaryPerOffer
 ) {
 
