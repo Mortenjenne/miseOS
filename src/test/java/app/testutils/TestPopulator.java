@@ -1,5 +1,7 @@
 package app.testutils;
 
+import app.dtos.takeaway.TakeAwayOrderCreateDTO;
+import app.dtos.takeaway.TakeAwayOrderLineCreateDTO;
 import app.enums.*;
 import app.persistence.daos.impl.*;
 import app.persistence.daos.interfaces.*;
@@ -533,7 +535,7 @@ public class TestPopulator
         Dish tartelet = (Dish) seeded.get("dish_tartelet");
 
         TakeAwayOffer activeToday = new TakeAwayOffer(
-            10,
+            20,
             45.00,
             gordon,
             salmon
@@ -567,25 +569,16 @@ public class TestPopulator
     {
         User customer = (User) seeded.get("user_customer");
         TakeAwayOffer offer1 = (TakeAwayOffer) seeded.get("offer_active_today");
-        TakeAwayOffer offer2 = (TakeAwayOffer) seeded.get("offer_soldout_today");
 
-        TakeAwayOrder order1 = new TakeAwayOrder(customer);
-        order1.addOrderLine(new TakeAwayOrderLine(order1, offer1,3));
-        order1.addOrderLine(new TakeAwayOrderLine(order1, offer2, 2));
-
-        takeAwayOrderDAO.create(order1);
+        TakeAwayOrderLineCreateDTO line1 = new TakeAwayOrderLineCreateDTO(offer1.getId(), 4);
+        TakeAwayOrderCreateDTO dto1 = new TakeAwayOrderCreateDTO(List.of(line1));
+        TakeAwayOrder order1 = takeAwayOrderDAO.create(customer.getId(), dto1);
         seeded.put("order_1", order1);
 
-        TakeAwayOrder order2 = new TakeAwayOrder(customer);
-        order2.addOrderLine(new TakeAwayOrderLine(order2, offer1, 5));
-
-        takeAwayOrderDAO.create(order2);
+        TakeAwayOrderLineCreateDTO line2 = new TakeAwayOrderLineCreateDTO(offer1.getId(), 6);
+        TakeAwayOrderCreateDTO dto2 = new TakeAwayOrderCreateDTO(List.of(line2));
+        TakeAwayOrder order2 = takeAwayOrderDAO.create(customer.getId(), dto2);
         seeded.put("order_2", order2);
 
-        TakeAwayOrder order3 = new TakeAwayOrder(customer);
-        order3.addOrderLine(new TakeAwayOrderLine(order1, offer2, 5));
-
-        takeAwayOrderDAO.create(order3);
-        seeded.put("order_3", order3);
     }
 }

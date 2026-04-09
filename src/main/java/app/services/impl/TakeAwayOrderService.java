@@ -40,25 +40,7 @@ public class TakeAwayOrderService implements ITakeAwayOrderService
         validateAuthenticatedUser(authUser);
         validateCreateInput(dto);
 
-        User customer = userReader.getByID(authUser.userId());
-        TakeAwayOrder takeAwayOrder = new TakeAwayOrder(customer);
-
-        dto.takeAwayOrderLines().forEach(orderLine ->
-        {
-            TakeAwayOffer takeAwayOffer = takeAwayOfferDAO.getByID(orderLine.offerId());
-            takeAwayOffer.sellPortions(orderLine.quantity());
-            TakeAwayOffer updatedOffer = takeAwayOfferDAO.update(takeAwayOffer);
-
-            TakeAwayOrderLine line = new TakeAwayOrderLine(
-                takeAwayOrder,
-                updatedOffer,
-                orderLine.quantity()
-            );
-
-            takeAwayOrder.addOrderLine(line);
-        });
-
-        TakeAwayOrder savedOrder = takeAwayOrderDAO.create(takeAwayOrder);
+        TakeAwayOrder savedOrder = takeAwayOrderDAO.create(authUser.userId(), dto);
         return TakeAwayOrderMapper.toDTO(savedOrder);
     }
 

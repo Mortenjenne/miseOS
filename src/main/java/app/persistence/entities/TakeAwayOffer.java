@@ -113,7 +113,7 @@ public class TakeAwayOffer implements IEntity
     public void addPortionsBack(int quantity)
     {
         ValidationUtil.validatePositive(quantity, "Quantity");
-        
+
         int restored = this.availablePortions + quantity;
         this.availablePortions = Math.min(this.offeredPortions, restored);
 

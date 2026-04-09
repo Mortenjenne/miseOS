@@ -1,17 +1,21 @@
 package app.persistence.daos.impl;
 
 import app.config.HibernateTestConfig;
+import app.dtos.takeaway.TakeAwayOrderCreateDTO;
+import app.dtos.takeaway.TakeAwayOrderLineCreateDTO;
 import app.persistence.entities.IEntity;
 import app.persistence.entities.TakeAwayOffer;
 import app.persistence.entities.TakeAwayOrder;
 import app.persistence.entities.User;
 import app.testutils.TestCleanDB;
 import app.testutils.TestPopulator;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.*;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -38,17 +42,48 @@ class TakeAwayOrderDAOTest {
     }
 
     @Test
-    @DisplayName("Create - should persist order")
-    void create()
+    @DisplayName("Create - should persist order and reduce portions")
+    void createSuccess()
     {
         User customer = (User) seeded.get("user_marco");
+        TakeAwayOffer offer = (TakeAwayOffer) seeded.get("offer_active_today");
+        int quantityToBuy = 2;
 
-        TakeAwayOrder order = new TakeAwayOrder(customer);
-        TakeAwayOrder result = takeAwayOrderDAO.create(order);
+        TakeAwayOrderLineCreateDTO line = new TakeAwayOrderLineCreateDTO(offer.getId(), quantityToBuy);
+        TakeAwayOrderCreateDTO dto = new TakeAwayOrderCreateDTO(List.of(line));
+
+        TakeAwayOrder result = takeAwayOrderDAO.create(customer.getId(), dto);
 
         assertThat(result.getId(), notNullValue());
-        assertThat(result.getCreatedAt(), is(LocalDate.now()));
         assertThat(result.getCustomer().getId(), is(customer.getId()));
+        assertThat(result.getOrderLines(), hasSize(1));
+
+        try (EntityManager em = emf.createEntityManager())
+        {
+            TakeAwayOffer updatedOffer = em.find(TakeAwayOffer.class, offer.getId());
+            assertThat(updatedOffer.getAvailablePortions(), is(8));
+        }
+    }
+
+    @Test
+    @DisplayName("Create - should rollback and throw exception when sold out")
+    void createRollbackTest()
+    {
+        User customer = (User) seeded.get("user_marco");
+        TakeAwayOffer offer = (TakeAwayOffer) seeded.get("offer_active_today");
+
+        int tooMany = 11;
+
+        TakeAwayOrderLineCreateDTO line = new TakeAwayOrderLineCreateDTO(offer.getId(), tooMany);
+        TakeAwayOrderCreateDTO dto = new TakeAwayOrderCreateDTO(List.of(line));
+
+        assertThrows(RuntimeException.class, () -> takeAwayOrderDAO.create(customer.getId(), dto));
+
+        try (EntityManager em = emf.createEntityManager())
+        {
+            TakeAwayOffer currentOffer = em.find(TakeAwayOffer.class, offer.getId());
+            assertThat(currentOffer.getAvailablePortions(), is(10));
+        }
     }
 
     @Test
@@ -80,7 +115,7 @@ class TakeAwayOrderDAOTest {
         Optional<Long> total = takeAwayOrderDAO.sumSoldQuantityByDate(today);
 
         assertTrue(total.isPresent());
-        assertThat(total.get(), is(15L));
+        assertThat(total.get(), is(10L));
     }
 
     @Test
@@ -99,7 +134,7 @@ class TakeAwayOrderDAOTest {
         LocalDate today = LocalDate.now();
         Set<TakeAwayOrder> orders = takeAwayOrderDAO.findByDate(today);
 
-        assertThat(orders, hasSize(3));
+        assertThat(orders, hasSize(2));
     }
 
     @Test
@@ -119,7 +154,7 @@ class TakeAwayOrderDAOTest {
     @DisplayName("Delete - should remove order")
     void delete()
     {
-        TakeAwayOrder seed = (TakeAwayOrder) seeded.get("order_3");
+        TakeAwayOrder seed = (TakeAwayOrder) seeded.get("order_2");
         boolean deleted = takeAwayOrderDAO.delete(seed.getId());
 
         assertTrue(deleted);

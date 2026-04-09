@@ -1,8 +1,13 @@
 package app.persistence.daos.impl;
 
+import app.dtos.takeaway.TakeAwayOrderCreateDTO;
+import app.dtos.takeaway.TakeAwayOrderLineCreateDTO;
 import app.exceptions.DatabaseException;
 import app.persistence.daos.interfaces.ITakeAwayOrderDAO;
+import app.persistence.entities.TakeAwayOffer;
 import app.persistence.entities.TakeAwayOrder;
+import app.persistence.entities.TakeAwayOrderLine;
+import app.persistence.entities.User;
 import app.utils.DBValidator;
 import app.utils.TransactionUtil;
 import app.utils.ValidationUtil;
@@ -164,25 +169,54 @@ public class TakeAwayOrderDAO implements ITakeAwayOrderDAO
     }
 
     @Override
-    public TakeAwayOrder create(TakeAwayOrder order)
+    public TakeAwayOrder create(Long customerId, TakeAwayOrderCreateDTO dto)
     {
-        ValidationUtil.validateNotNull(order, "Take away order");
+        ValidationUtil.validateId(customerId);
+        ValidationUtil.validateNotNull(dto, "Takeaway Order Create");
+        ValidationUtil.validateNotEmpty(dto.takeAwayOrderLines(), "Order Lines");
 
-        try (EntityManager em = emf.createEntityManager())
+        Long orderId;
+
+        try(EntityManager em = emf.createEntityManager())
         {
             try
             {
                 em.getTransaction().begin();
+
+                User customer = em.find(User.class, customerId);
+                DBValidator.validateExists(customer, customerId, User.class);
+
+                TakeAwayOrder order = new TakeAwayOrder(customer);
+
+                for (TakeAwayOrderLineCreateDTO lineDTO : dto.takeAwayOrderLines())
+                {
+                    TakeAwayOffer offer = em.find(TakeAwayOffer.class, lineDTO.offerId());
+                    DBValidator.validateExists(offer, lineDTO.offerId(), TakeAwayOffer.class);
+
+                    offer.sellPortions(lineDTO.quantity());
+
+                    TakeAwayOrderLine line = new TakeAwayOrderLine(order, offer, lineDTO.quantity());
+                    order.addOrderLine(line);
+                }
+
                 em.persist(order);
                 em.getTransaction().commit();
-                return getByID(order.getId());
+
+                orderId = order.getId();
             }
             catch (PersistenceException e)
             {
                 TransactionUtil.rollback(em);
-                throw new DatabaseException("Failed to create take away order", e);
+                throw new DatabaseException("Failed to place takeaway order", e);
+            }
+            catch (RuntimeException e)
+            {
+                TransactionUtil.rollback(em);
+                throw e;
             }
         }
+
+        return getByID(orderId);
     }
 
     @Override
