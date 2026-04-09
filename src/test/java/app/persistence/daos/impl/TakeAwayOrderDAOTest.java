@@ -42,13 +42,11 @@ class TakeAwayOrderDAOTest {
     void create()
     {
         User customer = (User) seeded.get("user_marco");
-        TakeAwayOffer offer = (TakeAwayOffer) seeded.get("offer_active_today");
 
-        TakeAwayOrder order = new TakeAwayOrder(customer, offer, 1);
+        TakeAwayOrder order = new TakeAwayOrder(customer);
         TakeAwayOrder result = takeAwayOrderDAO.create(order);
 
         assertThat(result.getId(), notNullValue());
-        assertThat(result.getQuantity(), is(1));
         assertThat(result.getCreatedAt(), is(LocalDate.now()));
         assertThat(result.getCustomer().getId(), is(customer.getId()));
     }
@@ -62,8 +60,6 @@ class TakeAwayOrderDAOTest {
 
         assertThat(fetched.getId(), is(seed.getId()));
         assertThat(fetched.getCustomer(), notNullValue());
-        assertThat(fetched.getTakeAwayOffer(), notNullValue());
-        assertThat(fetched.getQuantity(), is(seed.getQuantity()));
     }
 
     @Test
@@ -84,7 +80,7 @@ class TakeAwayOrderDAOTest {
         Optional<Long> total = takeAwayOrderDAO.sumSoldQuantityByDate(today);
 
         assertTrue(total.isPresent());
-        assertThat(total.get(), is(10L));
+        assertThat(total.get(), is(15L));
     }
 
     @Test
@@ -98,7 +94,8 @@ class TakeAwayOrderDAOTest {
 
     @Test
     @DisplayName("Find by Date - should return all orders created today")
-    void findByDate() {
+    void findByDate()
+    {
         LocalDate today = LocalDate.now();
         Set<TakeAwayOrder> orders = takeAwayOrderDAO.findByDate(today);
 
@@ -107,7 +104,8 @@ class TakeAwayOrderDAOTest {
 
     @Test
     @DisplayName("Update - should update status and quantity")
-    void update() {
+    void update()
+    {
         User gordon = (User) seeded.get("user_gordon");
         TakeAwayOrder seed = (TakeAwayOrder) seeded.get("order_2");
 
@@ -119,7 +117,8 @@ class TakeAwayOrderDAOTest {
 
     @Test
     @DisplayName("Delete - should remove order")
-    void delete() {
+    void delete()
+    {
         TakeAwayOrder seed = (TakeAwayOrder) seeded.get("order_3");
         boolean deleted = takeAwayOrderDAO.delete(seed.getId());
 
@@ -129,11 +128,8 @@ class TakeAwayOrderDAOTest {
 
     @Test
     @DisplayName("Validation - should throw exception for invalid order data")
-    void validationTest() {
-        User customer = (User) seeded.get("user_rene");
-        TakeAwayOffer offer = (TakeAwayOffer) seeded.get("offer_active_today");
-
-        assertThrows(IllegalArgumentException.class, () -> new TakeAwayOrder(null, offer, 1));
-        assertThrows(IllegalArgumentException.class, () -> new TakeAwayOrder(customer, offer, -5));
+    void validationTest()
+    {
+        assertThrows(IllegalArgumentException.class, () -> new TakeAwayOrder(null));
     }
 }

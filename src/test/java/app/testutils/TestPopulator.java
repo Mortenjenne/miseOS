@@ -569,26 +569,21 @@ public class TestPopulator
         TakeAwayOffer offer1 = (TakeAwayOffer) seeded.get("offer_active_today");
         TakeAwayOffer offer2 = (TakeAwayOffer) seeded.get("offer_soldout_today");
 
-        TakeAwayOrder order1 = new TakeAwayOrder(customer,
-            offer1,
-            2
-        );
+        TakeAwayOrder order1 = new TakeAwayOrder(customer);
+        order1.addOrderLine(new TakeAwayOrderLine(order1, offer1,3));
+        order1.addOrderLine(new TakeAwayOrderLine(order1, offer2, 2));
 
         takeAwayOrderDAO.create(order1);
         seeded.put("order_1", order1);
 
-        TakeAwayOrder order2 = new TakeAwayOrder(customer,
-            offer1,
-            3
-        );
+        TakeAwayOrder order2 = new TakeAwayOrder(customer);
+        order2.addOrderLine(new TakeAwayOrderLine(order2, offer1, 5));
 
         takeAwayOrderDAO.create(order2);
         seeded.put("order_2", order2);
 
-        TakeAwayOrder order3 = new TakeAwayOrder(customer,
-            offer2,
-            5
-        );
+        TakeAwayOrder order3 = new TakeAwayOrder(customer);
+        order3.addOrderLine(new TakeAwayOrderLine(order1, offer2, 5));
 
         takeAwayOrderDAO.create(order3);
         seeded.put("order_3", order3);

@@ -22,5 +22,6 @@ final class EntityRegistry
         configuration.addAnnotatedClass(WeeklyMenuSlot.class);
         configuration.addAnnotatedClass(TakeAwayOffer.class);
         configuration.addAnnotatedClass(TakeAwayOrder.class);
+        configuration.addAnnotatedClass(TakeAwayOrderLine.class);
     }
 }
