@@ -17,10 +17,8 @@ public interface ITakeAwayOrderService
 
     TakeAwayOrderDTO cancelOrder(AuthenticatedUser authUser, Long orderId);
 
-    TakeAwayOrderDTO getById(Long orderId);
-
     TakeAwayOrderDTO getById(AuthenticatedUser authUser, Long orderId);
-
+    
     List<TakeAwayOrderDTO> getOrders(AuthenticatedUser authUser, Long customerId, Long offerId, LocalDate date, OrderStatus status);
 
     TakeAwaySummaryDTO getSummary(LocalDate date);
