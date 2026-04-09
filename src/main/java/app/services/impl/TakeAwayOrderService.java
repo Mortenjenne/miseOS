@@ -107,7 +107,7 @@ public class TakeAwayOrderService implements ITakeAwayOrderService
             .map(TakeAwayOrderMapper::toDTO)
             .toList();
     }
-    
+
     @Override
     public TakeAwaySummaryDTO getSummary(LocalDate date)
     {
