@@ -86,12 +86,27 @@ public class TakeAwayOrderService implements ITakeAwayOrderService
     }
 
     @Override
-    public TakeAwayOrderDTO getById(Long orderId)
+    public TakeAwayOrderDTO getById(AuthenticatedUser authUser, Long orderId)
     {
         ValidationUtil.validateId(orderId);
 
         TakeAwayOrder takeAwayOrder = takeAwayOrderDAO.getByID(orderId);
+        User requester = userReader.getByID(authUser.userId());
+
+        validateOrderIdIsCustomers(authUser, takeAwayOrder, requester);
+
         return TakeAwayOrderMapper.toDTO(takeAwayOrder);
+    }
+
+    private void validateOrderIdIsCustomers(AuthenticatedUser authUser, TakeAwayOrder takeAwayOrder, User requester)
+    {
+        boolean isCustomerOrder = takeAwayOrder.getCustomer().getId().equals(authUser.userId());
+        boolean isManagement = requester.isHeadChef() || requester.isSousChef();
+
+        if (!isCustomerOrder && !isManagement)
+        {
+            throw new UnauthorizedActionException("You cannot view other customers orders.");
+        }
     }
 
     @Override
