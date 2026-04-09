@@ -46,6 +46,7 @@ public class TakeAwayOrder implements IEntity
 
         this.customer = customer;
         this.orderStatus = OrderStatus.RESERVED;
+
         this.orderedAt = LocalDateTime.now();
     }
 
@@ -99,6 +100,11 @@ public class TakeAwayOrder implements IEntity
         return orderLines.stream()
             .mapToInt(TakeAwayOrderLine::getQuantity)
             .sum();
+    }
+
+    public int getTotalOrderLines()
+    {
+        return orderLines.size();
     }
 
     @PrePersist

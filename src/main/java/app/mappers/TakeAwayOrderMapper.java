@@ -21,6 +21,7 @@ public class TakeAwayOrderMapper
 
         return new TakeAwayOrderDTO(
             order.getId(),
+            order.getTotalOrderLines(),
             order.getTotalItems(),
             UserMapper.toReferenceDTO(order.getCustomer()),
             lines,

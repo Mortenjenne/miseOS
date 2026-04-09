@@ -11,6 +11,7 @@ import java.util.List;
 public record TakeAwayOrderDTO(
     Long id,
     int totalOrderLines,
+    int totalQuantity,
     UserReferenceDTO customer,
     List<TakeAwayOrderLineDTO> orderLines,
     double totalOrderPrice,

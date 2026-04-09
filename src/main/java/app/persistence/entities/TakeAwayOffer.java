@@ -81,6 +81,7 @@ public class TakeAwayOffer implements IEntity
         this.offeredPortions = newOfferedPortions;
         this.price = price;
         this.soldOut = this.availablePortions == 0;
+        this.availablePortions = newOfferedPortions - soldAlready;
 
         if(soldOut)
         {

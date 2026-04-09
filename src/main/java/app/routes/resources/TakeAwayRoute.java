@@ -37,12 +37,12 @@ public class TakeAwayRoute
 
                 path("orders", () ->
                 {
+                    get("summary", orderController::getSummary, Role.HEAD_CHEF, Role.SOUS_CHEF);
                     get("", orderController::getOrders, Role.CUSTOMER, Role.KITCHEN_STAFF);
                     get("{id}", orderController::getById, Role.CUSTOMER, Role.KITCHEN_STAFF);
                     post("", orderController::placeOrder, Role.CUSTOMER);
                     patch("{id}/pay", orderController::markAsPaid, Role.HEAD_CHEF, Role.SOUS_CHEF);
                     patch("{id}/cancel", orderController::cancelOrder, Role.CUSTOMER, Role.HEAD_CHEF, Role.HEAD_CHEF);
-                    get("summary", orderController::getSummary, Role.HEAD_CHEF, Role.SOUS_CHEF);
                 });
             });
         };

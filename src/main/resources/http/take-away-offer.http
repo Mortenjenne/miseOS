@@ -1,0 +1,47 @@
+### Get all offers
+GET {{url}}/takeaway/offers?enabled=true&soldOut=false
+
+### Get offers filtered by date
+GET {{url}}/takeaway/offers?date=2026-04-09
+
+### Get offers filtered by availability and dish
+GET {{url}}/takeaway/offers?enabled=true&soldOut=false&dishId=1
+Authorization: Bearer {{authTokenUser}}
+
+### Get offer by id
+GET {{url}}/takeaway/offers/1
+Authorization: Bearer {{authTokenUser}}
+
+### Create new offer
+POST {{url}}/takeaway/offers
+Content-Type: application/json
+Authorization: Bearer {{authTokenHeadChef}}
+
+{
+    "dishId": 2,
+    "price": 85.00,
+    "offeredPortions": 50
+}
+
+### Update offer
+PUT {{url}}/takeaway/offers/1
+Content-Type: application/json
+Authorization: Bearer {{authTokenHeadChef}}
+
+{
+    "dishId": 1,
+    "price": 95.00,
+    "offeredPortions": 60
+}
+
+### Enable offer
+PATCH {{url}}/takeaway/offers/1/enable
+Authorization: Bearer {{authTokenHeadChef}}
+
+### Disable offer
+PATCH {{url}}/takeaway/offers/1/disable
+Authorization: Bearer {{authTokenHeadChef}}
+
+### Delete offer
+DELETE {{url}}/takeaway/offers/1
+Authorization: Bearer {{authTokenHeadChef}}
