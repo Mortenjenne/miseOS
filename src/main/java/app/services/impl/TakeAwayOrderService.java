@@ -126,9 +126,9 @@ public class TakeAwayOrderService implements ITakeAwayOrderService
     @Override
     public TakeAwaySummaryDTO getSummary(LocalDate date)
     {
-        ValidationUtil.validateNotNull(date, "Date");
+        LocalDate fallBackDate = date != null ? date : LocalDate.now();
 
-        Set<TakeAwayOffer> takeAwayOffers = takeAwayOfferDAO.findByFilter(date, null, null, null);
+        Set<TakeAwayOffer> takeAwayOffers = takeAwayOfferDAO.findByFilter(fallBackDate, null, null, null);
 
         Long totalOrders = takeAwayOrderDAO
             .countOrdersByDate(date)
