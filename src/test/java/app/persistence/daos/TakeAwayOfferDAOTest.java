@@ -1,6 +1,7 @@
-package app.persistence.daos.impl;
+package app.persistence.daos;
 
 import app.config.HibernateTestConfig;
+import app.persistence.daos.impl.TakeAwayOfferDAO;
 import app.persistence.entities.Dish;
 import app.persistence.entities.IEntity;
 import app.persistence.entities.TakeAwayOffer;

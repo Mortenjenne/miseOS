@@ -25,7 +25,7 @@ import static org.hamcrest.Matchers.*;
 class DishSuggestionControllerTest
 {
     private static final String ENDPOINT_URL  = "/dish-suggestions";
-    private static final int TEST_PORT = 7772;
+    private static final int TEST_PORT = 7782;
     private static EntityManagerFactory emf;
     private static Javalin app;
 

@@ -1,9 +1,10 @@
-package app.persistence.daos.impl;
+package app.persistence.daos;
 
 import app.config.HibernateTestConfig;
 import app.dtos.takeaway.TakeAwayOrderCreateDTO;
 import app.dtos.takeaway.TakeAwayOrderLineCreateDTO;
 import app.enums.OrderStatus;
+import app.persistence.daos.impl.TakeAwayOrderDAO;
 import app.persistence.entities.IEntity;
 import app.persistence.entities.TakeAwayOffer;
 import app.persistence.entities.TakeAwayOrder;

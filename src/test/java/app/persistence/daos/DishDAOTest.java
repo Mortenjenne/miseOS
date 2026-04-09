@@ -1,6 +1,7 @@
-package app.persistence.daos.impl;
+package app.persistence.daos;
 
 import app.config.HibernateTestConfig;
+import app.persistence.daos.impl.DishDAO;
 import app.persistence.entities.*;
 import app.testutils.TestCleanDB;
 import app.testutils.TestPopulator;
