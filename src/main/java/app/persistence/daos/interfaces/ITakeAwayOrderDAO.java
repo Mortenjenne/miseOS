@@ -1,6 +1,7 @@
 package app.persistence.daos.interfaces;
 
 import app.dtos.takeaway.TakeAwayOrderCreateDTO;
+import app.enums.OrderStatus;
 import app.persistence.daos.interfaces.generic.IEntityDAO;
 import app.persistence.entities.TakeAwayOrder;
 
@@ -10,13 +11,11 @@ import java.util.Set;
 
 public interface ITakeAwayOrderDAO
 {
-    Set<TakeAwayOrder> findByOfferId(Long offerId);
+    Set<TakeAwayOrder> findByFilter(Long customerId, Long offerId, LocalDate date, OrderStatus status);
 
     Optional<Long> sumSoldQuantityByDate(LocalDate date);
 
     Optional<Long> countOrdersByDate(LocalDate date);
-
-    Set<TakeAwayOrder> findByDate(LocalDate date);
 
     TakeAwayOrder getByID(Long id);
 

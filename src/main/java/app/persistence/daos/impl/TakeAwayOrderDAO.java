@@ -2,6 +2,7 @@ package app.persistence.daos.impl;
 
 import app.dtos.takeaway.TakeAwayOrderCreateDTO;
 import app.dtos.takeaway.TakeAwayOrderLineCreateDTO;
+import app.enums.OrderStatus;
 import app.exceptions.DatabaseException;
 import app.persistence.daos.interfaces.ITakeAwayOrderDAO;
 import app.persistence.entities.TakeAwayOffer;
@@ -28,29 +29,39 @@ public class TakeAwayOrderDAO implements ITakeAwayOrderDAO
     }
 
     @Override
-    public Set<TakeAwayOrder> findByOfferId(Long offerId)
+    public Set<TakeAwayOrder> findByFilter(Long customerId, Long offerId, LocalDate date, OrderStatus status)
     {
-        ValidationUtil.validateId(offerId);
-
         try (EntityManager em = emf.createEntityManager())
         {
             try
             {
-                TypedQuery<TakeAwayOrder> query = em.createQuery(
-                        "SELECT DISTINCT ord FROM TakeAwayOrder ord " +
-                            "JOIN FETCH ord.customer " +
-                            "JOIN FETCH ord.orderLines lines " +
-                            "JOIN FETCH lines.takeAwayOffer off " +
-                            "WHERE off.id = :offerId " +
-                            "ORDER BY ord.orderedAt DESC",
-                        TakeAwayOrder.class)
-                    .setParameter("offerId", offerId);
+                StringBuilder jpql = new StringBuilder(
+                    "SELECT DISTINCT ord FROM TakeAwayOrder ord " +
+                        "JOIN FETCH ord.customer c " +
+                        "LEFT JOIN FETCH ord.orderLines lines " +
+                        "LEFT JOIN FETCH lines.takeAwayOffer off " +
+                        "WHERE 1=1"
+                );
+
+                if (customerId != null) jpql.append(" AND c.id = :customerId");
+                if (offerId != null)    jpql.append(" AND off.id = :offerId");
+                if (date != null)       jpql.append(" AND ord.createdAt = :date");
+                if (status != null)     jpql.append(" AND ord.orderStatus = :status");
+
+                jpql.append(" ORDER BY ord.orderedAt DESC");
+
+                TypedQuery<TakeAwayOrder> query = em.createQuery(jpql.toString(), TakeAwayOrder.class);
+
+                if (customerId != null) query.setParameter("customerId", customerId);
+                if (offerId != null)    query.setParameter("offerId", offerId);
+                if (date != null)       query.setParameter("date", date);
+                if (status != null)     query.setParameter("status", status);
 
                 return new LinkedHashSet<>(query.getResultList());
             }
             catch (PersistenceException e)
             {
-                throw new DatabaseException("Failed to fetch take away orders by offer", e);
+                throw new DatabaseException("Failed to fetch take away orders with filter", e);
             }
         }
     }
@@ -104,35 +115,6 @@ public class TakeAwayOrderDAO implements ITakeAwayOrderDAO
             catch (PersistenceException e)
             {
                 throw new DatabaseException("Failed to count orders by date", e);
-            }
-        }
-    }
-
-    @Override
-    public Set<TakeAwayOrder> findByDate(LocalDate date)
-    {
-        ValidationUtil.validateNotNull(date, "Date");
-
-        try (EntityManager em = emf.createEntityManager())
-        {
-            try
-            {
-                TypedQuery<TakeAwayOrder> query = em.createQuery(
-                        "SELECT DISTINCT ord FROM TakeAwayOrder ord " +
-                            "JOIN FETCH ord.customer " +
-                            "LEFT JOIN FETCH ord.orderLines lines " +
-                            "LEFT JOIN FETCH lines.takeAwayOffer off " +
-                            "LEFT JOIN FETCH off.dish " +
-                            "WHERE ord.createdAt = :date " +
-                            "ORDER BY ord.orderedAt DESC",
-                        TakeAwayOrder.class)
-                    .setParameter("date", date);
-
-                return new LinkedHashSet<>(query.getResultList());
-            }
-            catch (PersistenceException e)
-            {
-                throw new DatabaseException("Failed to fetch take away orders by date", e);
             }
         }
     }

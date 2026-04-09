@@ -5,6 +5,8 @@ import app.dtos.takeaway.TakeAwayOfferSummaryDTO;
 import app.dtos.takeaway.TakeAwayOrderCreateDTO;
 import app.dtos.takeaway.TakeAwayOrderDTO;
 import app.dtos.takeaway.TakeAwaySummaryDTO;
+import app.enums.OrderStatus;
+import app.exceptions.UnauthorizedActionException;
 import app.mappers.TakeAwayOfferMapper;
 import app.mappers.TakeAwayOrderMapper;
 import app.persistence.daos.interfaces.ITakeAwayOfferDAO;
@@ -12,12 +14,12 @@ import app.persistence.daos.interfaces.ITakeAwayOrderDAO;
 import app.persistence.daos.interfaces.readers.IUserReader;
 import app.persistence.entities.TakeAwayOffer;
 import app.persistence.entities.TakeAwayOrder;
-import app.persistence.entities.TakeAwayOrderLine;
 import app.persistence.entities.User;
 import app.services.ITakeAwayOrderService;
 import app.utils.ValidationUtil;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -70,6 +72,8 @@ public class TakeAwayOrderService implements ITakeAwayOrderService
         TakeAwayOrder takeAwayOrder = takeAwayOrderDAO.getByID(orderId);
         takeAwayOrder.cancelOrder(requester);
 
+        validateCancellationTime(requester, takeAwayOrder);
+
         takeAwayOrder.getOrderLines().forEach(line ->
         {
             TakeAwayOffer offer = takeAwayOfferDAO.getByID(line.getTakeAwayOffer().getId());
@@ -91,27 +95,19 @@ public class TakeAwayOrderService implements ITakeAwayOrderService
     }
 
     @Override
-    public List<TakeAwayOrderDTO> getOrdersByOffer(Long offerId)
+    public List<TakeAwayOrderDTO> getOrders(AuthenticatedUser authUser, Long customerId, Long offerId, LocalDate date, OrderStatus status)
     {
-        ValidationUtil.validateId(offerId);
+        validateAuthenticatedUser(authUser);
+        User requester = userReader.getByID(authUser.userId());
 
-        return takeAwayOrderDAO.findByOfferId(offerId)
+        Long searchCustomerId = getSearchCustomerId(requester, customerId);
+
+        return takeAwayOrderDAO.findByFilter(searchCustomerId, offerId, date, status)
             .stream()
             .map(TakeAwayOrderMapper::toDTO)
             .toList();
     }
-
-    @Override
-    public List<TakeAwayOrderDTO> getOrdersByDate(LocalDate date)
-    {
-        ValidationUtil.validateNotNull(date, "Date");
-
-        return takeAwayOrderDAO.findByDate(date)
-            .stream()
-            .map(TakeAwayOrderMapper::toDTO)
-            .toList();
-    }
-
+    
     @Override
     public TakeAwaySummaryDTO getSummary(LocalDate date)
     {
@@ -151,6 +147,16 @@ public class TakeAwayOrderService implements ITakeAwayOrderService
         );
     }
 
+    private Long getSearchCustomerId(User requester, Long requestedCustomerId)
+    {
+        if (requester.isHeadChef() || requester.isSousChef())
+        {
+            return requestedCustomerId;
+        }
+
+        return requester.getId();
+    }
+
     private void validateCreateInput(TakeAwayOrderCreateDTO dto)
     {
         int minimumQuantityPerOrder = 1;
@@ -170,5 +176,19 @@ public class TakeAwayOrderService implements ITakeAwayOrderService
     {
         ValidationUtil.validateNotNull(authUser, "Authenticated User");
         ValidationUtil.validateId(authUser.userId());
+    }
+
+    private  void validateCancellationTime(User requester, TakeAwayOrder takeAwayOrder)
+    {
+        int cancellationTimeInMinuttes = 45;
+
+        if (!requester.isHeadChef() && !requester.isSousChef())
+        {
+            boolean isCancellationWindowExpired = takeAwayOrder.getOrderedAt().isBefore(LocalDateTime.now().minusMinutes(cancellationTimeInMinuttes));
+            if (isCancellationWindowExpired)
+            {
+                throw new UnauthorizedActionException("Cancellation window (45 mins) has expired. Please contact the kitchen.");
+            }
+        }
     }
 }

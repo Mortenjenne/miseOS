@@ -4,6 +4,7 @@ import app.dtos.security.AuthenticatedUser;
 import app.dtos.takeaway.TakeAwayOrderCreateDTO;
 import app.dtos.takeaway.TakeAwayOrderDTO;
 import app.dtos.takeaway.TakeAwaySummaryDTO;
+import app.enums.OrderStatus;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -18,9 +19,7 @@ public interface ITakeAwayOrderService
 
     TakeAwayOrderDTO getById(Long orderId);
 
-    List<TakeAwayOrderDTO> getOrdersByOffer(Long offerId);
-
-    List<TakeAwayOrderDTO> getOrdersByDate(LocalDate date);
+    List<TakeAwayOrderDTO> getOrders(AuthenticatedUser authUser, Long customerId, Long offerId, LocalDate date, OrderStatus status);
 
     TakeAwaySummaryDTO getSummary(LocalDate date);
 }

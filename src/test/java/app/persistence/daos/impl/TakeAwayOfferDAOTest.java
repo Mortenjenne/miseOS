@@ -64,7 +64,7 @@ class TakeAwayOfferDAOTest {
 
         assertThat(fetched.getId(), is(seed.getId()));
         assertThat(fetched.getDish().getId(), is(seed.getDish().getId()));
-        assertThat(fetched.getOfferedPortions(), is(10));
+        assertThat(fetched.getOfferedPortions(), is(20));
     }
 
     @Test
@@ -78,7 +78,7 @@ class TakeAwayOfferDAOTest {
 
         TakeAwayOffer updated = takeAwayOfferDAO.update(seed);
 
-        assertThat(updated.getAvailablePortions(), is(8));
+        assertThat(updated.getAvailablePortions(), is(18));
         assertFalse(updated.isEnabled());
     }
 
@@ -88,7 +88,7 @@ class TakeAwayOfferDAOTest {
     {
         TakeAwayOffer seed = (TakeAwayOffer) seeded.get("offer_active_today");
 
-        seed.sellPortions(10);
+        seed.sellPortions(20);
 
         TakeAwayOffer updated = takeAwayOfferDAO.update(seed);
 

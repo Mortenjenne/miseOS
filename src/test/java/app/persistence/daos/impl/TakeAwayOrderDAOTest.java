@@ -3,6 +3,7 @@ package app.persistence.daos.impl;
 import app.config.HibernateTestConfig;
 import app.dtos.takeaway.TakeAwayOrderCreateDTO;
 import app.dtos.takeaway.TakeAwayOrderLineCreateDTO;
+import app.enums.OrderStatus;
 import app.persistence.entities.IEntity;
 import app.persistence.entities.TakeAwayOffer;
 import app.persistence.entities.TakeAwayOrder;
@@ -102,7 +103,7 @@ class TakeAwayOrderDAOTest {
     void findByOfferId()
     {
         TakeAwayOffer offer = (TakeAwayOffer) seeded.get("offer_active_today");
-        Set<TakeAwayOrder> orders = takeAwayOrderDAO.findByOfferId(offer.getId());
+        Set<TakeAwayOrder> orders = takeAwayOrderDAO.findByFilter(null, offer.getId(), null, null);
 
         assertThat(orders, hasSize(2));
     }
@@ -132,9 +133,35 @@ class TakeAwayOrderDAOTest {
     void findByDate()
     {
         LocalDate today = LocalDate.now();
-        Set<TakeAwayOrder> orders = takeAwayOrderDAO.findByDate(today);
+        Set<TakeAwayOrder> orders = takeAwayOrderDAO.findByFilter(null, null, today, null);
 
         assertThat(orders, hasSize(2));
+    }
+
+    @Test
+    @DisplayName("Find orders by status (RESERVED AND PAID)")
+    void findByFilterStatus()
+    {
+        Set<TakeAwayOrder> reservedResults = takeAwayOrderDAO.findByFilter(null, null, null, OrderStatus.RESERVED);
+        Set<TakeAwayOrder> paidResults = takeAwayOrderDAO.findByFilter(null, null, null, OrderStatus.PAID);
+
+        assertNotNull(reservedResults);
+        assertThat(reservedResults, hasSize(2));
+
+        assertNotNull(paidResults);
+        assertThat(paidResults, hasSize(0));
+    }
+
+    @Test
+    @DisplayName("Find orders by customer ID")
+    void findByFilterCustomerId()
+    {
+        User customer = (User) seeded.get("user_customer");
+
+        Set<TakeAwayOrder> results = takeAwayOrderDAO.findByFilter(customer.getId(), null, null, null);
+
+        assertNotNull(results);
+        assertTrue(results.stream().allMatch(o -> o.getCustomer().getId().equals(customer.getId())));
     }
 
     @Test
