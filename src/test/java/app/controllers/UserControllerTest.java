@@ -122,7 +122,7 @@ class UserControllerTest
                 .get(ENDPOINT_URL)
                 .then()
                 .statusCode(200)
-                .body("$", hasSize(4));
+                .body("$", hasSize(5));
         }
 
         @Test

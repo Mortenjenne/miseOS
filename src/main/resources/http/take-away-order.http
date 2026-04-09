@@ -11,7 +11,7 @@ GET {{url}}/takeaway/orders?status=PAID&date=2026-04-09&customerId=7
 Authorization: Bearer {{authTokenHeadChef}}
 
 ### Get order by id
-GET {{url}}/takeaway/orders/1
+GET {{url}}/takeaway/orders/3
 Authorization: Bearer {{authTokenUser}}
 
 ### Place new order
