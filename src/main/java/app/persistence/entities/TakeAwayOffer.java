@@ -22,7 +22,7 @@ public class TakeAwayOffer implements IEntity
     @Column(name = "enabled")
     private boolean enabled;
 
-    @Column(name = "soldout")
+    @Column(name = "sold_out")
     private boolean soldOut;
 
     @Column(name = "offered_portions", nullable = false)
