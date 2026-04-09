@@ -109,7 +109,7 @@ class TakeAwayOrderDAOTest {
         User gordon = (User) seeded.get("user_gordon");
         TakeAwayOrder seed = (TakeAwayOrder) seeded.get("order_2");
 
-        seed.setOrderPayed(gordon);
+        seed.setOrderPaid(gordon);
 
         TakeAwayOrder updated = takeAwayOrderDAO.update(seed);
         assertThat(updated.getId(), is(seed.getId()));

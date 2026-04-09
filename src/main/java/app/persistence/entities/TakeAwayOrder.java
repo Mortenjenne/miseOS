@@ -49,11 +49,12 @@ public class TakeAwayOrder implements IEntity
         this.orderedAt = LocalDateTime.now();
     }
 
-    public void setOrderPayed(User user)
+    public void setOrderPaid(User user)
     {
         ValidationUtil.validateNotNull(user, "User");
 
-        if (this.orderStatus == OrderStatus.CANCELLED) {
+        if (this.orderStatus == OrderStatus.CANCELLED)
+        {
             throw new ConflictException("Cannot pay for a cancelled order");
         }
 

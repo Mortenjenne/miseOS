@@ -64,15 +64,28 @@ public class TakeAwayOffer implements IEntity
         this.dish = dish;
     }
 
-    public void updateOffer(Dish dish, int offeredPortions, double price)
+    public void updateOffer(Dish dish, int newOfferedPortions, double price)
     {
         ValidationUtil.validateNotNull(dish, "Dish");
-        validateOfferedPortions(offeredPortions);
+        validateOfferedPortions(newOfferedPortions);
         ValidationUtil.validatePositive(price, "Price");
 
+        int soldAlready = this.offeredPortions - this.availablePortions;
+
+        if (newOfferedPortions < soldAlready)
+        {
+            throw new ConflictException("Cannot set offered portions below already sold quantity (" + soldAlready + ")");
+        }
+
         this.dish = dish;
-        this.offeredPortions = offeredPortions;
+        this.offeredPortions = newOfferedPortions;
         this.price = price;
+        this.soldOut = this.availablePortions == 0;
+
+        if(soldOut)
+        {
+            this.enabled = false;
+        }
     }
 
     public void sellPortions(int quantity)
@@ -94,6 +107,21 @@ public class TakeAwayOffer implements IEntity
         {
             soldOut = true;
             enabled = false;
+        }
+    }
+
+    public void addPortionsBack(int quantity)
+    {
+        ValidationUtil.validatePositive(quantity, "Quantity");
+        
+        int restored = this.availablePortions + quantity;
+        this.availablePortions = Math.min(this.offeredPortions, restored);
+
+        this.soldOut = this.availablePortions == 0;
+
+        if (!this.soldOut)
+        {
+            this.enabled = true;
         }
     }
 
@@ -170,17 +198,5 @@ public class TakeAwayOffer implements IEntity
     public int hashCode()
     {
         return getClass().hashCode();
-    }
-
-    public void addPortionsBack(int quantity)
-    {
-        ValidationUtil.validatePositive(quantity, "Quantity");
-        this.availablePortions += quantity;
-
-        if (this.availablePortions > 0)
-        {
-            this.soldOut = false;
-            this.enabled = true;
-        }
     }
 }

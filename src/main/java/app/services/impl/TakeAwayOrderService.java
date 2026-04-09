@@ -71,7 +71,7 @@ public class TakeAwayOrderService implements ITakeAwayOrderService
         User requester = userReader.getByID(authUser.userId());
 
         TakeAwayOrder takeAwayOrder = takeAwayOrderDAO.getByID(orderId);
-        takeAwayOrder.setOrderPayed(requester);
+        takeAwayOrder.setOrderPaid(requester);
 
         TakeAwayOrder updatedOrder = takeAwayOrderDAO.update(takeAwayOrder);
         return TakeAwayOrderMapper.toDTO(updatedOrder);
