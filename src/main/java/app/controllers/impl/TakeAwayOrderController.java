@@ -8,7 +8,7 @@ public class TakeAwayOrderController implements ITakeAwayOrderController
     @Override
     public void getOrders(Context ctx)
     {
-        
+
     }
 
     @Override
