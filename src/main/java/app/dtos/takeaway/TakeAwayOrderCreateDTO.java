@@ -1,9 +1,9 @@
 package app.dtos.takeaway;
 
+import java.util.List;
+
 public record TakeAwayOrderCreateDTO(
-    Long offerId,
-    Long userId,
-    int quantity
+    List<TakeAwayOrderLineCreateDTO> takeAwayOrderLines
 )
 {
 }

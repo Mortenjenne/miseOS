@@ -2,6 +2,8 @@ package app.mappers;
 
 import app.dtos.dish.DishReferenceDTO;
 import app.dtos.takeaway.TakeAwayOfferDTO;
+import app.dtos.takeaway.TakeAwayOfferReferenceDTO;
+import app.dtos.takeaway.TakeAwayOfferSummaryDTO;
 import app.dtos.user.UserReferenceDTO;
 import app.persistence.entities.TakeAwayOffer;
 
@@ -27,4 +29,19 @@ public class TakeAwayOfferMapper
             takeAwayOffer.getUpdatedAt()
         );
     }
+
+    public static TakeAwayOfferReferenceDTO toReferenceDTO(TakeAwayOffer takeAwayOffer)
+    {
+        if(takeAwayOffer == null)
+        {
+            return null;
+        }
+
+        return new TakeAwayOfferReferenceDTO(
+            takeAwayOffer.getId(),
+            takeAwayOffer.getDish().getNameDA(),
+            takeAwayOffer.getPrice()
+        );
+    }
+
 }

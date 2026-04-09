@@ -10,6 +10,9 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 @NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 @Getter
@@ -23,17 +26,14 @@ public class TakeAwayOrder implements IEntity
 
     @ManyToOne
     @JoinColumn(name = "customer_id", nullable = false)
-    User customer;
+    private User customer;
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<TakeAwayOrderLine> orderLines = new HashSet<>();
 
     @ManyToOne
     @JoinColumn(name = "take_away_offer_id", nullable = false)
     TakeAwayOffer takeAwayOffer;
-
-    @Column(name = "quantity", nullable = false)
-    private int quantity;
-
-    @Column(name = "price_at_purchase", nullable = false)
-    private double priceAtPurchase;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "order_status")
@@ -45,17 +45,14 @@ public class TakeAwayOrder implements IEntity
     @Column(name = "created_at")
     private LocalDate createdAt;
 
-    public TakeAwayOrder(User customer, TakeAwayOffer takeAwayOffer, int quantity)
+    public TakeAwayOrder(User customer, TakeAwayOffer takeAwayOffer)
     {
         ValidationUtil.validateNotNull(customer, "Customer");
         ValidationUtil.validateNotNull(takeAwayOffer, "Take away offer");
-        ValidationUtil.validatePositive(quantity, "Quantity");
 
         this.customer = customer;
         this.takeAwayOffer = takeAwayOffer;
         this.orderStatus = OrderStatus.RESERVED;
-        this.quantity = quantity;
-        this.priceAtPurchase = takeAwayOffer.getPrice() * quantity;
         this.orderedAt = LocalDateTime.now();
     }
 
@@ -85,8 +82,28 @@ public class TakeAwayOrder implements IEntity
         {
             throw new UnauthorizedActionException("Only owners, head chefs and sous chefs can cancel order");
         }
+
         this.takeAwayOffer.addPortionsBack(this.quantity);
         this.orderStatus = OrderStatus.CANCELLED;
+    }
+
+    public void addOrderLine(TakeAwayOrderLine line)
+    {
+        orderLines.add(line);
+    }
+
+    public double getTotalPrice()
+    {
+        return orderLines.stream()
+            .mapToDouble(TakeAwayOrderLine::getPriceAtPurchase)
+            .sum();
+    }
+
+    public int getTotalItems()
+    {
+        return orderLines.stream()
+            .mapToInt(TakeAwayOrderLine::getQuantity)
+            .sum();
     }
 
     @PrePersist
