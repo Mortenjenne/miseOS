@@ -2,7 +2,6 @@ package app.persistence.daos.interfaces;
 
 import app.dtos.takeaway.TakeAwayOrderCreateDTO;
 import app.enums.OrderStatus;
-import app.persistence.daos.interfaces.generic.IEntityDAO;
 import app.persistence.entities.TakeAwayOrder;
 
 import java.time.LocalDate;
