@@ -210,8 +210,10 @@ public class TakeAwayOfferDAO implements ITakeAwayOfferDAO
             try
             {
                 Long count = em.createQuery(
-                        "SELECT COUNT(tao) FROM TakeAwayOrder tao " +
-                            "WHERE tao.takeAwayOffer.id = :offerId", Long.class)
+                        "SELECT COUNT(lines) " +
+                            "FROM TakeAwayOrderLine lines " +
+                            "WHERE lines.takeAwayOffer.id = :offerId",
+                        Long.class)
                     .setParameter("offerId", offerId)
                     .getSingleResult();
 
