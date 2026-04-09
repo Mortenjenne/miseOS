@@ -7,7 +7,7 @@ GET {{url}}/takeaway/orders
 Authorization: Bearer {{authTokenUser}}
 
 ### Get orders - filtered by status and customer
-GET {{url}}/takeaway/orders?status=PAID&date=2026-04-09&customerId=7
+GET {{url}}/takeaway/orders?status=RESERVED&date=2026-04-09&customerId=9
 Authorization: Bearer {{authTokenHeadChef}}
 
 ### Get order by id
