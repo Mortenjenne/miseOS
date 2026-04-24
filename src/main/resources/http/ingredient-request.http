@@ -35,8 +35,8 @@ Authorization: Bearer {{authTokenLineCook}}
     "preferredSupplier": "Grønttorvet",
     "note": "Til laks",
     "requestType": "DISH_SPECIFIC",
-    "deliveryDate": "2026-03-28",
-    "dishId": 1
+    "deliveryDate": "2026-04-13",
+    "dishId": 75
 }
 
 ### Create general stock request
@@ -51,7 +51,7 @@ Authorization: Bearer {{authTokenLineCook}}}
     "preferredSupplier": "Valsemøllen",
     "note": "Lageropfyldning",
     "requestType": "GENERAL_STOCK",
-    "deliveryDate": "2026-03-22"
+    "deliveryDate": "2026-04-13"
 }
 
 ### Update request

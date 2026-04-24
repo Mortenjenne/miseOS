@@ -107,8 +107,8 @@ Authorization: Bearer {{authTokenHeadChef}}
     "userRole": "SOUS_CHEF"
 }
 
-### PATCH Assign User(Anna) To Station
-PATCH {{url}}/users/5/station/1
+### PATCH Assign User To Station
+PATCH {{url}}/users/8/station/1
 Authorization: Bearer {{authTokenHeadChef}}
 
 ### DELETE Delete User

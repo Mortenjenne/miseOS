@@ -44,7 +44,7 @@ Authorization: Bearer {{authTokenHeadChef}}
 
 ### DELETE allergen
 DELETE {{url}}/allergens/15
-Authorization: Bearer {{authToken}}
+Authorization: Bearer {{authTokenHeadChef}}
 
 ###
 

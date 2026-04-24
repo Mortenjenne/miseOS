@@ -11,6 +11,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.UUID;
 
 public class ServerConfig
@@ -37,6 +38,12 @@ public class ServerConfig
             config.startup.showJavalinBanner = false;
             config.router.contextPath = "/api/v1";
             config.bundledPlugins.enableRouteOverview("/routes");
+            config.bundledPlugins.enableCors(cors -> {
+                cors.addRule(rule -> {
+                    rule.allowHost("http://localhost:5173");
+                    rule.allowCredentials = true;
+                });
+            });
             config.routes.apiBuilder(apiRoutes.getRoutes());
             configureMiddleWareLogging(config);
             configureMiddleWareSecurity(config);
