@@ -1,4 +1,32 @@
 
+### GET all - week + year + status PENDING
+GET {{url}}/dish-suggestions?week=17&year=2026&status=PENDING
+Authorization: Bearer {{authTokenHeadChef}}
+
+
+### GET all - full filter: status + week + year + stationId + orderBy
+GET {{url}}/dish-suggestions?status=PENDING&week=17&year=2026&stationId=5&orderBy=status
+Authorization: Bearer {{authTokenHeadChef}}
+
+
+### PATCH approve suggestion
+PATCH {{url}}/dish-suggestions/112/approve
+Authorization: Bearer {{authTokenHeadChef}}}
+
+
+
+### PATCH reject suggestion
+PATCH {{url}}/dish-suggestions/5/reject
+Content-Type: application/json
+Authorization: Bearer {{authTokenHeadChef}}
+
+{
+    "feedback": "Retten passer ikke til menuen - for tung til forår"
+}
+
+
+
+
 ### GET by ID
 GET {{url}}/dish-suggestions/101
 Authorization: Bearer {{authTokenHeadChef}}
@@ -23,10 +51,6 @@ Authorization: Bearer {{authTokenHeadChef}}
 GET {{url}}/dish-suggestions?week=12&year=2026
 Authorization: Bearer {{authTokenHeadChef}}
 
-### GET all - week + year + status PENDING
-GET {{url}}/dish-suggestions?week=12&year=2026&status=PENDING
-Authorization: Bearer {{authTokenHeadChef}}
-
 ### GET all - week + year + status APPROVED
 GET {{url}}/dish-suggestions?week=12&year=2026&status=APPROVED
 Authorization: Bearer {{authTokenHeadChef}}
@@ -39,9 +63,6 @@ Authorization: Bearer {{authTokenHeadChef}}
 GET {{url}}/dish-suggestions?stationId=1&status=PENDING
 Authorization: Bearer {{authTokenHeadChef}}
 
-### GET all - full filter: status + week + year + stationId + orderBy
-GET {{url}}/dish-suggestions?status=PENDING&week=16&year=2026&stationId=1&orderBy=status
-Authorization: Bearer {{authTokenHeadChef}}
 
 ### GET all - orderBy station
 GET {{url}}/dish-suggestions?orderBy=station
@@ -55,13 +76,14 @@ Authorization: Bearer {{authTokenHeadChef}}
 GET {{url}}/dish-suggestions/current-week
 Authorization: Bearer {{authTokenHeadChef}}
 
+### GET current week - APPROVED only
+GET {{url}}/dish-suggestions/current-week?status=APPROVED
+Authorization: Bearer {{authTokenHeadChef}}
+
 ### GET current week - PENDING only
 GET {{url}}/dish-suggestions/current-week?status=PENDING
 Authorization: Bearer {{authTokenHeadChef}}
 
-### GET current week - APPROVED only
-GET {{url}}/dish-suggestions/current-week?status=APPROVED
-Authorization: Bearer {{authTokenHeadChef}}
 
 ### POST create suggestion (Chicken with asparagus & potatoes)
 POST {{url}}/dish-suggestions
@@ -73,7 +95,7 @@ Authorization: Bearer {{authTokenLineCook}}
     "descriptionDA": "Stegt kylling serveret med smørstegte grønne asparges, glaserede gulerødder, kogte kartofler og let citronsauce",
     "stationId": 1,
     "allergenIds": [7],
-    "targetWeek": 16,
+    "targetWeek": 17,
     "targetYear": 2026
 }
 
@@ -84,10 +106,10 @@ Authorization: Bearer {{authTokenLineCook}}}
 
 {
     "nameDA": "Laks med beurre blanc",
-    "descriptionDA": "Færøsk laks bagt med fransk smør sauce",
+    "descriptionDA": "Færøsk laks bagt, stegt porre, kartofler og fransk smør sauce",
     "stationId": 1,
     "allergenIds": [1, 4],
-    "targetWeek": 16,
+    "targetWeek": 17,
     "targetYear": 2026
 }
 
@@ -100,8 +122,22 @@ Authorization: Bearer {{authTokenLineCook}}
     "nameDA": "Butter Chicken",
     "descriptionDA": "Marineret kylling i cremet og aromatisk curry-sauce med stegte blomkål og ris",
     "stationId": 1,
-    "allergenIds": [1, 2, 3, 4, 5],
-    "targetWeek": 16,
+    "allergenIds": [7, 8],
+    "targetWeek": 17,
+    "targetYear": 2026
+}
+
+### POST create suggestion
+POST {{url}}/dish-suggestions
+Content-Type: application/json
+Authorization: Bearer {{authTokenLineCook}}
+
+{
+    "nameDA": "Okonomiyaki",
+    "descriptionDA": "Klassisk Osaka-style madpandekage med kål, toppet med okonomiyaki-sauce, japansk mayo og bonito-flager.",
+    "stationId": 5,
+    "allergenIds": [1, 3, 4, 6],
+    "targetWeek": 17,
     "targetYear": 2026
 }
 
@@ -127,19 +163,6 @@ Authorization: Bearer {{authTokenLineCook}}
     "allergenIds": []
 }
 
-### PATCH approve suggestion
-PATCH {{url}}/dish-suggestions/107/approve
-Authorization: Bearer {{authTokenHeadChef}}}
-
-
-### PATCH reject suggestion
-PATCH {{url}}/dish-suggestions/5/reject
-Content-Type: application/json
-Authorization: Bearer {{authTokenHeadChef}}
-
-{
-    "feedback": "Retten passer ikke til menuen - for tung til forår"
-}
 
 ### PATCH reject - blank feedback
 PATCH {{url}}/dish-suggestions/101/reject

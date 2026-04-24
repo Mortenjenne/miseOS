@@ -37,7 +37,7 @@ PATCH {{url}}/takeaway/orders/1/pay
 Authorization: Bearer {{authTokenHeadChef}}
 
 ### Cancel order (within 45 min window)
-PATCH {{url}}/takeaway/orders/2/cancel
+PATCH {{url}}/takeaway/orders/1/cancel
 Authorization: Bearer {{authTokenUser}}
 
 ### Get daily summary

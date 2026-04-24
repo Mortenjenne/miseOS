@@ -24,7 +24,7 @@ GET {{url}}/dishes/15
 Authorization: Bearer {{authTokenHeadChef}}
 
 ### Search by name
-GET {{url}}/dishes/search?query=kyl
+GET {{url}}/dishes/search?query=laks
 Authorization: Bearer {{authTokenHeadChef}}
 
 ### Get dishes grouped by station
