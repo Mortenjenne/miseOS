@@ -13,6 +13,7 @@ import io.restassured.RestAssured;
 import jakarta.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.*;
 
+import java.time.LocalTime;
 import java.util.Map;
 
 import static io.restassured.RestAssured.given;
@@ -117,25 +118,38 @@ class TakeAwayOfferControllerTest
             Dish roastedPork = (Dish) seeded.get("dish_roasted_pork");
 
             String body = """
-            {
-              "dishId": %d,
-              "offeredPortions": 30,
-              "price": 85.50
-            }
-            """.formatted(roastedPork.getId());
+                {
+                  "dishId": %d,
+                  "offeredPortions": 30,
+                  "price": 85.50
+                }
+                """.formatted(roastedPork.getId());
 
-            given()
-                .header("Authorization", headChefToken)
-                .body(body)
-                .when()
-                .post(ENDPOINT_URL)
-                .then()
-                .statusCode(201)
-                .body("id", notNullValue())
-                .body("enabled", equalTo(true))
-                .body("soldOut", equalTo(false))
-                .body("offeredPortions", equalTo(30))
-                .body("price", equalTo(85.5f));
+            LocalTime now = LocalTime.now();
+            if (now.isBefore(LocalTime.of(12, 0)))
+            {
+                given()
+                    .header("Authorization", headChefToken)
+                    .body(body)
+                    .when()
+                    .post(ENDPOINT_URL)
+                    .then()
+                    .statusCode(409);
+            } else
+            {
+                given()
+                    .header("Authorization", headChefToken)
+                    .body(body)
+                    .when()
+                    .post(ENDPOINT_URL)
+                    .then()
+                    .statusCode(201)
+                    .body("id", notNullValue())
+                    .body("enabled", equalTo(true))
+                    .body("soldOut", equalTo(false))
+                    .body("offeredPortions", equalTo(30))
+                    .body("price", equalTo(85.5f));
+            }
         }
 
         @Test
