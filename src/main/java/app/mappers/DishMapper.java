@@ -63,8 +63,8 @@ public class DishMapper
         return new MenuDishDTO(
             dish.getId(),
             dish.getNameDA(),
-            dish.getDescriptionDA(),
             dish.getNameEN(),
+            dish.getDescriptionDA(),
             dish.getDescriptionEN(),
             dish.hasTranslation(),
             allergens
