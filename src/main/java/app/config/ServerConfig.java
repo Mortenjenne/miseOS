@@ -40,7 +40,11 @@ public class ServerConfig
             config.bundledPlugins.enableRouteOverview("/routes");
             config.bundledPlugins.enableCors(cors -> {
                 cors.addRule(rule -> {
-                    rule.allowHost("localhost:5173", "miseos.corral.dk");
+                    rule.allowHost(
+                        "http://localhost:5173",
+                        "https://miseos.corral.dk"
+                    );
+
                     rule.allowCredentials = true;
                 });
             });
