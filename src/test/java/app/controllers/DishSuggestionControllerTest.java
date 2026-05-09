@@ -14,6 +14,8 @@ import io.restassured.RestAssured;
 import jakarta.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.*;
 
+import java.time.LocalDate;
+import java.time.temporal.WeekFields;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -278,16 +280,20 @@ class DishSuggestionControllerTest
             Allergen gluten = (Allergen) seeded.get("allergen_gluten");
             Allergen milk = (Allergen) seeded.get("allergen_milk");
 
+            LocalDate future = LocalDate.now().plusWeeks(2);
+            int targetWeek = future.get(WeekFields.ISO.weekOfWeekBasedYear());
+            int targetYear = future.getYear();
+
             String body = """
-            {
-              "nameDA": "Grillet torsk",
-              "descriptionDA": "Saftig torsk med urter og citron",
-              "stationId": 1,
-              "allergenIds": [%d, %d],
-              "targetWeek": 20,
-              "targetYear": 2026
-            }
-            """.formatted(gluten.getId(), milk.getId());
+    {
+      "nameDA": "Grillet torsk",
+      "descriptionDA": "Saftig torsk med urter og citron",
+      "stationId": 1,
+      "allergenIds": [%d, %d],
+      "targetWeek": %d,
+      "targetYear": %d
+    }
+    """.formatted(gluten.getId(), milk.getId(), targetWeek, targetYear);
 
             given()
                 .header("Authorization", lineChefToken)
