@@ -46,8 +46,10 @@ public class ServerConfig
                     );
 
                     rule.allowCredentials = true;
+
                 });
             });
+            config.bundledPlugins.enableHttpAllowedMethodsOnRoutes();
             config.routes.apiBuilder(apiRoutes.getRoutes());
             configureMiddleWareLogging(config);
             configureMiddleWareSecurity(config);
