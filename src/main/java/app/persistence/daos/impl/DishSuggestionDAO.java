@@ -30,7 +30,7 @@ public class DishSuggestionDAO implements IDishSuggestionDAO
         {
             case "status" -> "ds.dishStatus ASC";
             case "station" -> "ds.station.id ASC";
-            case "createdAt" -> "ds.createdAt ASC";
+            case "createdAt" -> "ds.createdAt DESC";
             default -> "ds.targetYear DESC, ds.targetWeek DESC";
         };
 
