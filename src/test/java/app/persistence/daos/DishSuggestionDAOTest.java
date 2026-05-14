@@ -288,7 +288,7 @@ class DishSuggestionDAOTest {
 
         assertThat(result, hasSize(5));
         List<DishSuggestion> list = new ArrayList<>(result);
-        assertFalse(list.get(0).getCreatedAt().isAfter(list.get(4).getCreatedAt()));
+        assertThat(list.get(0).getCreatedAt(), greaterThan(list.get(4).getCreatedAt()));
     }
 
     @Test
