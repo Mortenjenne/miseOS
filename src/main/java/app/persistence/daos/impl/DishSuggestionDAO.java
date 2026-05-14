@@ -22,7 +22,7 @@ public class DishSuggestionDAO implements IDishSuggestionDAO
     }
 
     @Override
-    public Set<DishSuggestion> findByFilter(Status status, Long creatorId, Integer week, Integer year, Long stationId, String orderBy)
+    public Set<DishSuggestion> findByFilter(Status status, Long creatorId, Integer week, Integer year, Long stationId, String orderBy, Integer limit)
     {
         String target = orderBy != null ? orderBy : "";
 
@@ -31,7 +31,7 @@ public class DishSuggestionDAO implements IDishSuggestionDAO
             case "status" -> "ds.dishStatus ASC";
             case "station" -> "ds.station.id ASC";
             case "createdAt" -> "ds.createdAt ASC";
-            default -> "ds.targetYear ASC, ds.targetWeek ASC";
+            default -> "ds.targetYear DESC, ds.targetWeek DESC";
         };
 
         try (EntityManager em = emf.createEntityManager())
@@ -53,6 +53,10 @@ public class DishSuggestionDAO implements IDishSuggestionDAO
                     .setParameter("week", week)
                     .setParameter("year", year)
                     .setParameter("stationId", stationId);
+
+                if (limit != null) {
+                    query.setMaxResults(limit);
+                }
 
                 return new LinkedHashSet<>(query.getResultList());
             }

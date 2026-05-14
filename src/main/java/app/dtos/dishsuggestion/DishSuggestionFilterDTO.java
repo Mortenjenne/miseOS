@@ -7,7 +7,8 @@ public record DishSuggestionFilterDTO(
     Integer week,
     Integer year,
     Long stationId,
-    String orderBy
+    String orderBy,
+    Integer limit
 )
 {
 }
