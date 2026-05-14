@@ -26,7 +26,7 @@ public class GeminiClient implements IAiClient
     private final ObjectMapper objectMapper;
     private final String apiKey;
     private final String apiUrl;
-    private static final String MODEL_PRIMARY = "gemini-3.1-flash-lite-preview";
+    private static final String MODEL_PRIMARY = "gemini-3.1-flash-lite";
     private static final String MODEL_FALLBACK = "gemini-2.5-flash-lite";
     private static final String GEMINI_GENERATE_CONTENT = ":generateContent";
     private static final String GEMINI_STREAM_GENERATE_CONTENT = ":streamGenerateContent";

@@ -40,13 +40,16 @@ public class DishSuggestionController implements IDishSuggestionController
         Integer year = RequestUtil.getQueryInt(ctx, "year");
         Long stationId = RequestUtil.getQueryLong(ctx, "stationId");
         String orderBy = RequestUtil.getQueryString(ctx, "orderBy");
+        Integer limit = RequestUtil.getQueryInt(ctx, "limit");
+
 
         DishSuggestionFilterDTO filter = new DishSuggestionFilterDTO(
             status,
             week,
             year,
             stationId,
-            orderBy
+            orderBy,
+            limit
         );
 
         List<DishSuggestionDTO> suggestionDTOS = dishSuggestionService.getByFilter(authUser, filter);

@@ -213,7 +213,7 @@ public class DishSuggestionService implements IDishSuggestionService
 
         Long creatorId = authUser.isHeadChef() || authUser.isSousChef() ? null : authUser.userId();
 
-        return dishSuggestionDAO.findByFilter(dto.status(), creatorId, dto.week(), dto.year(), dto.stationId(), dto.orderBy())
+        return dishSuggestionDAO.findByFilter(dto.status(), creatorId, dto.week(), dto.year(), dto.stationId(), dto.orderBy(), dto.limit())
             .stream()
             .map(DishSuggestionMapper::toDTO)
             .collect(Collectors.toList());
@@ -225,7 +225,7 @@ public class DishSuggestionService implements IDishSuggestionService
         int week = LocalDate.now().get(IsoFields.WEEK_OF_WEEK_BASED_YEAR);
         int year = LocalDate.now().get(IsoFields.WEEK_BASED_YEAR);
 
-        return dishSuggestionDAO.findByFilter(status, null, week, year, null, null)
+        return dishSuggestionDAO.findByFilter(status, null, week, year, null, null, null)
             .stream()
             .map(DishSuggestionMapper::toDTO)
             .collect(Collectors.toList());
