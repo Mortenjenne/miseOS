@@ -1,6 +1,7 @@
 package app.services;
 
 import app.dtos.station.StationDTO;
+import app.dtos.station.StationListDTO;
 import app.dtos.station.StationRequestDTO;
 
 import java.util.Set;
@@ -14,6 +15,8 @@ public interface IStationService
     boolean deleteStation(Long stationId);
 
     StationDTO getStationById(Long stationId);
+
+    Set<StationListDTO> getAllStationsWithUserCount();
 
     Set<StationDTO> getAllStations();
 

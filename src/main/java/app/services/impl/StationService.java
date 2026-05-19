@@ -1,5 +1,6 @@
 package app.services.impl;
 
+import app.dtos.station.StationListDTO;
 import app.dtos.station.StationRequestDTO;
 import app.dtos.station.StationDTO;
 import app.exceptions.ConflictException;
@@ -80,6 +81,12 @@ public class StationService implements IStationService
         Station station = stationDAO.getByID(id);
 
         return StationMapper.toDTO(station);
+    }
+
+    @Override
+    public Set<StationListDTO> getAllStationsWithUserCount()
+    {
+        return stationDAO.getAllWithUserCount();
     }
 
     @Override
