@@ -1,5 +1,6 @@
 package app.persistence.daos.impl;
 
+import app.dtos.station.StationListDTO;
 import app.exceptions.DatabaseException;
 import app.persistence.daos.interfaces.IStationDAO;
 import app.persistence.entities.Station;
@@ -57,6 +58,22 @@ public class StationDAO implements IStationDAO
             {
                 throw new DatabaseException("Failed to fetch all stations", e);
             }
+        }
+    }
+
+    @Override
+    public Set<StationListDTO> getAllWithUserCount() {
+        try(EntityManager em = emf.createEntityManager())
+        {
+            String jpql = "SELECT new app.dtos.station.StationListDTO(" +
+                "s.id, s.stationName, s.description, COUNT(u)) " +
+                "FROM Station s LEFT JOIN User u ON u.station.id = s.id " +
+                "GROUP BY s.id, s.stationName, s.description " +
+                "ORDER BY s.stationName ASC";
+            TypedQuery<StationListDTO> query = em.createQuery(jpql, StationListDTO.class);
+            return new LinkedHashSet<>(query.getResultList());
+        } catch (PersistenceException e) {
+            throw new DatabaseException("Failed to fetch all stations with counts", e);
         }
     }
 

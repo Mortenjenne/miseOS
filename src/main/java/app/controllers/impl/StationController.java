@@ -2,6 +2,7 @@ package app.controllers.impl;
 
 import app.controllers.IStationController;
 import app.dtos.station.StationDTO;
+import app.dtos.station.StationListDTO;
 import app.dtos.station.StationRequestDTO;
 import app.services.IStationService;
 import app.utils.RequestUtil;
@@ -67,6 +68,13 @@ public class StationController implements IStationController
     {
         Set<StationDTO> stationDTOS = stationService.getAllStations();
         ctx.status(200).json(stationDTOS);
+    }
+
+    @Override
+    public void getAllWithUserCount(Context ctx)
+    {
+        Set<StationListDTO> stationListDTOS = stationService.getAllStationsWithUserCount();
+        ctx.status(200).json(stationListDTOS);
     }
 
     @Override

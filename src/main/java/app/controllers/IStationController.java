@@ -14,5 +14,7 @@ public interface IStationController
 
     void getAll(Context ctx);
 
+    void getAllWithUserCount(Context ctx);
+
     void getByName(Context ctx);
 }
