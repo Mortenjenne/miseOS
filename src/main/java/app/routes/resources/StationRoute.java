@@ -23,9 +23,9 @@ public class StationRoute
         return () -> path("stations", () ->
         {
             get("", stationController::getAll, Role.HEAD_CHEF, Role.SOUS_CHEF);
+            get("stats", stationController::getAllWithUserCount, Role.HEAD_CHEF, Role.SOUS_CHEF);
             get("{id}", stationController::getById, Role.HEAD_CHEF, Role.SOUS_CHEF);
             get("name/{name}", stationController::getByName, Role.HEAD_CHEF, Role.SOUS_CHEF);
-            get("stats", stationController::getAllWithUserCount);
             post("", stationController::create, Role.HEAD_CHEF);
             put("{id}", stationController::update, Role.HEAD_CHEF);
             delete("{id}", stationController::delete, Role.HEAD_CHEF);
