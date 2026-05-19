@@ -24,6 +24,7 @@ public class StationRoute
         {
             get("", stationController::getAll, Role.HEAD_CHEF, Role.SOUS_CHEF);
             get("stats", stationController::getAllWithUserCount, Role.HEAD_CHEF, Role.SOUS_CHEF);
+            get("{id}/users", stationController::getUsersByStationId, Role.HEAD_CHEF, Role.SOUS_CHEF);
             get("{id}", stationController::getById, Role.HEAD_CHEF, Role.SOUS_CHEF);
             get("name/{name}", stationController::getByName, Role.HEAD_CHEF, Role.SOUS_CHEF);
             post("", stationController::create, Role.HEAD_CHEF);

@@ -144,7 +144,7 @@ public final class DIContainer
         this.takeAwayOrderService = new TakeAwayOrderService(takeAwayOrderDAO, takeAwayOfferDAO, userDAO);
 
         this.allergenController = new AllergenController(allergenService);
-        this.stationController = new StationController(stationService);
+        this.stationController = new StationController(stationService, userService);
         this.userController = new UserController(userService);
         this.menuInspirationController = new MenuInspirationController(menuInspirationService);
         this.dishSuggestionController = new DishSuggestionController(dishSuggestionService);

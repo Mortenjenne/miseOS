@@ -5,6 +5,7 @@ import app.dtos.station.StationDTO;
 import app.dtos.station.StationListDTO;
 import app.dtos.station.StationRequestDTO;
 import app.services.IStationService;
+import app.services.IUserService;
 import app.utils.RequestUtil;
 import io.javalin.http.Context;
 
@@ -13,10 +14,12 @@ import java.util.Set;
 public class StationController implements IStationController
 {
     private final IStationService stationService;
+    private final IUserService userService;
 
-    public StationController(IStationService stationService)
+    public StationController(IStationService stationService, IUserService userService)
     {
         this.stationService = stationService;
+        this.userService = userService;
     }
 
     @Override
@@ -61,6 +64,13 @@ public class StationController implements IStationController
         StationDTO stationDTO = stationService.getStationById(stationId);
 
         ctx.status(200).json(stationDTO);
+    }
+
+    @Override
+    public void getUsersByStationId(Context ctx)
+    {
+        Long stationId = RequestUtil.requirePathId(ctx, "id");
+        ctx.status(200).json(userService.findByStationId(stationId));
     }
 
     @Override

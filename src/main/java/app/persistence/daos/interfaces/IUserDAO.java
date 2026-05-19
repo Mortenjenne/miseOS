@@ -11,5 +11,7 @@ public interface IUserDAO extends IUserReader, IEntityDAO<User, Long>
 {
     Set<User> getAll();
 
+    Set<User> findByStationId(Long stationId);
+
     Set<User> findByRole(UserRole role);
 }
