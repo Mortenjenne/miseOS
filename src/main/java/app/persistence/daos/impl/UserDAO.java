@@ -10,6 +10,7 @@ import app.utils.ValidationUtil;
 import jakarta.persistence.*;
 
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
 
@@ -58,6 +59,33 @@ public class UserDAO implements IUserDAO
             {
                 throw new DatabaseException("Failed fetch all users", e);
             }
+        }
+    }
+
+    @Override
+    public Set<User> findByStationId(Long stationId)
+    {
+        ValidationUtil.validateId(stationId);
+
+        try(EntityManager em = emf.createEntityManager())
+        {
+            TypedQuery<User> query = em.createQuery("""
+            SELECT u
+            FROM User u
+            WHERE u.station.id = :stationId
+            ORDER BY u.firstName ASC
+        """, User.class);
+
+            query.setParameter("stationId", stationId);
+
+            return new LinkedHashSet<>(query.getResultList());
+        }
+        catch (PersistenceException e)
+        {
+            throw new DatabaseException(
+                "Failed to fetch users by station id: " + stationId,
+                e
+            );
         }
     }
 

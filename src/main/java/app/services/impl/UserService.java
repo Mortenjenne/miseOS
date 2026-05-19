@@ -163,6 +163,17 @@ public class UserService implements IUserService
         return userDAO.delete(targetUserId);
     }
 
+    @Override
+    public List<UserDTO> findByStationId(Long stationId)
+    {
+        ValidationUtil.validateId(stationId);
+
+        return userDAO.findByStationId(stationId)
+            .stream()
+            .map(UserMapper::toDTO)
+            .toList();
+    }
+
     private void validateOwnershipOrAdmin(AuthenticatedUser authUser, Long targetUserId) {
         ValidationUtil.validateNotNull(authUser, "Authenticated User");
 

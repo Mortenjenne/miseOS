@@ -24,4 +24,6 @@ public interface IUserService
     UserDTO changeEmail(AuthenticatedUser authUser, Long targetUserId, EmailUpdateDTO dto);
 
     UserDTO changePassword(AuthenticatedUser authUser, Long targetUserId, ChangeUserPasswordDTO dto);
+
+    List<UserDTO> findByStationId(Long stationId);
 }
