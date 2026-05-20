@@ -55,8 +55,8 @@ public class AllergenDAO implements IAllergenDAO
             try
             {
                 Allergen allergen = em.createQuery("SELECT a FROM Allergen a" +
-                        " WHERE a.nameDA ILIKE :nameDA", Allergen.class)
-                    .setParameter("nameDA", "%" + nameDA + "%")
+                        " WHERE LOWER(a.nameDA) = LOWER(:nameDA)", Allergen.class)
+                    .setParameter("nameDA", nameDA.trim())
                     .getResultStream()
                     .findFirst()
                     .orElse(null);
@@ -79,8 +79,8 @@ public class AllergenDAO implements IAllergenDAO
         {
             try
             {
-                Allergen allergen = em.createQuery("SELECT a FROM Allergen a WHERE a.nameEN ILIKE :nameEN", Allergen.class)
-                    .setParameter("nameEN", "%" + nameEN + "%")
+                Allergen allergen = em.createQuery("SELECT a FROM Allergen a WHERE LOWER(a.nameEN) = LOWER(:nameEN)", Allergen.class)
+                    .setParameter("nameEN", nameEN.trim())
                     .getResultStream()
                     .findFirst()
                     .orElse(null);
