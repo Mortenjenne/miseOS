@@ -39,7 +39,7 @@ public class WeeklyMenuDAO implements IWeeklyMenuDAO
                             "WHERE (:status IS NULL OR wm.menuStatus = :status) " +
                             "AND   (:year   IS NULL OR wm.year = :year) " +
                             "AND   (:week   IS NULL OR wm.weekNumber = :week) " +
-                            "ORDER BY wm.year DESC, wm.weekNumber ASC",
+                            "ORDER BY wm.year DESC, wm.weekNumber DESC",
                         WeeklyMenuOverviewDTO.class)
                     .setParameter("status", status)
                     .setParameter("year", year)
