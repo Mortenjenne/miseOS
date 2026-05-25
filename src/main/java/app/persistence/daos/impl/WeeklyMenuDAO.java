@@ -59,27 +59,33 @@ public class WeeklyMenuDAO implements IWeeklyMenuDAO
         ValidationUtil.validateRange(weekNumber, 1, 53, "Week number");
         ValidationUtil.validateRange(year, 2000, 2100, "Year");
 
-        try(EntityManager em = emf.createEntityManager())
+        try (EntityManager em = emf.createEntityManager())
         {
             try
             {
-                WeeklyMenu weeklyMenu = em.createQuery(
-                        "SELECT DISTINCT wm FROM WeeklyMenu wm " +
-                            "LEFT JOIN FETCH wm.weeklyMenuSlots s " +
-                            "LEFT JOIN FETCH s.station " +
-                            "LEFT JOIN FETCH s.dish d " +
-                            "LEFT JOIN FETCH d.allergens " +
-                            "WHERE (:status IS NULL OR wm.menuStatus = :status) " +
-                            "AND   (:year   IS NULL OR wm.year = :year) " +
-                            "AND   (:week   IS NULL OR wm.weekNumber = :week) ", WeeklyMenu.class)
-                    .setParameter("status", status)
-                    .setParameter("year", year)
-                    .setParameter("week", weekNumber)
-                    .getResultStream()
-                    .findFirst()
-                    .orElse(null);
+                String jpql = "SELECT DISTINCT wm FROM WeeklyMenu wm " +
+                    "LEFT JOIN FETCH wm.weeklyMenuSlots s " +
+                    "LEFT JOIN FETCH s.station " +
+                    "LEFT JOIN FETCH s.dish d " +
+                    "LEFT JOIN FETCH d.allergens " +
+                    "WHERE wm.weekNumber = :week AND wm.year = :year";
 
-                return Optional.ofNullable(weeklyMenu);
+                if (status != null)
+                {
+                    jpql += " AND wm.menuStatus = :status";
+                }
+
+                TypedQuery<WeeklyMenu> query = em.createQuery(jpql, WeeklyMenu.class)
+                    .setParameter("week", weekNumber)
+                    .setParameter("year", year);
+
+                if (status != null)
+                {
+                    query.setParameter("status", status);
+                }
+
+                WeeklyMenu result = query.getResultStream().findFirst().orElse(null);
+                return Optional.ofNullable(result);
             }
             catch (PersistenceException e)
             {
