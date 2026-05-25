@@ -1,6 +1,7 @@
 package app.controllers;
 
 import io.javalin.http.Context;
+import org.jetbrains.annotations.NotNull;
 
 public interface IWeeklyMenuController
 {
@@ -17,6 +18,8 @@ public interface IWeeklyMenuController
     void removeMenuSlot(Context ctx);
 
     void updateMenuSlot(Context ctx);
+
+    void getByWeekAdmin(Context ctx);
 
     void translateMenu(Context ctx);
 

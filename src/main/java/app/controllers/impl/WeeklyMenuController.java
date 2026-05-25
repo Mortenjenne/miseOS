@@ -60,6 +60,17 @@ public class WeeklyMenuController implements IWeeklyMenuController
     }
 
     @Override
+    public void getByWeekAdmin(Context ctx)
+    {
+        Integer week = RequestUtil.requireQueryInt(ctx, "week");
+        Integer year = RequestUtil.requireQueryInt(ctx, "year");
+        AuthenticatedUser authUser = ctx.attribute("authUser");
+
+        WeeklyMenuDTO weeklyMenuDTO = weeklyMenuService.getByWeekAndYear(authUser, week, year);
+        ctx.status(200).json(weeklyMenuDTO);
+    }
+
+    @Override
     public void translateMenu(Context ctx)
     {
         Long menuId = RequestUtil.requirePathId(ctx, "id");

@@ -22,6 +22,7 @@ public class WeeklyMenuRoute
             get("", weeklyMenuController::getAll, Role.HEAD_CHEF, Role.SOUS_CHEF);
             get("current", weeklyMenuController::getCurrentWeekMenu, Role.ANYONE);
             get("by-week", weeklyMenuController::getByWeekAndYear, Role.KITCHEN_STAFF, Role.ANYONE);
+            get("by-week/admin", weeklyMenuController::getByWeekAdmin, Role.HEAD_CHEF, Role.SOUS_CHEF);
             post("", weeklyMenuController::create, Role.HEAD_CHEF, Role.SOUS_CHEF);
             get("{id}", weeklyMenuController::getById, Role.HEAD_CHEF, Role.SOUS_CHEF);
             delete("{id}", weeklyMenuController::delete, Role.HEAD_CHEF, Role.SOUS_CHEF);

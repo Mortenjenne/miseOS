@@ -184,7 +184,6 @@ public class WeeklyMenuService implements IWeeklyMenuService
     public WeeklyMenuDTO getByWeekAndYear(AuthenticatedUser authUser, int week, int year)
     {
         validateWeekAndYear(week, year);
-
         MenuStatus menuStatus = getMenuStatusPermission(authUser);
 
         return menuDAO.findByWeekAndYear(week, year, menuStatus)
