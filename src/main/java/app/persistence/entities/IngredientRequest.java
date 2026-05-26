@@ -64,6 +64,10 @@ public class IngredientRequest implements IEntity
     private User createdBy;
 
     @ManyToOne
+    @JoinColumn(name = "reviewed_by_user_id")
+    private User reviewedBy;
+
+    @ManyToOne
     @JoinColumn(name = "dish_id")
     private Dish dish;
 
@@ -102,6 +106,7 @@ public class IngredientRequest implements IEntity
     {
         requireHeadOrSousChef(headChef);
         requirePendingStatus();
+        this.reviewedBy = headChef;
         this.requestStatus = Status.APPROVED;
         this.reviewedAt = LocalDateTime.now();
     }
