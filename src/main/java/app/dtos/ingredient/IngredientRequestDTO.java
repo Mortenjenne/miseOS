@@ -1,6 +1,7 @@
 package app.dtos.ingredient;
 
 import app.dtos.dish.DishReferenceDTO;
+import app.dtos.station.StationReferenceDTO;
 import app.dtos.user.UserReferenceDTO;
 import app.enums.RequestType;
 import app.enums.Status;
@@ -22,7 +23,9 @@ public record IngredientRequestDTO(
     @JsonFormat(pattern = "yyyy-MM-dd")
     LocalDate deliveryDate,
     UserReferenceDTO requestedBy,
+    UserReferenceDTO reviewedBy,
     DishReferenceDTO dish,
+    StationReferenceDTO station,
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     LocalDateTime reviewedAt,
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
