@@ -28,8 +28,8 @@ public class ShoppingListRoute
             delete("{id}", shoppingListController::delete, Role.HEAD_CHEF, Role.SOUS_CHEF);
             put("{id}/items/{itemId}", shoppingListController::updateShoppingListItem, Role.HEAD_CHEF, Role.SOUS_CHEF);
             delete("{id}/items/{itemId}", shoppingListController::removeShoppingListItem, Role.HEAD_CHEF, Role.SOUS_CHEF);
-            patch("{id}/items/{itemId}/ordered", shoppingListController::markShoppingListItemOrdered, Role.HEAD_CHEF, Role.SOUS_CHEF);
             patch("{id}/items/ordered", shoppingListController::markAllShoppinglistItemOrdered, Role.HEAD_CHEF, Role.SOUS_CHEF);
+            patch("{id}/items/{itemId}/ordered", shoppingListController::markShoppingListItemOrdered, Role.HEAD_CHEF, Role.SOUS_CHEF);
         });
     }
 }
