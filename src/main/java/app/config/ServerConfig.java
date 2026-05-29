@@ -46,6 +46,7 @@ public class ServerConfig
                     );
 
                     rule.allowCredentials = true;
+
                 });
             });
             config.bundledPlugins.enableHttpAllowedMethodsOnRoutes();

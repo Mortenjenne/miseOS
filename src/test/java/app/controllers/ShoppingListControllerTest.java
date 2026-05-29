@@ -759,7 +759,7 @@ class ShoppingListControllerTest
             ShoppingListDTO response = given()
                 .header("Authorization", headChefToken)
                 .when()
-                .patch(ENDPOINT_URL + "/" + draftListId + "/items/order-all")
+                .put(ENDPOINT_URL + "/" + draftListId + "/items/order-all")
                 .then()
                 .statusCode(200)
                 .extract()
@@ -779,7 +779,7 @@ class ShoppingListControllerTest
             given()
                 .header("Authorization", lineChefToken)
                 .when()
-                .patch(ENDPOINT_URL + "/" + draftListId + "/items/order-all")
+                .put(ENDPOINT_URL + "/" + draftListId + "/items/order-all")
                 .then()
                 .statusCode(403);
         }
@@ -795,7 +795,7 @@ class ShoppingListControllerTest
         {
             given()
                 .header("Authorization", headChefToken)
-                .patch(ENDPOINT_URL + "/" + draftListId + "/items/order-all");
+                .put(ENDPOINT_URL + "/" + draftListId + "/items/order-all");
 
             given()
                 .header("Authorization", headChefToken)
@@ -838,7 +838,7 @@ class ShoppingListControllerTest
             given()
                 .header("Authorization", sousChefToken)
                 .when()
-                .patch(ENDPOINT_URL + "/" + draftListId + "/items/order-all")
+                .put(ENDPOINT_URL + "/" + draftListId + "/items/order-all")
                 .then()
                 .statusCode(200);
 

@@ -25,7 +25,7 @@ public class ShoppingListRoute
             post("{id}/finalize", shoppingListController::finalizeShoppingList, Role.HEAD_CHEF, Role.SOUS_CHEF);
             patch("{id}/delivery-date", shoppingListController::updateDeliveryDate, Role.HEAD_CHEF, Role.SOUS_CHEF);
             delete("{id}", shoppingListController::delete, Role.HEAD_CHEF, Role.SOUS_CHEF);
-            patch("{id}/items/order-all", shoppingListController::markAllShoppinglistItemOrdered, Role.HEAD_CHEF, Role.SOUS_CHEF);
+            put("{id}/items/order-all", shoppingListController::markAllShoppinglistItemOrdered, Role.HEAD_CHEF, Role.SOUS_CHEF);
             post("{id}/items", shoppingListController::addShoppingListItem, Role.HEAD_CHEF, Role.SOUS_CHEF);
             put("{id}/items/{itemId}", shoppingListController::updateShoppingListItem, Role.HEAD_CHEF, Role.SOUS_CHEF);
             delete("{id}/items/{itemId}", shoppingListController::removeShoppingListItem, Role.HEAD_CHEF, Role.SOUS_CHEF);
