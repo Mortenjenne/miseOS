@@ -100,7 +100,22 @@ public class SecurityController implements ISecurityController
     public void authenticateWebSocket(WsConnectContext wsCtx)
     {
         String header = wsCtx.header("Authorization");
-        if (header == null || !header.startsWith("Bearer "))
+        String token = null;
+
+        if (header != null && header.startsWith("Bearer "))
+        {
+            token = header.substring(7).trim();
+        }
+        else
+        {
+            String queryToken = wsCtx.queryParam("token");
+            if (queryToken != null && !queryToken.isBlank())
+            {
+                token = queryToken.trim();
+            }
+        }
+
+        if (token == null)
         {
             wsCtx.closeSession(1008, "Missing or malformed Authorization header");
             return;
@@ -108,7 +123,6 @@ public class SecurityController implements ISecurityController
 
         try
         {
-            String token = header.substring(7).trim();
             AuthenticatedUser authUser = securityService.verifyAndExtract(token);
             wsCtx.attribute("authUser", authUser);
         }
