@@ -121,7 +121,9 @@ public class ShoppingListService implements IShoppingListService
         ValidationUtil.validateId(shoppingListId);
 
         ShoppingList list = shoppingListDAO.getByID(shoppingListId);
-        list.getShoppingListItems().forEach(ShoppingListItem::markAsOrdered);
+        list.getShoppingListItems().stream()
+            .filter(item -> !item.isOrdered())
+            .forEach(ShoppingListItem::markAsOrdered);
 
         ShoppingList updated = shoppingListDAO.update(list);
         return ShoppingListMapper.toDTO(updated);
