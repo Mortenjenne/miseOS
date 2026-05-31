@@ -1,5 +1,6 @@
 package app.persistence.daos.impl;
 
+import app.enums.MenuStatus;
 import app.exceptions.DatabaseException;
 import app.persistence.daos.interfaces.IDishDAO;
 import app.persistence.entities.Dish;
@@ -8,8 +9,7 @@ import app.utils.TransactionUtil;
 import app.utils.ValidationUtil;
 import jakarta.persistence.*;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 
 public class DishDAO implements IDishDAO
 {
@@ -98,6 +98,60 @@ public class DishDAO implements IDishDAO
             {
                 throw new DatabaseException("Failed to search dishes by name", e);
             }
+        }
+    }
+
+    @Override
+    public Optional<String> findLastServed(Long dishId) {
+        try (EntityManager em = emf.createEntityManager()) {
+            return em.createQuery(
+                    "SELECT wm.weekNumber, wm.year FROM WeeklyMenuSlot s " +
+                        "JOIN s.weeklyMenu wm " +
+                        "WHERE s.dish.id = :dishId AND wm.menuStatus = :published " +
+                        "ORDER BY wm.year DESC, wm.weekNumber DESC",
+                    Object[].class)
+                .setParameter("dishId", dishId)
+                .setParameter("published", MenuStatus.PUBLISHED)
+                .setMaxResults(1)
+                .getResultStream()
+                .findFirst()
+                .map(row -> "Uge " + row[0] + " · " + row[1]);
+        }
+    }
+
+    @Override
+    public int countMenuUsage(Long dishId) {
+        try (EntityManager em = emf.createEntityManager()) {
+            return em.createQuery(
+                    "SELECT COUNT(DISTINCT s.weeklyMenu) FROM WeeklyMenuSlot s " +
+                        "WHERE s.dish.id = :dishId",
+                    Long.class)
+                .setParameter("dishId", dishId)
+                .getSingleResult()
+                .intValue();
+        }
+    }
+
+    @Override
+    public Map<Long, String> findLastServedBatch(Set<Long> dishIds) {
+        if (dishIds == null || dishIds.isEmpty()) return Map.of();
+
+        try (EntityManager em = emf.createEntityManager()) {
+            List<Object[]> results = em.createQuery(
+                    "SELECT s.dish.id, wm.weekNumber, wm.year " +
+                        "FROM WeeklyMenuSlot s JOIN s.weeklyMenu wm " +
+                        "WHERE s.dish.id IN :ids AND wm.menuStatus = :published " +
+                        "ORDER BY wm.year DESC, wm.weekNumber DESC",
+                    Object[].class)
+                .setParameter("ids", dishIds)
+                .setParameter("published", MenuStatus.PUBLISHED)
+                .getResultList();
+
+            Map<Long, String> map = new LinkedHashMap<>();
+            for (Object[] row : results) {
+                map.putIfAbsent((Long) row[0], "Uge " + row[1] + " · " + row[2]);
+            }
+            return map;
         }
     }
 

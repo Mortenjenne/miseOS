@@ -135,7 +135,8 @@ class DishControllerTest
                 .body("allergens", hasSize(salmon.getAllergens().size()))
                 .body("allergens.id", everyItem(notNullValue()))
                 .body("allergens.nameDA", everyItem(notNullValue()))
-                .body("allergens.displayNumber", everyItem(greaterThan(0)));
+                .body("allergens.displayNumber", everyItem(greaterThan(0)))
+                .body("menuCount", notNullValue());
         }
 
         @Test

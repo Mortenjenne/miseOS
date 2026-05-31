@@ -2,6 +2,7 @@ package app.mappers;
 
 import app.dtos.allergen.AllergenDTO;
 import app.dtos.dish.DishDTO;
+import app.dtos.dish.DishDetailDTO;
 import app.dtos.dish.DishOptionDTO;
 import app.dtos.dish.DishReferenceDTO;
 import app.dtos.menu.MenuDishDTO;
@@ -41,16 +42,42 @@ public class DishMapper
         );
     }
 
-    public static DishOptionDTO toOptionDTO(Dish dish)
-    {
-        if (dish == null) return null;
+    public static DishDetailDTO toDetailDTO(Dish dish, int menuCount, String lastServed) {
+        List<AllergenDTO> allergens = getDishAllergens(dish);
 
+        UserReferenceDTO createdBy = UserMapper.toReferenceDTO(dish.getCreatedBy());
+        StationReferenceDTO station = StationMapper.toReferenceDTO(dish.getStation());
+        boolean hasTranslations = dish.hasTranslation();
+
+        return new DishDetailDTO(
+            dish.getId(),
+            dish.getNameDA(),
+            dish.getNameEN(),
+            dish.getDescriptionDA(),
+            dish.getDescriptionEN(),
+            station,
+            createdBy,
+            allergens,
+            dish.isActive(),
+            dish.getOriginWeek(),
+            dish.getOriginYear(),
+            hasTranslations,
+            dish.getCreatedAt(),
+            dish.getUpdatedAt(),
+            menuCount,
+            lastServed
+        );
+    };
+
+    public static DishOptionDTO toOptionDTO(Dish dish, String lastServed) {
+        if (dish == null) return null;
         return new DishOptionDTO(
             dish.getId(),
             dish.getNameDA(),
             dish.getDescriptionDA(),
             dish.getStation().getStationName(),
-            dish.isActive()
+            dish.isActive(),
+            lastServed
         );
     }
 

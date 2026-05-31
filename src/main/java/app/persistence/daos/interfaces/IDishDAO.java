@@ -4,6 +4,8 @@ import app.persistence.daos.interfaces.generic.IEntityDAO;
 import app.persistence.daos.interfaces.readers.IDishReader;
 import app.persistence.entities.Dish;
 
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 public interface IDishDAO extends IDishReader, IEntityDAO<Dish, Long>
@@ -13,6 +15,12 @@ public interface IDishDAO extends IDishReader, IEntityDAO<Dish, Long>
     Set<Dish> findFromPreviousWeeks(int currentWeek, int currentYear);
 
     Set<Dish> searchByName(String query);
+
+    Optional<String> findLastServed(Long dishId);
+
+    int countMenuUsage(Long dishId);
+
+    Map<Long, String> findLastServedBatch(Set<Long> dishIds);
 
     Set<Dish> findByFilter(Long stationId, Boolean active);
 

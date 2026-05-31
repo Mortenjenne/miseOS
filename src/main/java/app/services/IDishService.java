@@ -12,7 +12,7 @@ public interface IDishService
 
     DishDTO updateDish(Long dishId, DishUpdateDTO dto);
 
-    DishDTO getById(Long dishId);
+    DishDetailDTO getById(Long dishId);
 
     List<DishDTO> searchByName(String query);
 

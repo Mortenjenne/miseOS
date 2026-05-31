@@ -17,6 +17,7 @@ import app.utils.ValidationUtil;
 
 import java.time.LocalDate;
 import java.time.temporal.IsoFields;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -89,12 +90,14 @@ public class DishService implements IDishService
     }
 
     @Override
-    public DishDTO getById(Long dishId)
+    public DishDetailDTO getById(Long dishId)
     {
         ValidationUtil.validateId(dishId);
 
         Dish dish = dishDAO.getByID(dishId);
-        return DishMapper.toDTO(dish);
+        int menuCount = dishDAO.countMenuUsage(dishId);
+        String lastServed = dishDAO.findLastServed(dishId).orElse(null);
+        return DishMapper.toDetailDTO(dish, menuCount, lastServed);
     }
 
     @Override
@@ -147,19 +150,23 @@ public class DishService implements IDishService
     }
 
     @Override
-    public AvailableDishesDTO getAvailableDishesForMenu(int week, int year)
-    {
+    public AvailableDishesDTO getAvailableDishesForMenu(int week, int year) {
         ValidationUtil.validateRange(week, 1, 53, "Week");
         ValidationUtil.validateRange(year, 2020, 2100, "Year");
 
         Set<Dish> newDishesFromThisWeek = dishDAO.findByOriginWeekAndYear(week, year);
         Set<Dish> fromDishHistory = dishDAO.findFromPreviousWeeks(week, year);
 
+        Set<Long> allIds = new HashSet<>();
+        newDishesFromThisWeek.forEach(d -> allIds.add(d.getId()));
+        fromDishHistory.forEach(d -> allIds.add(d.getId()));
+        Map<Long, String> lastServedMap = dishDAO.findLastServedBatch(allIds);
+
         return new AvailableDishesDTO(
             week,
             year,
-            groupDishOptionsByStation(newDishesFromThisWeek),
-            groupDishOptionsByStation(fromDishHistory)
+            groupDishOptionsByStation(newDishesFromThisWeek, lastServedMap),
+            groupDishOptionsByStation(fromDishHistory, lastServedMap)
         );
     }
 
@@ -178,18 +185,30 @@ public class DishService implements IDishService
     }
 
     @Override
-    public Map<String, List<DishOptionDTO>> getAllActiveDishesGrouped()
-    {
+    public Map<String, List<DishOptionDTO>> getAllActiveDishesGrouped() {
         Set<Dish> dishes = dishDAO.findByFilter(null, true);
-        return groupDishOptionsByStation(dishes);
+        return groupDishOptionsByStationNoLastServed(dishes);
     }
 
-    private Map<String, List<DishOptionDTO>> groupDishOptionsByStation(Set<Dish> dishes)
-    {
+    private Map<String, List<DishOptionDTO>> groupDishOptionsByStation(Set<Dish> dishes, Map<Long, String> lastServedMap) {
         return dishes.stream()
             .collect(Collectors.groupingBy(
                 d -> d.getStation().getStationName(),
-                Collectors.mapping(DishMapper::toOptionDTO, Collectors.toList())
+                Collectors.mapping(
+                    d -> DishMapper.toOptionDTO(d, lastServedMap.get(d.getId())),
+                    Collectors.toList()
+                )
+            ));
+    }
+
+    private Map<String, List<DishOptionDTO>> groupDishOptionsByStationNoLastServed(Set<Dish> dishes) {
+        return dishes.stream()
+            .collect(Collectors.groupingBy(
+                d -> d.getStation().getStationName(),
+                Collectors.mapping(
+                    d -> DishMapper.toOptionDTO(d, null),
+                    Collectors.toList()
+                )
             ));
     }
 
