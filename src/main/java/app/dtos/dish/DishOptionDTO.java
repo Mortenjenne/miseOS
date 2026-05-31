@@ -5,7 +5,8 @@ public record DishOptionDTO(
     String dishName,
     String dishDescription,
     String stationName,
-    Boolean isActive
+    Boolean isActive,
+    String lastServed
 )
 {
 }

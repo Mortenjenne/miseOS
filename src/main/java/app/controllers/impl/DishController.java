@@ -66,7 +66,7 @@ public class DishController implements IDishController
     public void getById(Context ctx)
     {
         Long id = RequestUtil.requirePathId(ctx, "id");
-        DishDTO dishDTO = dishService.getById(id);
+        DishDetailDTO dishDTO = dishService.getById(id);
         ctx.status(200).json(dishDTO);
     }
 
