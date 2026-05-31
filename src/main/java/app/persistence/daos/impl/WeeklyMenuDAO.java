@@ -24,13 +24,13 @@ public class WeeklyMenuDAO implements IWeeklyMenuDAO
     }
 
     @Override
-    public List<WeeklyMenuOverviewDTO> findByFilter(MenuStatus status, Integer year, Integer week)
+    public List<WeeklyMenuOverviewDTO> findByFilter(MenuStatus status, Integer year, Integer week, Integer limit)
     {
         try (EntityManager em = emf.createEntityManager())
         {
             try
             {
-                return em.createQuery(
+                TypedQuery<WeeklyMenuOverviewDTO> query = em.createQuery(
                         "SELECT new app.dtos.menu.WeeklyMenuOverviewDTO(" +
                             "wm.id, wm.weekNumber, wm.year, wm.menuStatus, " +
                             "CAST((SELECT COUNT(slot) FROM WeeklyMenuSlot slot WHERE slot.weeklyMenu = wm) AS long), " +
@@ -43,8 +43,11 @@ public class WeeklyMenuDAO implements IWeeklyMenuDAO
                         WeeklyMenuOverviewDTO.class)
                     .setParameter("status", status)
                     .setParameter("year", year)
-                    .setParameter("week", week)
-                    .getResultList();
+                    .setParameter("week", week);
+
+                if (limit != null) query.setMaxResults(limit);
+
+                return query.getResultList();
             }
             catch (PersistenceException e)
             {

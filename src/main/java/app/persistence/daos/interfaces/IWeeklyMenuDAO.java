@@ -11,7 +11,7 @@ import java.util.Optional;
 
 public interface IWeeklyMenuDAO extends IWeeklyMenuReader, IEntityDAO<WeeklyMenu, Long>
 {
-    List<WeeklyMenuOverviewDTO> findByFilter(MenuStatus status, Integer year, Integer week);
+    List<WeeklyMenuOverviewDTO> findByFilter(MenuStatus status, Integer year, Integer week, Integer limit);
 
     Optional<WeeklyMenu> findByWeekAndYear(int weekNumber, int year, MenuStatus status);
 }

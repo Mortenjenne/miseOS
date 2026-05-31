@@ -133,8 +133,9 @@ public class WeeklyMenuController implements IWeeklyMenuController
         MenuStatus status = RequestUtil.getQueryMenuStatus(ctx, "status");
         Integer year = RequestUtil.getQueryInt(ctx, "year");
         Integer week = RequestUtil.getQueryInt(ctx, "week");
+        Integer limit = RequestUtil.getQueryInt(ctx, "limit");
 
-        List<WeeklyMenuOverviewDTO> menus = weeklyMenuService.getOverview(status, year, week);
+        List<WeeklyMenuOverviewDTO> menus = weeklyMenuService.getOverview(status, year, week, limit);
 
         ctx.status(200).json(menus);
     }

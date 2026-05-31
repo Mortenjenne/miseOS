@@ -128,7 +128,7 @@ class IngredientRequestDAOTest
     @DisplayName("Find by filter - should return all seeded requests")
     void getAll()
     {
-        List<IngredientRequest> requests = ingredientRequestDAO.findByFilter(null, null, null, null, null);
+        List<IngredientRequest> requests = ingredientRequestDAO.findByFilter(null, null, null, null, null, null);
         assertThat(requests, hasSize(19));
     }
 
@@ -136,7 +136,7 @@ class IngredientRequestDAOTest
     @DisplayName("Find by filter - should filter by status PENDING")
     void findByStatus()
     {
-        List<IngredientRequest> pending = ingredientRequestDAO.findByFilter(Status.PENDING, null, null, null, null);
+        List<IngredientRequest> pending = ingredientRequestDAO.findByFilter(Status.PENDING, null, null, null, null, null);
 
         assertThat(pending, hasSize(greaterThanOrEqualTo(2)));
         pending.forEach(r -> assertThat(r.getRequestStatus(), is(Status.PENDING)));
@@ -146,7 +146,7 @@ class IngredientRequestDAOTest
     @DisplayName("Find by filter - should return empty set for status with no matches")
     void findByStatusEmptyResults()
     {
-        List<IngredientRequest> rejected = ingredientRequestDAO.findByFilter(Status.REJECTED, null, null, null, null);
+        List<IngredientRequest> rejected = ingredientRequestDAO.findByFilter(Status.REJECTED, null, null, null, null, null);
         assertThat(rejected, is(empty()));
     }
 
@@ -156,7 +156,7 @@ class IngredientRequestDAOTest
     {
         IngredientRequest seed = (IngredientRequest) seeded.get("req_dill");
 
-        List<IngredientRequest> results = ingredientRequestDAO.findByFilter(Status.PENDING, seed.getDeliveryDate(), null, null, null);
+        List<IngredientRequest> results = ingredientRequestDAO.findByFilter(Status.PENDING, seed.getDeliveryDate(), null, null, null, null);
 
         assertThat(results, hasSize(1));
         assertThat(results.iterator().next().getName(), is("Frisk Dild"));
@@ -168,7 +168,7 @@ class IngredientRequestDAOTest
     {
         Station cold = (Station) seeded.get("station_cold");
 
-        List<IngredientRequest> results = ingredientRequestDAO.findByFilter(null, null, null, null, cold.getId());
+        List<IngredientRequest> results = ingredientRequestDAO.findByFilter(null, null, null, null, cold.getId(), null);
 
         assertThat(results, is(not(empty())));
         results.forEach(r ->
@@ -180,7 +180,7 @@ class IngredientRequestDAOTest
     @DisplayName("Find by filter- filter by requestType DISH_SPECIFIC")
     void findByRequestType()
     {
-        List<IngredientRequest> results = ingredientRequestDAO.findByFilter(null, null, null, RequestType.DISH_SPECIFIC, null);
+        List<IngredientRequest> results = ingredientRequestDAO.findByFilter(null, null, null, RequestType.DISH_SPECIFIC, null, null);
 
         assertThat(results, is(not(empty())));
         results.forEach(r ->
@@ -194,7 +194,7 @@ class IngredientRequestDAOTest
     {
         User claire = (User) seeded.get("user_claire");
 
-        List<IngredientRequest> results = ingredientRequestDAO.findByFilter(null, null, claire.getId(), null, null);
+        List<IngredientRequest> results = ingredientRequestDAO.findByFilter(null, null, claire.getId(), null, null, null);
 
         assertThat(results, is(not(empty())));
         results.forEach(r ->
@@ -208,7 +208,7 @@ class IngredientRequestDAOTest
     {
         Station cold = (Station) seeded.get("station_cold");
 
-        List<IngredientRequest> results = ingredientRequestDAO.findByFilter(Status.PENDING, null, null, null, cold.getId());
+        List<IngredientRequest> results = ingredientRequestDAO.findByFilter(Status.PENDING, null, null, null, cold.getId(), null);
 
         assertThat(results, is(not(empty())));
         results.forEach(r -> {
@@ -221,7 +221,7 @@ class IngredientRequestDAOTest
     @DisplayName("Find by filter - unknown stationId returns empty")
     void findByUnknownStationReturnsEmpty()
     {
-        List<IngredientRequest> results = ingredientRequestDAO.findByFilter(null, null, null, null, 9999L);
+        List<IngredientRequest> results = ingredientRequestDAO.findByFilter(null, null, null, null, 9999L, null);
 
         assertThat(results, is(empty()));
     }
@@ -230,8 +230,8 @@ class IngredientRequestDAOTest
     @DisplayName("Find by filter - all filters null returns all requests")
     void findAllFiltersNullReturnsAll()
     {
-        List<IngredientRequest> all = ingredientRequestDAO.findByFilter(null, null, null, null, null);
-        List<IngredientRequest> filtered = ingredientRequestDAO.findByFilter(Status.PENDING, null, null, null, null);
+        List<IngredientRequest> all = ingredientRequestDAO.findByFilter(null, null, null, null, null, null);
+        List<IngredientRequest> filtered = ingredientRequestDAO.findByFilter(Status.PENDING, null, null, null, null, null);
 
         assertThat(all.size(), greaterThan(filtered.size()));
     }

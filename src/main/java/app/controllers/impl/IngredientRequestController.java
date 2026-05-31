@@ -71,8 +71,9 @@ public class IngredientRequestController implements IIngredientRequestController
         LocalDate deliveryDate = RequestUtil.getQueryDate(ctx, "deliveryDate");
         RequestType requestType = RequestUtil.getQueryRequestType(ctx, "requestType");
         Long stationId = RequestUtil.getQueryLong(ctx, "stationId");
+        Integer limit = RequestUtil.getQueryInt(ctx, "limit");
 
-        List<IngredientRequestDTO> ingredientRequests = ingredientRequestService.getRequests(authUser, status, deliveryDate, requestType, stationId);
+        List<IngredientRequestDTO> ingredientRequests = ingredientRequestService.getRequests(authUser, status, deliveryDate, requestType, stationId, limit);
         ctx.status(200).json(ingredientRequests);
     }
 

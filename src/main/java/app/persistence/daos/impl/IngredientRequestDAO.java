@@ -23,7 +23,7 @@ public class IngredientRequestDAO implements IIngredientRequestDAO
     }
 
     @Override
-    public List<IngredientRequest> findByFilter(Status status, LocalDate deliveryDate, Long creatorId, RequestType requestType, Long stationId)
+    public List<IngredientRequest> findByFilter(Status status, LocalDate deliveryDate, Long creatorId, RequestType requestType, Long stationId, Integer limit)
     {
         try (EntityManager em = emf.createEntityManager())
         {
@@ -45,7 +45,7 @@ public class IngredientRequestDAO implements IIngredientRequestDAO
                 if (requestType != null) jpql.append(" AND ir.requestType = :requestType");
                 if (stationId != null) jpql.append(" AND st.id = :stationId");
 
-                jpql.append(" ORDER BY ir.name ASC, ir.createdAt ASC");
+                jpql.append(" ORDER BY ir.createdAt DESC");
 
                 TypedQuery<IngredientRequest> query = em.createQuery(jpql.toString(), IngredientRequest.class);
 
@@ -54,6 +54,7 @@ public class IngredientRequestDAO implements IIngredientRequestDAO
                 if (creatorId != null) query.setParameter("creatorId", creatorId);
                 if (requestType != null) query.setParameter("requestType", requestType);
                 if (stationId != null) query.setParameter("stationId", stationId);
+                if (limit != null) query.setMaxResults(limit);
 
                 return query.getResultList();
             }
