@@ -114,7 +114,7 @@ public class IngredientRequestService implements IIngredientRequestService
     }
 
     @Override
-    public List<IngredientRequestDTO> getRequests(AuthenticatedUser authUser, Status status, LocalDate deliveryDate, RequestType requestType, Long stationId)
+    public List<IngredientRequestDTO> getRequests(AuthenticatedUser authUser, Status status, LocalDate deliveryDate, RequestType requestType, Long stationId, Integer limit)
     {
         validateAuthenticatedUser(authUser);
 
@@ -125,7 +125,7 @@ public class IngredientRequestService implements IIngredientRequestService
 
         Long creatorId = authUser.isHeadChef() || authUser.isSousChef() ? null : authUser.userId();
 
-        List<IngredientRequest> ingredientRequests = ingredientRequestDAO.findByFilter(status, deliveryDate, creatorId, requestType, stationId);
+        List<IngredientRequest> ingredientRequests = ingredientRequestDAO.findByFilter(status, deliveryDate, creatorId, requestType, stationId, limit);
 
         return ingredientRequests.stream()
             .map(IngredientRequestMapper::toDTO)

@@ -155,7 +155,7 @@ class WeeklyMenuDAOTest
     @DisplayName("Find by filter - should filter by MenuStatus")
     void findByStatus()
     {
-        List<WeeklyMenuOverviewDTO> publishedMenus = weeklyMenuDAO.findByFilter(MenuStatus.PUBLISHED, null, null);
+        List<WeeklyMenuOverviewDTO> publishedMenus = weeklyMenuDAO.findByFilter(MenuStatus.PUBLISHED, null, null, null);
 
         assertThat(publishedMenus, is(not(empty())));
         assertThat(publishedMenus.stream().allMatch(m -> m.menuStatus() == MenuStatus.PUBLISHED), is(true));
@@ -165,7 +165,7 @@ class WeeklyMenuDAOTest
     @DisplayName("Find by filter - null filter should return all menus")
     void findByFilterAll()
     {
-        List<WeeklyMenuOverviewDTO> allMenus = weeklyMenuDAO.findByFilter(null, null, null);
+        List<WeeklyMenuOverviewDTO> allMenus = weeklyMenuDAO.findByFilter(null, null, null, null);
 
         assertThat(allMenus, hasSize(greaterThanOrEqualTo(4)));
     }
@@ -174,7 +174,7 @@ class WeeklyMenuDAOTest
     @DisplayName("Find by filter - should filter by week and year")
     void findByFilterWeekAndYear()
     {
-        List<WeeklyMenuOverviewDTO> menus = weeklyMenuDAO.findByFilter(null, 2026, 7);
+        List<WeeklyMenuOverviewDTO> menus = weeklyMenuDAO.findByFilter(null, 2026, 7, null);
 
         assertThat(menus, hasSize(1));
         assertThat(menus.get(0).weekNumber(), is(7));

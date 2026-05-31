@@ -52,7 +52,7 @@ public class ShoppingListService implements IShoppingListService
         validateCreateInput(dto);
         checkIfShoppingListExists(dto);
 
-        List<IngredientRequest> approvedRequests = ingredientRequestDAO.findByFilter(Status.APPROVED, dto.deliveryDate(),null,null, null);
+        List<IngredientRequest> approvedRequests = ingredientRequestDAO.findByFilter(Status.APPROVED, dto.deliveryDate(),null,null, null, null);
         checkRequestNotEmpty(approvedRequests, dto.deliveryDate());
 
         List<String> uniqueIngredientNames = shoppingListAggregator.getUniqueIngredientNames(approvedRequests);

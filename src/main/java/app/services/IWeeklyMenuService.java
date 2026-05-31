@@ -29,7 +29,7 @@ public interface IWeeklyMenuService
 
     WeeklyMenuDTO getById(Long menuId);
 
-    List<WeeklyMenuOverviewDTO> getOverview(MenuStatus menuStatus, Integer year, Integer week);
+    List<WeeklyMenuOverviewDTO> getOverview(MenuStatus menuStatus, Integer year, Integer week, Integer limit);
 
     boolean deleteMenu(AuthenticatedUser authUser, Long menuId);
 }

@@ -213,9 +213,9 @@ public class WeeklyMenuService implements IWeeklyMenuService
     }
 
     @Override
-    public List<WeeklyMenuOverviewDTO> getOverview(MenuStatus menuStatus, Integer year, Integer week)
+    public List<WeeklyMenuOverviewDTO> getOverview(MenuStatus menuStatus, Integer year, Integer week, Integer limit)
     {
-        return menuDAO.findByFilter(menuStatus, year, week);
+        return menuDAO.findByFilter(menuStatus, year, week, limit);
     }
 
     @Override

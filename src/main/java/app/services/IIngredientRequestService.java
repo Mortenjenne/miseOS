@@ -19,7 +19,7 @@ public interface IIngredientRequestService
 
     IngredientRequestDTO rejectIngredientRequest(AuthenticatedUser authUser, Long requestId);
 
-    List<IngredientRequestDTO> getRequests(AuthenticatedUser authUser, Status status, LocalDate deliveryDate, RequestType requestType, Long stationId);
+    List<IngredientRequestDTO> getRequests(AuthenticatedUser authUser, Status status, LocalDate deliveryDate, RequestType requestType, Long stationId, Integer limit);
 
     IngredientRequestDTO getById(AuthenticatedUser authUser, Long id);
 
