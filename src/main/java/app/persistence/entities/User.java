@@ -57,10 +57,10 @@ public class User implements IEntity
         ValidationUtil.validateNotBlank(lastName, "Last name");
         ValidationUtil.validateNotNull(userRole, "User role");
 
-        this.firstName = firstName;
-        this.lastName = lastName;
+        this.firstName = firstName.trim();
+        this.lastName = lastName.trim();
         this.email = ValidationUtil.validateEmail(email);
-        this.hashedPassword = hashedPassword;
+        this.hashedPassword = hashedPassword.trim();
         this.userRole = userRole;
     }
 

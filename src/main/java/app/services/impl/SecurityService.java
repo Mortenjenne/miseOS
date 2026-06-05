@@ -42,7 +42,7 @@ public class SecurityService implements ISecurityService
     {
         validateLoginRequest(dto);
 
-        User user = userReader.findByEmail(dto.email())
+        User user = userReader.findByEmail(dto.email().trim().toLowerCase())
             .orElseThrow(() -> new AuthenticationException("Invalid email or password"));
 
         if (!user.verifyPassword(dto.password()))
