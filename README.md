@@ -39,7 +39,7 @@ The goal is to replace fragmented manual planning with a structured, role-based 
 
 **Project overview video:** [YouTube demo](https://www.youtube.com/watch?v=Zti71YNXW6o)
 
-**Deployed API:** [miseos.corral.dk/api/v1](https://miseos.corral.dk/api/v1)
+**Deployed API:** [miseos-api.corral.dk/api/v1](https://miseos.corral.dk/api/v1)
 
 **Full API documentation:** [corral.dk/docs/miseos-api-doc](https://corral.dk/docs/miseos-api-doc/)
 
